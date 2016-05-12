@@ -27,6 +27,7 @@ public class ChiConfig {
   private String DBBindIP;
   private String cert;
   private String key;
+  private String dbPath;
 
   public ChiConfig(Config conf) {
 
@@ -40,6 +41,7 @@ public class ChiConfig {
       e.printStackTrace();
     }
 
+    this.dbPath = conf.getString("db_path");
     this.workers = conf.getInt("workers");
     this.bossCount =  conf.getInt("boss_count");
     this.adminBindIP = conf.getString("admin_bind_ip");
@@ -96,5 +98,9 @@ public class ChiConfig {
 
   public String getKey() {
     return PRIVATE_KEY;
+  }
+
+  public String getDBPath() {
+    return dbPath;
   }
 }

@@ -1,8 +1,13 @@
 package com.xjeffrose.chicago;
 
+import com.xjeffrose.chicago.codec.ChicagoCodec;
+import com.xjeffrose.chicago.processors.ChicagoAdminProcessor;
+import com.xjeffrose.chicago.processors.ChicagoProcessor;
+import com.xjeffrose.chicago.processors.ChicagoStatsProcessor;
 import com.xjeffrose.xio.SSL.XioSecurityHandlerImpl;
 import com.xjeffrose.xio.core.XioAggregatorFactory;
 import com.xjeffrose.xio.core.XioCodecFactory;
+import com.xjeffrose.xio.core.XioNoOpHandler;
 import com.xjeffrose.xio.core.XioRoutingFilterFactory;
 import com.xjeffrose.xio.core.XioSecurityFactory;
 import com.xjeffrose.xio.core.XioSecurityHandlers;
@@ -17,6 +22,7 @@ import io.netty.channel.ChannelInboundHandler;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.handler.codec.http.HttpServerCodec;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -31,10 +37,12 @@ public class DBRouter implements Closeable {
   //TODO(JR): Make this concurrent to applow for parallel streams
   private final Set<XioServerDef> serverDefSet = new HashSet<>();
   private final ChiConfig config;
+  private final DBManager dbManager;
   private XioBootstrap x;
 
   public DBRouter(ChiConfig config) {
     this.config = config;
+    this.dbManager = new DBManager(config);
     config.setDbRouter(this);
   }
 
@@ -56,13 +64,13 @@ public class DBRouter implements Closeable {
         .withProcessorFactory(new XioProcessorFactory() {
           @Override
           public XioProcessor getProcessor() {
-            return new ChicagoProcessor();
+            return new ChicagoAdminProcessor();
           }
         })
         .withCodecFactory(new XioCodecFactory() {
           @Override
           public ChannelHandler getCodec() {
-            return new ChicagoCodec();
+            return new HttpServerCodec();
           }
         })
         .withAggregator(new XioAggregatorFactory() {
@@ -100,13 +108,13 @@ public class DBRouter implements Closeable {
         .withProcessorFactory(new XioProcessorFactory() {
           @Override
           public XioProcessor getProcessor() {
-            return null;
+            return new ChicagoStatsProcessor();
           }
         })
         .withCodecFactory(new XioCodecFactory() {
           @Override
           public ChannelHandler getCodec() {
-            return null;
+            return new HttpServerCodec();
           }
         })
         .withAggregator(new XioAggregatorFactory() {
@@ -144,25 +152,25 @@ public class DBRouter implements Closeable {
         .withProcessorFactory(new XioProcessorFactory() {
           @Override
           public XioProcessor getProcessor() {
-            return null;
+            return new ChicagoProcessor(dbManager);
           }
         })
         .withCodecFactory(new XioCodecFactory() {
           @Override
           public ChannelHandler getCodec() {
-            return null;
+            return new ChicagoCodec();
           }
         })
         .withAggregator(new XioAggregatorFactory() {
           @Override
           public ChannelHandler getAggregator() {
-            return null;
+            return new XioNoOpHandler();
           }
         })
         .withRoutingFilter(new XioRoutingFilterFactory() {
           @Override
           public ChannelInboundHandler getRoutingFilter() {
-            return null;
+            return new XioNoOpHandler();
           }
         })
         .build();
@@ -170,7 +178,7 @@ public class DBRouter implements Closeable {
     serverDefSet.add(dbServer);
   }
 
-  public void run(boolean statsTest) {
+  public void run() {
 
     configureAdminServer();
     configureStatsServer();
