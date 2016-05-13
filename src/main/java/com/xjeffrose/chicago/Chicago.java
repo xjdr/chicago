@@ -3,7 +3,6 @@ package com.xjeffrose.chicago;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import java.io.File;
-import kafka.producer.KafkaLog4jAppender;
 import org.apache.log4j.Logger;
 
 public class Chicago {
@@ -13,13 +12,6 @@ public class Chicago {
   public static void main(String[] args) {
 
     //Setting the Log topic for Kafka
-    if(System.getProperty("ENV") != null && Logger.getRootLogger().getAppender("KAFKA") != null) {
-      KafkaLog4jAppender kafka = (KafkaLog4jAppender) Logger.getRootLogger().getAppender("KAFKA");
-      String env = System.getProperty("ENV");
-
-      kafka.setTopic(kafka.getTopic() + "-" + env);
-
-    }
 
     log.info("Starting Chicago, have a nice day");
 

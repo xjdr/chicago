@@ -3,6 +3,7 @@ package com.xjeffrose.chicago.client;
 import com.xjeffrose.chicago.ChicagoMessage;
 import com.xjeffrose.chicago.DefaultChicagoMessage;
 import com.xjeffrose.chicago.Op;
+import com.xjeffrose.xio.SSL.XioSecurityHandlerImpl;
 import com.xjeffrose.xio.client.retry.BoundedExponentialBackoffRetry;
 import com.xjeffrose.xio.client.retry.RetryLoop;
 import com.xjeffrose.xio.client.retry.TracerDriver;
@@ -73,7 +74,7 @@ public class ChicagoClient {
           @Override
           protected void initChannel(SocketChannel channel) throws Exception {
             ChannelPipeline cp = channel.pipeline();
-            // we don't need the security handler here since tcp is pass-through
+//            cp.addLast(new XioSecurityHandlerImpl(true).getEncryptionHandler());
             cp.addLast(new XioIdleDisconnectHandler(60, 60, 60));
             cp.addLast(new ChicagoClientCodec());
             cp.addLast(new ChicagoClientHandler(listener));
@@ -118,11 +119,10 @@ public class ChicagoClient {
           ChicagoMessage chicagoMessage = new DefaultChicagoMessage(op, key, val);
 
           try {
-            ch.writeAndFlush(chicagoMessage).sync();
-          } catch (InterruptedException e) {
+            ch.writeAndFlush(chicagoMessage);
+          } catch (Exception e) {
             e.printStackTrace();
           }
-
         }
       }
     };
