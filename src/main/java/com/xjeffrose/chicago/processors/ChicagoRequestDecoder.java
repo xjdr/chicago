@@ -1,4 +1,4 @@
-package com.xjeffrose.chicago.codec;
+package com.xjeffrose.chicago.processors;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,7 +26,7 @@ public class ChicagoRequestDecoder extends ByteArrayDecoder {
 
     // Get the Value Length
     msg.getBytes(2 + keyLength, valLengthArray, 0, 1);
-    final int valLength = 5;
+    final int valLength = valLengthArray[0];
     final byte[] val = new byte[valLength];
 
     // Get the Value

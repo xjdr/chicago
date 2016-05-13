@@ -1,4 +1,4 @@
-package com.xjeffrose.chicago.codec;
+package com.xjeffrose.chicago.processors;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.CombinedChannelDuplexHandler;

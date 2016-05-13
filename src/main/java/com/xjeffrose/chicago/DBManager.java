@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
+import org.rocksdb.WriteBatch;
 
 public class DBManager {
   private static final Logger log = Logger.getLogger(DBManager.class);
@@ -23,6 +24,8 @@ public class DBManager {
   }
 
   public boolean write(byte[] key, byte[] value) {
+    WriteBatch writeBatch = new WriteBatch();
+    writeBatch.
     if (key == null) {
       log.error("Tried to write a null key");
       return false;
@@ -33,6 +36,7 @@ public class DBManager {
       try {
         db.put(key, value);
       } catch (RocksDBException e) {
+        log.error("Error writing record: " + new String(key), e);
         return false;
       }
     }
@@ -40,14 +44,15 @@ public class DBManager {
     return true;
   }
 
-  public byte[] get(byte[] key) {
+  public byte[] read(byte[] key) {
     if (key == null) {
-      log.error("Tried to get a null key");
+      log.error("Tried to read a null key");
       return null;
     } else {
       try {
         return db.get(key);
       } catch (RocksDBException e) {
+        log.error("Error getting record: " + new String(key), e);
         return null;
       }
     }
@@ -62,9 +67,13 @@ public class DBManager {
         db.remove(key);
         return true;
       } catch (RocksDBException e) {
+        log.error("Error deleting record: " + new String(key), e);
         return false;
       }
     }
   }
 
+  public void destroy() {
+    db.close();
+  }
 }

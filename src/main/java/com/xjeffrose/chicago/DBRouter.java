@@ -1,6 +1,6 @@
 package com.xjeffrose.chicago;
 
-import com.xjeffrose.chicago.codec.ChicagoCodec;
+import com.xjeffrose.chicago.processors.ChicagoCodec;
 import com.xjeffrose.chicago.processors.ChicagoAdminProcessor;
 import com.xjeffrose.chicago.processors.ChicagoProcessor;
 import com.xjeffrose.chicago.processors.ChicagoStatsProcessor;
@@ -212,6 +212,7 @@ public class DBRouter implements Closeable {
   @Override
   public void close() throws IOException {
     x.stop();
+    dbManager.destroy();
   }
 
   public void stop() {

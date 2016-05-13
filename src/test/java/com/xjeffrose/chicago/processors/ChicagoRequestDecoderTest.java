@@ -1,13 +1,11 @@
-package com.xjeffrose.chicago.codec;
+package com.xjeffrose.chicago.processors;
 
+import com.xjeffrose.chicago.processors.ChicagoRequestDecoder;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.junit.Test;
-import scala.Array;
 
 import static org.junit.Assert.*;
 
@@ -40,9 +38,9 @@ public class ChicagoRequestDecoderTest {
     byte[] _key = (byte[]) list.get(1);
     byte[] _val = (byte[]) list.get(2);
 
-    System.out.println(Integer.toString(_op));
-    System.out.println(new String(_key));
-    System.out.println(new String(_val));
+    assertEquals(0, _op);
+    assertEquals("key", new String(_key));
+    assertEquals("value", new String(_val));
 
   }
 

@@ -16,7 +16,7 @@ public class DBManagerTest {
     byte[] val = "Valure".getBytes();
 
     assertTrue(dbManager.write(key, val));
-    assertEquals(new String(val), new String(dbManager.get(key)));
+    assertEquals(new String(val), new String(dbManager.read(key)));
     assertTrue(dbManager.delete(key));
   }
 
