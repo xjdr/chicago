@@ -30,7 +30,8 @@ public class ChicagoListener implements Listener<byte[]> {
       return response;
     } else {
       try {
-        Thread.sleep(200);
+        Thread.sleep(1);
+        getResponse();
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
@@ -44,7 +45,8 @@ public class ChicagoListener implements Listener<byte[]> {
       return success;
     } else {
       try {
-        Thread.sleep(2000);
+        Thread.sleep(1);
+        getStatus();
       } catch (InterruptedException e) {
         e.printStackTrace();
       }

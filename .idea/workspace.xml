@@ -2,12 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fd2c71ad-3b2b-45d7-a09c-3d3e9897a2e6" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/ChicagoObjectEncoder.java" afterPath="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/ChicagoObjectEncoder.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application.conf" afterPath="$PROJECT_DIR$/application.conf" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/ChicagoProcessor.java" afterPath="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/ChicagoProcessor.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoClientHandler.java" afterPath="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoClientHandler.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoClient.java" afterPath="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoClient.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoListener.java" afterPath="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoListener.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/com/xjeffrose/chicago/ChicagoProcessorTest.java" afterPath="$PROJECT_DIR$/src/test/java/com/xjeffrose/chicago/ChicagoProcessorTest.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/com/xjeffrose/chicago/client/ChicagoClientTest.java" afterPath="$PROJECT_DIR$/src/test/java/com/xjeffrose/chicago/client/ChicagoClientTest.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test.conf" afterPath="$PROJECT_DIR$/test.conf" />
     </list>
     <ignored path="chicago.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -36,8 +37,8 @@
           <file leaf-file-name="ChicagoClient.java" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoClient.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-300">
-                  <caret line="26" column="13" selection-start-line="26" selection-start-column="13" selection-end-line="26" selection-end-column="13" />
+                <state relative-caret-position="1461">
+                  <caret line="121" column="0" selection-start-line="121" selection-start-column="0" selection-end-line="121" selection-end-column="0" />
                   <folding>
                     <element signature="imports" expanded="true" />
                   </folding>
@@ -59,11 +60,11 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="ChicagoListener.java" pinned="false" current-in-tab="false">
+          <file leaf-file-name="ChicagoListener.java" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoListener.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="255">
-                  <caret line="17" column="0" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
+                <state relative-caret-position="480">
+                  <caret line="32" column="22" selection-start-line="32" selection-start-column="22" selection-end-line="32" selection-end-column="22" />
                   <folding />
                 </state>
               </provider>
@@ -91,11 +92,11 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="ChicagoClientTest.java" pinned="false" current-in-tab="true">
+          <file leaf-file-name="ChicagoClientTest.java" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/test/java/com/xjeffrose/chicago/client/ChicagoClientTest.java">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="300">
-                  <caret line="26" column="17" selection-start-line="26" selection-start-column="17" selection-end-line="26" selection-end-column="17" />
+                  <caret line="26" column="25" selection-start-line="26" selection-start-column="25" selection-end-line="26" selection-end-column="25" />
                   <folding />
                 </state>
               </provider>
@@ -118,8 +119,8 @@
           <file leaf-file-name="ChicagoProcessor.java" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/ChicagoProcessor.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="405">
-                  <caret line="29" column="0" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
+                <state relative-caret-position="480">
+                  <caret line="34" column="56" selection-start-line="34" selection-start-column="56" selection-end-line="34" selection-end-column="56" />
                   <folding>
                     <element signature="imports" expanded="true" />
                   </folding>
@@ -146,8 +147,18 @@
           <file leaf-file-name="test.conf" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/test.conf">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="165">
-                  <caret line="11" column="36" selection-start-line="11" selection-start-column="36" selection-end-line="11" selection-end-column="36" />
+                <state relative-caret-position="45">
+                  <caret line="3" column="15" selection-start-line="3" selection-start-column="15" selection-end-line="3" selection-end-column="15" />
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="application.conf" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/application.conf">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="45">
+                  <caret line="3" column="15" selection-start-line="3" selection-start-column="15" selection-end-line="3" selection-end-column="15" />
                   <folding />
                 </state>
               </provider>
@@ -273,11 +284,9 @@
         <option value="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/ChicagoCodec.java" />
         <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/ChicagoAdminProcessor.java" />
-        <option value="$PROJECT_DIR$/application.conf" />
         <option value="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/ChiConfig.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/Chicago.java" />
         <option value="$PROJECT_DIR$/src/test/java/com/xjeffrose/chicago/ChicagoTest.java" />
-        <option value="$PROJECT_DIR$/test.conf" />
         <option value="$PROJECT_DIR$/src/test/java/com/xjeffrose/chicago/DBManagerTest.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/codec/ChicagoRequestDecoder.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/codec/Op.java" />
@@ -307,14 +316,16 @@
         <option value="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/DBRouter.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/ChicagoObjectDecoder.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoRequestEncoder.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoListener.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoResponseDecoder.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoClient.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/ChicagoProcessor.java" />
-        <option value="$PROJECT_DIR$/src/test/java/com/xjeffrose/chicago/ChicagoProcessorTest.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/ChicagoObjectEncoder.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoClientHandler.java" />
+        <option value="$PROJECT_DIR$/test.conf" />
+        <option value="$PROJECT_DIR$/application.conf" />
+        <option value="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/ChicagoProcessor.java" />
+        <option value="$PROJECT_DIR$/src/test/java/com/xjeffrose/chicago/ChicagoProcessorTest.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoClient.java" />
         <option value="$PROJECT_DIR$/src/test/java/com/xjeffrose/chicago/client/ChicagoClientTest.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoListener.java" />
       </list>
     </option>
   </component>
@@ -389,6 +400,48 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="test" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="chicago" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="chicago" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="chicago" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="test" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="chicago" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="client" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -502,16 +555,21 @@
       <recent name="com.xjeffrose.chicago" />
     </key>
   </component>
-  <component name="RunManager" selected="JUnit.ChicagoClientTest.read">
-    <configuration default="false" name="All in chicago" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+  <component name="RunManager" selected="JUnit.ChicagoClientTest.deleteMany">
+    <configuration default="false" name="ChicagoClientTest.writeMany" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
+        <pattern>
+          <option name="PATTERN" value="com.xjeffrose.chicago.client.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
       <module name="chicago" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="PACKAGE_NAME" value="" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="package" />
+      <option name="PACKAGE_NAME" value="com.xjeffrose.chicago.client" />
+      <option name="MAIN_CLASS_NAME" value="com.xjeffrose.chicago.client.ChicagoClientTest" />
+      <option name="METHOD_NAME" value="writeMany" />
+      <option name="TEST_OBJECT" value="method" />
       <option name="VM_PARAMETERS" value="-ea" />
       <option name="PARAMETERS" />
       <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
@@ -524,7 +582,7 @@
       <patterns />
       <method />
     </configuration>
-    <configuration default="false" name="ChicagoClientTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration default="false" name="ChicagoClientTest.writeSingle" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
         <pattern>
           <option name="PATTERN" value="com.xjeffrose.chicago.client.*" />
@@ -536,8 +594,34 @@
       <option name="ALTERNATIVE_JRE_PATH" />
       <option name="PACKAGE_NAME" value="com.xjeffrose.chicago.client" />
       <option name="MAIN_CLASS_NAME" value="com.xjeffrose.chicago.client.ChicagoClientTest" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
+      <option name="METHOD_NAME" value="writeSingle" />
+      <option name="TEST_OBJECT" value="method" />
+      <option name="VM_PARAMETERS" value="-ea" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="singleModule" />
+      </option>
+      <envs />
+      <patterns />
+      <method />
+    </configuration>
+    <configuration default="false" name="ChicagoClientTest.readMany" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
+        <pattern>
+          <option name="PATTERN" value="com.xjeffrose.chicago.client.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <module name="chicago" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PACKAGE_NAME" value="com.xjeffrose.chicago.client" />
+      <option name="MAIN_CLASS_NAME" value="com.xjeffrose.chicago.client.ChicagoClientTest" />
+      <option name="METHOD_NAME" value="readMany" />
+      <option name="TEST_OBJECT" value="method" />
       <option name="VM_PARAMETERS" value="-ea" />
       <option name="PARAMETERS" />
       <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
@@ -576,7 +660,7 @@
       <patterns />
       <method />
     </configuration>
-    <configuration default="false" name="ChicagoClientTest.write" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration default="false" name="ChicagoClientTest.deleteMany" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
         <pattern>
           <option name="PATTERN" value="com.xjeffrose.chicago.client.*" />
@@ -588,33 +672,7 @@
       <option name="ALTERNATIVE_JRE_PATH" />
       <option name="PACKAGE_NAME" value="com.xjeffrose.chicago.client" />
       <option name="MAIN_CLASS_NAME" value="com.xjeffrose.chicago.client.ChicagoClientTest" />
-      <option name="METHOD_NAME" value="write" />
-      <option name="TEST_OBJECT" value="method" />
-      <option name="VM_PARAMETERS" value="-ea" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="TEST_SEARCH_SCOPE">
-        <value defaultName="singleModule" />
-      </option>
-      <envs />
-      <patterns />
-      <method />
-    </configuration>
-    <configuration default="false" name="ChicagoClientTest.delete" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
-        <pattern>
-          <option name="PATTERN" value="com.xjeffrose.chicago.client.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <module name="chicago" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="PACKAGE_NAME" value="com.xjeffrose.chicago.client" />
-      <option name="MAIN_CLASS_NAME" value="com.xjeffrose.chicago.client.ChicagoClientTest" />
-      <option name="METHOD_NAME" value="delete" />
+      <option name="METHOD_NAME" value="deleteMany" />
       <option name="TEST_OBJECT" value="method" />
       <option name="VM_PARAMETERS" value="-ea" />
       <option name="PARAMETERS" />
@@ -1068,19 +1126,19 @@
       <method />
     </configuration>
     <list size="5">
-      <item index="0" class="java.lang.String" itemvalue="JUnit.All in chicago" />
-      <item index="1" class="java.lang.String" itemvalue="JUnit.ChicagoClientTest" />
-      <item index="2" class="java.lang.String" itemvalue="JUnit.ChicagoClientTest.read" />
-      <item index="3" class="java.lang.String" itemvalue="JUnit.ChicagoClientTest.write" />
-      <item index="4" class="java.lang.String" itemvalue="JUnit.ChicagoClientTest.delete" />
+      <item index="0" class="java.lang.String" itemvalue="JUnit.ChicagoClientTest.writeMany" />
+      <item index="1" class="java.lang.String" itemvalue="JUnit.ChicagoClientTest.writeSingle" />
+      <item index="2" class="java.lang.String" itemvalue="JUnit.ChicagoClientTest.readMany" />
+      <item index="3" class="java.lang.String" itemvalue="JUnit.ChicagoClientTest.read" />
+      <item index="4" class="java.lang.String" itemvalue="JUnit.ChicagoClientTest.deleteMany" />
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="JUnit.ChicagoClientTest.read" />
-        <item index="1" class="java.lang.String" itemvalue="JUnit.ChicagoClientTest.write" />
-        <item index="2" class="java.lang.String" itemvalue="JUnit.ChicagoClientTest.delete" />
-        <item index="3" class="java.lang.String" itemvalue="JUnit.ChicagoClientTest" />
-        <item index="4" class="java.lang.String" itemvalue="JUnit.All in chicago" />
+        <item index="0" class="java.lang.String" itemvalue="JUnit.ChicagoClientTest.deleteMany" />
+        <item index="1" class="java.lang.String" itemvalue="JUnit.ChicagoClientTest.readMany" />
+        <item index="2" class="java.lang.String" itemvalue="JUnit.ChicagoClientTest.writeMany" />
+        <item index="3" class="java.lang.String" itemvalue="JUnit.ChicagoClientTest.read" />
+        <item index="4" class="java.lang.String" itemvalue="JUnit.ChicagoClientTest.writeSingle" />
       </list>
     </recent_temporary>
   </component>
@@ -1102,44 +1160,44 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1463086731779</updated>
-      <workItem from="1463086733991" duration="35535000" />
+      <workItem from="1463086733991" duration="37903000" />
     </task>
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="ChicagoClientTest - 2016.05.13 at 02h 41m 29s.xml">
-      <configuration name="ChicagoClientTest" configurationId="JUnit" />
+    <history-entry file="ChicagoClientTest_deleteMany - 2016.05.13 at 10h 18m 41s.xml">
+      <configuration name="ChicagoClientTest.deleteMany" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="ChicagoClientTest - 2016.05.13 at 02h 42m 44s.xml">
-      <configuration name="ChicagoClientTest" configurationId="JUnit" />
+    <history-entry file="ChicagoClientTest_deleteMany - 2016.05.13 at 10h 19m 00s.xml">
+      <configuration name="ChicagoClientTest.deleteMany" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="ChicagoClientTest - 2016.05.13 at 02h 46m 46s.xml">
-      <configuration name="ChicagoClientTest" configurationId="JUnit" />
+    <history-entry file="ChicagoClientTest_readMany - 2016.05.13 at 10h 17m 09s.xml">
+      <configuration name="ChicagoClientTest.readMany" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="ChicagoClientTest_delete - 2016.05.13 at 02h 47m 49s.xml">
-      <configuration name="ChicagoClientTest.delete" configurationId="JUnit" />
+    <history-entry file="ChicagoClientTest_readMany - 2016.05.13 at 10h 18m 30s.xml">
+      <configuration name="ChicagoClientTest.readMany" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="ChicagoClientTest_read - 2016.05.13 at 02h 47m 08s.xml">
-      <configuration name="ChicagoClientTest.read" configurationId="JUnit" />
+    <history-entry file="ChicagoClientTest_writeMany - 2016.05.13 at 10h 16m 58s.xml">
+      <configuration name="ChicagoClientTest.writeMany" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="ChicagoClientTest_read - 2016.05.13 at 02h 47m 43s.xml">
-      <configuration name="ChicagoClientTest.read" configurationId="JUnit" />
+    <history-entry file="ChicagoClientTest_writeMany - 2016.05.13 at 10h 17m 29s.xml">
+      <configuration name="ChicagoClientTest.writeMany" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="ChicagoClientTest_read - 2016.05.13 at 02h 47m 53s.xml">
-      <configuration name="ChicagoClientTest.read" configurationId="JUnit" />
+    <history-entry file="ChicagoClientTest_writeMany - 2016.05.13 at 10h 17m 45s.xml">
+      <configuration name="ChicagoClientTest.writeMany" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="ChicagoClientTest_read - 2016.05.13 at 02h 48m 03s.xml">
-      <configuration name="ChicagoClientTest.read" configurationId="JUnit" />
+    <history-entry file="ChicagoClientTest_writeMany - 2016.05.13 at 10h 17m 58s.xml">
+      <configuration name="ChicagoClientTest.writeMany" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="ChicagoClientTest_write - 2016.05.13 at 02h 47m 26s.xml">
-      <configuration name="ChicagoClientTest.write" configurationId="JUnit" />
+    <history-entry file="ChicagoClientTest_writeMany - 2016.05.13 at 10h 18m 10s.xml">
+      <configuration name="ChicagoClientTest.writeMany" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="ChicagoClientTest_write - 2016.05.13 at 02h 47m 59s.xml">
-      <configuration name="ChicagoClientTest.write" configurationId="JUnit" />
+    <history-entry file="ChicagoClientTest_writeMany - 2016.05.13 at 10h 18m 18s.xml">
+      <configuration name="ChicagoClientTest.writeMany" configurationId="JUnit" />
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="35535000" />
+    <option name="totallyTimeSpent" value="37903000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="2560" height="1440" extended-state="6" />
@@ -1153,7 +1211,7 @@
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32950467" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32950467" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
@@ -1303,7 +1361,7 @@
         <state relative-caret-position="120">
           <caret line="8" column="13" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
           <folding>
-            <element signature="imports" expanded="true" />
+            <element signature="imports" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1321,7 +1379,7 @@
         <state relative-caret-position="90">
           <caret line="6" column="13" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
           <folding>
-            <element signature="imports" expanded="true" />
+            <element signature="imports" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1371,7 +1429,7 @@
         <state relative-caret-position="255">
           <caret line="17" column="0" selection-start-line="17" selection-start-column="0" selection-end-line="31" selection-end-column="51" />
           <folding>
-            <element signature="imports" expanded="true" />
+            <element signature="imports" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1416,23 +1474,15 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/application.conf">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="165">
-          <caret line="11" column="36" selection-start-line="11" selection-start-column="36" selection-end-line="11" selection-end-column="36" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/DefaultChicagoMessage.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="735">
           <caret line="55" column="0" selection-start-line="55" selection-start-column="0" selection-end-line="55" selection-end-column="0" />
           <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#1483#1484#0" expanded="true" />
-            <element signature="e#1503#1504#0" expanded="true" />
-            <element signature="e#1563#1564#0" expanded="true" />
+            <element signature="imports" expanded="false" />
+            <element signature="e#1483#1484#0" expanded="false" />
+            <element signature="e#1503#1504#0" expanded="false" />
+            <element signature="e#1563#1564#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1442,7 +1492,7 @@
         <state relative-caret-position="600">
           <caret line="40" column="0" selection-start-line="40" selection-start-column="0" selection-end-line="40" selection-end-column="0" />
           <folding>
-            <element signature="imports" expanded="true" />
+            <element signature="imports" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1514,14 +1564,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test.conf">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="165">
-          <caret line="11" column="36" selection-start-line="11" selection-start-column="36" selection-end-line="11" selection-end-column="36" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/src.zip!/java/lang/String.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="297">
@@ -1573,24 +1615,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/ChicagoProcessor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="405">
-          <caret line="29" column="0" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/test/java/com/xjeffrose/chicago/ChicagoProcessorTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="570">
-          <caret line="66" column="0" selection-start-line="66" selection-start-column="0" selection-end-line="66" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/ChicagoObjectEncoder.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="688">
@@ -1625,34 +1649,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoListener.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="17" column="0" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoClientCodec.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="105">
-          <caret line="7" column="0" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
-          <folding>
-            <element signature="e#310#311#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoClient.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-300">
-          <caret line="26" column="13" selection-start-line="26" selection-start-column="13" selection-end-line="26" selection-end-column="13" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/DBRouter.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="122">
@@ -1677,10 +1673,72 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/test.conf">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="45">
+          <caret line="3" column="15" selection-start-line="3" selection-start-column="15" selection-end-line="3" selection-end-column="15" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/application.conf">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="45">
+          <caret line="3" column="15" selection-start-line="3" selection-start-column="15" selection-end-line="3" selection-end-column="15" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/java/com/xjeffrose/chicago/ChicagoProcessorTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="570">
+          <caret line="66" column="0" selection-start-line="66" selection-start-column="0" selection-end-line="66" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/ChicagoProcessor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="480">
+          <caret line="34" column="56" selection-start-line="34" selection-start-column="56" selection-end-line="34" selection-end-column="56" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoClientCodec.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="7" column="0" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
+          <folding>
+            <element signature="e#310#311#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoClient.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1461">
+          <caret line="121" column="0" selection-start-line="121" selection-start-column="0" selection-end-line="121" selection-end-column="0" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/test/java/com/xjeffrose/chicago/client/ChicagoClientTest.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="300">
-          <caret line="26" column="17" selection-start-line="26" selection-start-column="17" selection-end-line="26" selection-end-column="17" />
+          <caret line="26" column="25" selection-start-line="26" selection-start-column="25" selection-end-line="26" selection-end-column="25" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoListener.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="480">
+          <caret line="32" column="22" selection-start-line="32" selection-start-column="22" selection-end-line="32" selection-end-column="22" />
           <folding />
         </state>
       </provider>

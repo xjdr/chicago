@@ -63,7 +63,7 @@ public class ChicagoProcessorTest {
       }
     });
 
-    processFuture.get();
+    assertEquals(true, processFuture.get());
     assertEquals(new String(val), new String(dbManager.read(key)));
     assertTrue(dbManager.delete(key));
 
