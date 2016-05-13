@@ -14,7 +14,7 @@ public class ChicagoClientTest {
 
   @Before
   public void setUp() throws Exception {
-    chicago.main(new String[]{"Foo"});
+    chicago.main(new String[]{});
   }
 
   @Test
@@ -56,7 +56,7 @@ public class ChicagoClientTest {
 
   @Test
   public void writeMany() throws Exception {
-    for (int i = 0; i < 200; i++) {
+    for (int i = 0; i < 1500; i++) {
       String _k = "key"+i;
       byte[] key = _k.getBytes();
       String _v = "val" +i;

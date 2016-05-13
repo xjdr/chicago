@@ -68,7 +68,7 @@ public class ChicagoClient {
         .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024)
         .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
         .option(ChannelOption.TCP_NODELAY, true);
-    bootstrap.group(new NioEventLoopGroup(12))
+    bootstrap.group(new NioEventLoopGroup(2))
         .channel(NioSocketChannel.class)
         .handler(new ChannelInitializer<SocketChannel>() {
           @Override
