@@ -53,4 +53,18 @@ public class DBManager {
     }
   }
 
+  public boolean delete(byte[] key) {
+    if (key == null) {
+      log.error("Tried to delete a null key");
+      return false;
+    } else {
+      try {
+        db.remove(key);
+        return true;
+      } catch (RocksDBException e) {
+        return false;
+      }
+    }
+  }
+
 }
