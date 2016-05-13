@@ -3,7 +3,8 @@ package com.xjeffrose.chicago;
 public enum Op {
   READ(0),
   WRITE(1),
-  DELETE(2);
+  DELETE(2),
+  RESPONSE(3);
 
   private int i;
 
@@ -24,6 +25,8 @@ public enum Op {
         return WRITE;
       case 2:
         return DELETE;
+      case 3:
+        return RESPONSE;
     }
     return null;
   }

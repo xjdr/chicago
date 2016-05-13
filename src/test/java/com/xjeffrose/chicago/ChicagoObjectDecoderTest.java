@@ -1,6 +1,5 @@
 package com.xjeffrose.chicago;
 
-import com.xjeffrose.chicago.ChicagoObjectDecoder;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import java.util.ArrayList;
@@ -10,7 +9,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class ChicagoObjectDecoderTest {
-  ChicagoObjectDecoder chicagoObjectDecoder = new ChicagoObjectDecoder();
+  private ChicagoObjectDecoder chicagoObjectDecoder = new ChicagoObjectDecoder();
 
 
   @Test
@@ -34,13 +33,11 @@ public class ChicagoObjectDecoderTest {
     List<Object> list = new ArrayList<>();
     chicagoObjectDecoder.decode(null, msg, list);
 
-    int _op = (int) list.get(0);
-    byte[] _key = (byte[]) list.get(1);
-    byte[] _val = (byte[]) list.get(2);
+    ChicagoMessage message = (ChicagoMessage) list.get(0);
 
-    assertEquals(0, _op);
-    assertEquals("key", new String(_key));
-    assertEquals("value", new String(_val));
+    assertEquals(Op.READ, message.getOp());
+    assertEquals("key", new String(message.getKey()));
+    assertEquals("value", new String(message.getVal()));
 
   }
 

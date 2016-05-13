@@ -40,6 +40,15 @@ public class ChicagoListener implements Listener<byte[]> {
 
   @Override
   public boolean getStatus() {
-    return success;
+    if (response != null) {
+      return success;
+    } else {
+      try {
+        Thread.sleep(2000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      return success;
+    }
   }
 }

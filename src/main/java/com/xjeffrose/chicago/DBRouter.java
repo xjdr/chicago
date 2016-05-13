@@ -4,6 +4,7 @@ import com.xjeffrose.xio.SSL.XioSecurityHandlerImpl;
 import com.xjeffrose.xio.core.XioAggregatorFactory;
 import com.xjeffrose.xio.core.XioCodecFactory;
 import com.xjeffrose.xio.core.XioNoOpHandler;
+import com.xjeffrose.xio.core.XioNoOpSecurityFactory;
 import com.xjeffrose.xio.core.XioRoutingFilterFactory;
 import com.xjeffrose.xio.core.XioSecurityFactory;
 import com.xjeffrose.xio.core.XioSecurityHandlers;
@@ -134,17 +135,18 @@ public class DBRouter implements Closeable {
     XioServerDef dbServer = new XioServerDefBuilder()
         .name("Chicago Server")
         .listen(new InetSocketAddress(config.getDBBindIP(), config.getDBPort()))
-        .withSecurityFactory(new XioSecurityFactory() {
-          @Override
-          public XioSecurityHandlers getSecurityHandlers(XioServerDef xioServerDef, XioServerConfig xioServerConfig) {
-            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
-          }
-
-          @Override
-          public XioSecurityHandlers getSecurityHandlers() {
-            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
-          }
-        })
+        .withSecurityFactory(new XioNoOpSecurityFactory())
+//        .withSecurityFactory(new XioSecurityFactory() {
+//          @Override
+//          public XioSecurityHandlers getSecurityHandlers(XioServerDef xioServerDef, XioServerConfig xioServerConfig) {
+//            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
+//          }
+//
+//          @Override
+//          public XioSecurityHandlers getSecurityHandlers() {
+//            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
+//          }
+//        })
         .withProcessorFactory(new XioProcessorFactory() {
           @Override
           public XioProcessor getProcessor() {

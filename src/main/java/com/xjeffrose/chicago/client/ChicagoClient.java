@@ -117,6 +117,12 @@ public class ChicagoClient {
 
           ChicagoMessage chicagoMessage = new DefaultChicagoMessage(op, key, val);
 
+          try {
+            ch.writeAndFlush(chicagoMessage).sync();
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+
         }
       }
     };

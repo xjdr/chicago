@@ -13,6 +13,21 @@ public class ChicagoObjectEncoder extends MessageToMessageEncoder<Object> {
   public ChicagoObjectEncoder() {
   }
 
+  public byte[] encode(Op _op, byte[] key, byte[] val) {
+    byte[] op = {(byte) _op.getOp()};
+    byte[] keySize = {(byte) key.length};
+    byte[] valSize ={(byte) val.length};
+    byte[] msgArray = new byte[op.length + keySize.length + key.length + valSize.length + val.length];
+
+    System.arraycopy(op, 0, msgArray, 0, op.length);
+    System.arraycopy(keySize, 0, msgArray, op.length, keySize.length);
+    System.arraycopy(key, 0, msgArray, op.length + keySize.length, key.length);
+    System.arraycopy(valSize, 0, msgArray, op.length + keySize.length + key.length , valSize.length);
+    System.arraycopy(val, 0, msgArray, op.length + keySize.length + key.length + valSize.length, val.length);
+
+    return msgArray;
+  }
+
   @Override
   protected void encode(ChannelHandlerContext ctx, Object msg, List<Object> out) throws Exception {
     ChicagoMessage chiMessage = null;
@@ -20,7 +35,7 @@ public class ChicagoObjectEncoder extends MessageToMessageEncoder<Object> {
     if (msg instanceof ChicagoMessage) {
       chiMessage = (ChicagoMessage) msg;
     } else {
-      log.error("Object not an instance of ChicagoMessage");
+      log.error("Object not an instance of ChicagoMessage: " + msg);
     }
 
     byte[] key = chiMessage.getKey();

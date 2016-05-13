@@ -7,6 +7,7 @@ import com.xjeffrose.chicago.DBManager;
 import com.xjeffrose.chicago.Op;
 import com.xjeffrose.xio.processor.XioProcessor;
 import com.xjeffrose.xio.server.RequestContext;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import java.util.List;
 
@@ -22,40 +23,54 @@ public class ChicagoProcessor implements XioProcessor {
 
   }
 
-  private byte[] createResponse(boolean status) {
-    byte[] response = new byte[12];
+  private byte[] createResponse(boolean status, byte[] response) {
+    ChicagoObjectEncoder encoder = new ChicagoObjectEncoder();
 
-    return response;
+    if (response == null) {
+      response = "x".getBytes();
+    }
+
+    return encoder.encode(Op.fromInt(3), Boolean.toString(status).getBytes(), response);
   }
 
   @Override
   public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, Object req, RequestContext reqCtx) {
     ListeningExecutorService service = MoreExecutors.listeningDecorator(ctx.executor());
+    ChicagoMessage msg = null;
 
-    List<Object> reqList = (List<Object>) req;
-    Op op = Op.fromInt((int) reqList.get(0));
+    if (req instanceof ChicagoMessage) {
+      msg = (ChicagoMessage) req;
+    }
 
+    ChicagoMessage finalMsg = msg;
     return service.submit(() -> {
 
-      if (op == null) {
-        reqCtx.setContextData(reqCtx.getConnectionId(), createResponse(false));
+      if (finalMsg == null) {
+        ctx.writeAndFlush(new DefaultChicagoMessage(Op.fromInt(3), Boolean.toString(false).getBytes(), "x".getBytes()));
+
         return false;
       }
 
-      switch (op) {
+      byte[] readResponse = null;
+      boolean status = false;
+
+      switch (finalMsg.getOp()) {
         case READ:
-          dbManager.read((byte[]) reqList.get(1));
+          readResponse = dbManager.read(finalMsg.getKey());
+          if (readResponse != null) {
+            status = true;
+          }
           break;
         case WRITE:
-          dbManager.write((byte[]) reqList.get(1), (byte[]) reqList.get(2));
+          status = dbManager.write(finalMsg.getKey(), finalMsg.getVal());
           break;
         case DELETE:
-          dbManager.delete((byte[]) reqList.get(1));
+          status = dbManager.delete(finalMsg.getKey());
         default:
           break;
       }
 
-      reqCtx.setContextData(reqCtx.getConnectionId(), createResponse(true));
+      ctx.writeAndFlush(new DefaultChicagoMessage(Op.fromInt(3), Boolean.toString(status).getBytes(), readResponse));
       return true;
     });
   }
