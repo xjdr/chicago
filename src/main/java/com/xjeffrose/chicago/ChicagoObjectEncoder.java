@@ -42,14 +42,14 @@ public class ChicagoObjectEncoder extends MessageToMessageEncoder<Object> {
     byte[] val = chiMessage.getVal();
     byte[] op = {(byte) chiMessage.getOp().getOp()};
     byte[] keySize = {(byte) key.length};
-    byte[] valSize ={(byte) val.length};
-    byte[] msgArray = new byte[op.length + keySize.length + key.length + valSize.length + val.length];
+    byte[] valSize ={(byte) (val != null ? val.length : 0)};
+    byte[] msgArray = new byte[op.length + keySize.length + key.length + valSize.length + (val != null ? val.length : 0)];
 
     System.arraycopy(op, 0, msgArray, 0, op.length);
     System.arraycopy(keySize, 0, msgArray, op.length, keySize.length);
     System.arraycopy(key, 0, msgArray, op.length + keySize.length, key.length);
     System.arraycopy(valSize, 0, msgArray, op.length + keySize.length + key.length , valSize.length);
-    System.arraycopy(val, 0, msgArray, op.length + keySize.length + key.length + valSize.length, val.length);
+    System.arraycopy((val != null ? val : new byte[]{0}), 0, msgArray, op.length + keySize.length + key.length + valSize.length, (val != null ? val.length : 0));
 
     ByteBuf _msg = ctx.alloc().directBuffer().writeBytes(msgArray);
     out.add(_msg);

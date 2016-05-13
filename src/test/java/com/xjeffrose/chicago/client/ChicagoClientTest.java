@@ -16,16 +16,16 @@ public class ChicagoClientTest {
   public void setUp() throws Exception {
     chicago.main(new String[]{"Foo"});
   }
-//
-//  @Test
-//  public void delete() throws Exception {
-//    assertEquals(true, chicagoClient.delete("key".getBytes()));
-//  }
 
-//  @Test
-//  public void read() throws Exception {
-//    assertEquals("key", new String(chicagoClient.read("key".getBytes())));
-//  }
+  @Test
+  public void delete() throws Exception {
+    assertEquals(true, chicagoClient.delete("key".getBytes()));
+  }
+
+  @Test
+  public void read() throws Exception {
+    assertEquals("val", new String(chicagoClient.read("key".getBytes())));
+  }
 
 
   @Test

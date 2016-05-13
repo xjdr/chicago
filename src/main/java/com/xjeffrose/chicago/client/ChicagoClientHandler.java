@@ -13,6 +13,6 @@ public class ChicagoClientHandler extends SimpleChannelInboundHandler<ChicagoMes
 
   @Override
   protected void channelRead0(ChannelHandlerContext ctx, ChicagoMessage chicagoMessage) throws Exception {
-    System.out.println(chicagoMessage.getSuccess());
+    listener.onResponseReceived(chicagoMessage.getVal(), chicagoMessage.getSuccess());
   }
 }

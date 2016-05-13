@@ -3,13 +3,9 @@ package com.xjeffrose.chicago;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.xjeffrose.chicago.DBManager;
-import com.xjeffrose.chicago.Op;
 import com.xjeffrose.xio.processor.XioProcessor;
 import com.xjeffrose.xio.server.RequestContext;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
-import java.util.List;
 
 public class ChicagoProcessor implements XioProcessor {
   private DBManager dbManager;
@@ -21,16 +17,6 @@ public class ChicagoProcessor implements XioProcessor {
   @Override
   public void disconnect(ChannelHandlerContext ctx) {
 
-  }
-
-  private byte[] createResponse(boolean status, byte[] response) {
-    ChicagoObjectEncoder encoder = new ChicagoObjectEncoder();
-
-    if (response == null) {
-      response = "x".getBytes();
-    }
-
-    return encoder.encode(Op.fromInt(3), Boolean.toString(status).getBytes(), response);
   }
 
   @Override
