@@ -2,13 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fd2c71ad-3b2b-45d7-a09c-3d3e9897a2e6" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application.conf" afterPath="$PROJECT_DIR$/application.conf" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/ChicagoProcessor.java" afterPath="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/ChicagoProcessor.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoClient.java" afterPath="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoClient.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoListener.java" afterPath="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoListener.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/com/xjeffrose/chicago/ChicagoProcessorTest.java" afterPath="$PROJECT_DIR$/src/test/java/com/xjeffrose/chicago/ChicagoProcessorTest.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/com/xjeffrose/chicago/client/ChicagoClientTest.java" afterPath="$PROJECT_DIR$/src/test/java/com/xjeffrose/chicago/client/ChicagoClientTest.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test.conf" afterPath="$PROJECT_DIR$/test.conf" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pom.xml" afterPath="$PROJECT_DIR$/pom.xml" />
     </list>
     <ignored path="chicago.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -60,11 +54,21 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="ChicagoListener.java" pinned="false" current-in-tab="true">
+          <file leaf-file-name="ChicagoListener.java" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoListener.java">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="480">
                   <caret line="32" column="22" selection-start-line="32" selection-start-column="22" selection-end-line="32" selection-end-column="22" />
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="pom.xml" pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/pom.xml">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="-138">
+                  <caret line="42" column="0" selection-start-line="42" selection-start-column="0" selection-end-line="42" selection-end-column="0" />
                   <folding />
                 </state>
               </provider>
@@ -279,7 +283,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/ChicagoResponseEncoder.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/ChicagoCodec.java" />
         <option value="$PROJECT_DIR$/README.md" />
@@ -326,6 +329,7 @@
         <option value="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoClient.java" />
         <option value="$PROJECT_DIR$/src/test/java/com/xjeffrose/chicago/client/ChicagoClientTest.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/xjeffrose/chicago/client/ChicagoListener.java" />
+        <option value="$PROJECT_DIR$/pom.xml" />
       </list>
     </option>
   </component>
@@ -1160,7 +1164,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1463086731779</updated>
-      <workItem from="1463086733991" duration="37903000" />
+      <workItem from="1463086733991" duration="38135000" />
     </task>
     <servers />
   </component>
@@ -1197,7 +1201,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="37903000" />
+    <option name="totallyTimeSpent" value="38135000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="2560" height="1440" extended-state="6" />
@@ -1289,14 +1293,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar://$MAVEN_REPOSITORY$/com/xjeffrose/xio/0.10.0-SNAPSHOT/xio-0.10.0-SNAPSHOT.jar!/io/netty/handler/codec/http/HttpServerUpgradeHandler.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="31" column="55" selection-start-line="31" selection-start-column="55" selection-end-line="31" selection-end-column="55" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$MAVEN_REPOSITORY$/com/xjeffrose/xio/0.10.0-SNAPSHOT/xio-0.10.0-SNAPSHOT.jar!/io/netty/channel/CombinedChannelDuplexHandler.class">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="90">
@@ -1739,6 +1735,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="480">
           <caret line="32" column="22" selection-start-line="32" selection-start-column="22" selection-end-line="32" selection-end-column="22" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pom.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-138">
+          <caret line="42" column="0" selection-start-line="42" selection-start-column="0" selection-end-line="42" selection-end-column="0" />
           <folding />
         </state>
       </provider>
