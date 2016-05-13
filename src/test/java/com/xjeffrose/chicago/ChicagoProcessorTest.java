@@ -1,8 +1,10 @@
-package com.xjeffrose.chicago.processors;
+package com.xjeffrose.chicago;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.chicago.ChiConfig;
+import com.xjeffrose.chicago.ChicagoObjectDecoder;
+import com.xjeffrose.chicago.ChicagoProcessor;
 import com.xjeffrose.chicago.DBManager;
 import com.xjeffrose.chicago.fixtures.TestCTX;
 import com.xjeffrose.xio.core.ConnectionContext;
@@ -21,7 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ChicagoProcessorTest {
-  ChicagoRequestDecoder chicagoRequestDecoder = new ChicagoRequestDecoder();
+  ChicagoObjectDecoder chicagoObjectDecoder = new ChicagoObjectDecoder();
   DBManager dbManager = new DBManager(new ChiConfig(ConfigFactory.parseFile(new File("test.conf"))));
   ChicagoProcessor processor = new ChicagoProcessor(dbManager);
 
@@ -44,7 +46,7 @@ public class ChicagoProcessorTest {
 
     ByteBuf msg = Unpooled.wrappedBuffer(msgArray);
     List<Object> list = new ArrayList<>();
-    chicagoRequestDecoder.decode(null, msg, list);
+    chicagoObjectDecoder.decode(null, msg, list);
 
     ListenableFuture<Boolean> processFuture = processor.process(new TestCTX(), list, new RequestContext() {
       @Override

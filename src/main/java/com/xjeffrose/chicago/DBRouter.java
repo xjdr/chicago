@@ -1,9 +1,5 @@
 package com.xjeffrose.chicago;
 
-import com.xjeffrose.chicago.processors.ChicagoCodec;
-import com.xjeffrose.chicago.processors.ChicagoAdminProcessor;
-import com.xjeffrose.chicago.processors.ChicagoProcessor;
-import com.xjeffrose.chicago.processors.ChicagoStatsProcessor;
 import com.xjeffrose.xio.SSL.XioSecurityHandlerImpl;
 import com.xjeffrose.xio.core.XioAggregatorFactory;
 import com.xjeffrose.xio.core.XioCodecFactory;

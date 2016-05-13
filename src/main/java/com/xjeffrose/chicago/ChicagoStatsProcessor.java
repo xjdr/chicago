@@ -1,4 +1,4 @@
-package com.xjeffrose.chicago.processors;
+package com.xjeffrose.chicago;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.xjeffrose.xio.processor.XioProcessor;

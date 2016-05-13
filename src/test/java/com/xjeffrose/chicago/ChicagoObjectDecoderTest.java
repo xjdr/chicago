@@ -1,6 +1,6 @@
-package com.xjeffrose.chicago.processors;
+package com.xjeffrose.chicago;
 
-import com.xjeffrose.chicago.processors.ChicagoRequestDecoder;
+import com.xjeffrose.chicago.ChicagoObjectDecoder;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import java.util.ArrayList;
@@ -9,8 +9,8 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class ChicagoRequestDecoderTest {
-  ChicagoRequestDecoder chicagoRequestDecoder = new ChicagoRequestDecoder();
+public class ChicagoObjectDecoderTest {
+  ChicagoObjectDecoder chicagoObjectDecoder = new ChicagoObjectDecoder();
 
 
   @Test
@@ -32,7 +32,7 @@ public class ChicagoRequestDecoderTest {
 
     ByteBuf msg = Unpooled.wrappedBuffer(msgArray);
     List<Object> list = new ArrayList<>();
-    chicagoRequestDecoder.decode(null, msg, list);
+    chicagoObjectDecoder.decode(null, msg, list);
 
     int _op = (int) list.get(0);
     byte[] _key = (byte[]) list.get(1);

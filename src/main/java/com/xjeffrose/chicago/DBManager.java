@@ -4,7 +4,6 @@ import org.apache.log4j.Logger;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
-import org.rocksdb.WriteBatch;
 
 public class DBManager {
   private static final Logger log = Logger.getLogger(DBManager.class);
@@ -24,8 +23,6 @@ public class DBManager {
   }
 
   public boolean write(byte[] key, byte[] value) {
-    WriteBatch writeBatch = new WriteBatch();
-    writeBatch.
     if (key == null) {
       log.error("Tried to write a null key");
       return false;
