@@ -17,7 +17,7 @@ public class DBManager {
     try {
       this.db = RocksDB.open(options, config.getDBPath());
     } catch (RocksDBException e) {
-      log.error("Could not load DB: " + config.getDBPath());
+      log.error("Could not load DB: " + config.getDBPath() + e.getMessage());
       System.exit(-1);
     }
   }
