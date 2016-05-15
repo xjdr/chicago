@@ -62,7 +62,7 @@ public class ChicagoObjectDecoder extends ByteToMessageDecoder {
     System.arraycopy(val, 0, msgArray, op.length + keySize.length + key.length + valSize.length, val.length);
 
     HashCode messageHash = Hashing.murmur3_32().hashBytes(msgArray);
-    
+
     if (hashCode.equals(messageHash) ) {
       _msg.setDecoderResult(DecoderResult.SUCCESS);
     } else {

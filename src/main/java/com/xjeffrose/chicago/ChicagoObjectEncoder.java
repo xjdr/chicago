@@ -1,6 +1,5 @@
 package com.xjeffrose.chicago;
 
-import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import com.google.common.primitives.Ints;
 import io.netty.buffer.ByteBuf;
