@@ -1,5 +1,6 @@
 package com.xjeffrose.chicago;
 
+import com.google.common.primitives.Ints;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
@@ -14,9 +15,9 @@ public class ChicagoObjectEncoder extends MessageToMessageEncoder<Object> {
   }
 
   public byte[] encode(Op _op, byte[] key, byte[] val) {
-    byte[] op = {(byte) _op.getOp()};
-    byte[] keySize = {(byte) key.length};
-    byte[] valSize ={(byte) val.length};
+    byte[] op = Ints.toByteArray(_op.getOp());
+    byte[] keySize = Ints.toByteArray(key.length);
+    byte[] valSize = Ints.toByteArray(val.length);
     byte[] msgArray = new byte[op.length + keySize.length + key.length + valSize.length + val.length];
 
     System.arraycopy(op, 0, msgArray, 0, op.length);
@@ -38,20 +39,7 @@ public class ChicagoObjectEncoder extends MessageToMessageEncoder<Object> {
       log.error("Object not an instance of ChicagoMessage: " + msg);
     }
 
-    byte[] key = chiMessage.getKey();
-    byte[] val = chiMessage.getVal();
-    byte[] op = {(byte) chiMessage.getOp().getOp()};
-    byte[] keySize = {(byte) key.length};
-    byte[] valSize ={(byte) (val != null ? val.length : 0)};
-    byte[] msgArray = new byte[op.length + keySize.length + key.length + valSize.length + (val != null ? val.length : 0)];
-
-    System.arraycopy(op, 0, msgArray, 0, op.length);
-    System.arraycopy(keySize, 0, msgArray, op.length, keySize.length);
-    System.arraycopy(key, 0, msgArray, op.length + keySize.length, key.length);
-    System.arraycopy(valSize, 0, msgArray, op.length + keySize.length + key.length , valSize.length);
-    System.arraycopy((val != null ? val : new byte[]{0}), 0, msgArray, op.length + keySize.length + key.length + valSize.length, (val != null ? val.length : 0));
-
-    ByteBuf _msg = ctx.alloc().directBuffer().writeBytes(msgArray);
+    ByteBuf _msg = ctx.alloc().directBuffer().writeBytes(encode(chiMessage.getOp(), chiMessage.getKey(), chiMessage.getVal()));
     out.add(_msg);
   }
 }
