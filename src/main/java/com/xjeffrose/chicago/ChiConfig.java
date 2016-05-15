@@ -11,6 +11,7 @@ import java.util.Map;
 
 public class ChiConfig {
   private final int dbPort;
+  private final String zkHosts;
   private String dbBindIP;
   private String X509_CERT;
   private String PRIVATE_KEY;
@@ -50,6 +51,8 @@ public class ChiConfig {
     this.statsPort = conf.getInt("stats_port");
     this.dbBindIP = conf.getString("db_bind_ip");
     this.dbPort = conf.getInt("db_port");
+    this.zkHosts = conf.getString("zk_hosts");
+
   }
 
   public void setDbRouter(DBRouter dbRouter) {
@@ -102,5 +105,9 @@ public class ChiConfig {
 
   public String getDBPath() {
     return dbPath;
+  }
+
+  public String getZkHosts() {
+    return zkHosts;
   }
 }

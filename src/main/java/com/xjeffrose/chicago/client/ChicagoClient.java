@@ -1,9 +1,11 @@
 package com.xjeffrose.chicago.client;
 
+import com.google.common.collect.Lists;
+import com.google.common.hash.Funnels;
 import com.xjeffrose.chicago.ChicagoMessage;
 import com.xjeffrose.chicago.DefaultChicagoMessage;
 import com.xjeffrose.chicago.Op;
-import com.xjeffrose.xio.SSL.XioSecurityHandlerImpl;
+import com.xjeffrose.chicago.ZkClient;
 import com.xjeffrose.xio.client.retry.BoundedExponentialBackoffRetry;
 import com.xjeffrose.xio.client.retry.RetryLoop;
 import com.xjeffrose.xio.client.retry.TracerDriver;
@@ -20,6 +22,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import java.net.InetSocketAddress;
+import java.nio.charset.Charset;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.log4j.Logger;
@@ -27,17 +32,40 @@ import org.apache.log4j.Logger;
 
 public class ChicagoClient {
   private static final Logger log = Logger.getLogger(ChicagoClient.class);
-  private final InetSocketAddress server;
+  private final static String NODE_LIST_PATH = "/chicago/node-list";
+
+  private final InetSocketAddress single_server;
+  private final RendezvousHash rendezvousHash;
+  private final ZkClient zkClient;
 
   ChicagoClient(InetSocketAddress server) {
 
-    this.server = server;
+    this.single_server = server;
+    this.zkClient = null;
+    this.rendezvousHash = null;
+  }
+
+  ChicagoClient(String zkConnectionString) throws InterruptedException {
+
+    this.single_server = null;
+    this.zkClient = new ZkClient(zkConnectionString);
+    zkClient.start();
+
+    this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), buildNodeList());
+  }
+
+  private Collection buildNodeList() {
+    return zkClient.list(NODE_LIST_PATH);
   }
 
   public byte[] read(byte[] key) {
     Listener<byte[]> listener = new ChicagoListener();
 
-    connect(Op.READ, key, null, listener);
+    if (single_server != null) {
+      connect(single_server, Op.READ, key, null, listener);
+    } else {
+      connect(new InetSocketAddress((String) rendezvousHash.get(key), 12000), Op.READ, key, null, listener);
+    }
 
     return listener.getResponse();
   }
@@ -45,7 +73,12 @@ public class ChicagoClient {
   public boolean write(byte[] key, byte[] value) {
     Listener<byte[]> listener = new ChicagoListener();
 
-    connect(Op.WRITE, key, value, listener);
+    if (single_server != null) {
+      connect(single_server, Op.WRITE, key, value, listener);
+    } else {
+      connect(new InetSocketAddress((String) rendezvousHash.get(key), 12000), Op.WRITE, key, value, listener);
+
+    }
 
     return listener.getStatus();
   }
@@ -53,13 +86,17 @@ public class ChicagoClient {
   public boolean delete(byte[] key) {
     Listener<byte[]> listener = new ChicagoListener();
 
-    connect(Op.DELETE, key, null, listener);
+    if (single_server != null) {
+      connect(single_server, Op.DELETE, key, null, listener);
+    } else {
+      connect(new InetSocketAddress((String) rendezvousHash.get(key), 12000), Op.DELETE, key, null, listener);
+    }
 
     return listener.getStatus();
   }
 
 
-  private void connect(Op op, byte[] key, byte[] val, Listener listener) {
+  private void connect(InetSocketAddress server, Op op, byte[] key, byte[] val, Listener listener) {
     // Start the connection attempt.
     Bootstrap bootstrap = new Bootstrap();
     bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 500)
@@ -95,11 +132,11 @@ public class ChicagoClient {
     };
 
     RetryLoop retryLoop = new RetryLoop(retry, new AtomicReference<>(tracerDriver));
-    connect2(op, key, val, bootstrap, retryLoop);
+    connect2(server, op, key, val, bootstrap, retryLoop);
 
   }
 
-  private void connect2(Op op, byte[] key, byte[] val, Bootstrap bootstrap, RetryLoop retryLoop) {
+  private void connect2(InetSocketAddress server, Op op, byte[] key, byte[] val, Bootstrap bootstrap, RetryLoop retryLoop) {
     ChannelFutureListener listener = new ChannelFutureListener() {
       @Override
       public void operationComplete(ChannelFuture future) {
@@ -107,7 +144,7 @@ public class ChicagoClient {
           try {
             retryLoop.takeException((Exception) future.cause());
             log.error("==== Service connect failure (will retry)", future.cause());
-            connect2(op, key, val, bootstrap, retryLoop);
+            connect2(server, op, key, val, bootstrap, retryLoop);
           } catch (Exception e) {
             log.error("==== Service connect failure ", future.cause());
             // Close the connection if the connection attempt has failed.

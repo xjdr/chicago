@@ -1,25 +1,33 @@
 package com.xjeffrose.chicago.client;
 
+import com.netflix.curator.test.TestingServer;
 import com.xjeffrose.chicago.Chicago;
 import java.net.InetSocketAddress;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 public class ChicagoClientTest {
-  Chicago chicago = new Chicago();
-  ChicagoClient chicagoClient = new ChicagoClient(new InetSocketAddress("127.0.0.1", 12000));
+  static TestingServer testingServer;// = new TestingServer(2190);
+  static Chicago chicago;// = new Chicago();
+  static ChicagoClient chicagoClientSingle;// = new ChicagoClient(new InetSocketAddress("127.0.0.1", 12000));
+  static ChicagoClient chicagoClientDHT;// = new ChicagoClient(new InetSocketAddress("127.0.0.1", 12000));
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeClass
+  static public void setupFixture() throws Exception {
+    testingServer = new TestingServer(2181);
+    chicago = new Chicago();
     chicago.main(new String[]{});
+    chicagoClientSingle = new ChicagoClient(new InetSocketAddress("127.0.0.1", 12000));
+    chicagoClientDHT = new ChicagoClient(testingServer.getConnectString());
   }
 
   @Test
   public void delete() throws Exception {
-    assertEquals(true, chicagoClient.delete("key".getBytes()));
+    assertEquals(true, chicagoClientSingle.delete("key".getBytes()));
   }
 
   @Test
@@ -29,12 +37,12 @@ public class ChicagoClientTest {
       byte[] key = _k.getBytes();
       String _v = "val" +i;
       byte[] val = _v.getBytes();
-      assertEquals(true, chicagoClient.delete(key));
+      assertEquals(true, chicagoClientDHT.delete(key));
     }  }
 
   @Test
   public void read() throws Exception {
-    assertEquals("val", new String(chicagoClient.read("key".getBytes())));
+    assertEquals("val", new String(chicagoClientSingle.read("key".getBytes())));
   }
 
   @Test
@@ -44,14 +52,14 @@ public class ChicagoClientTest {
       byte[] key = _k.getBytes();
       String _v = "val" +i;
       byte[] val = _v.getBytes();
-      assertEquals(new String(val), new String(chicagoClient.read(key)));
+      assertEquals(new String(val), new String(chicagoClientDHT.read(key)));
     }
   }
 
 
   @Test
   public void writeSingle() throws Exception {
-    assertEquals(true, chicagoClient.write("key".getBytes(), "val".getBytes()));
+    assertEquals(true, chicagoClientSingle.write("key".getBytes(), "val".getBytes()));
   }
 
   @Test
@@ -61,7 +69,7 @@ public class ChicagoClientTest {
       byte[] key = _k.getBytes();
       String _v = "val" +i;
       byte[] val = _v.getBytes();
-      assertEquals(true, chicagoClient.write(key, val));
+      assertEquals(true, chicagoClientDHT.write(key, val));
     }
   }
 

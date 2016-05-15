@@ -6,7 +6,7 @@ import com.google.common.hash.Hashing;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentSkipListSet;
 
-public class RendezvousHash<N extends Comparable<? super N>> {
+public class RendezvousHash<N> {
 
   private final HashFunction hasher;
   private final Funnel<N> nodeFunnel;
