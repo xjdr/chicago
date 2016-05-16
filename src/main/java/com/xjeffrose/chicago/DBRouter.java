@@ -1,13 +1,10 @@
 package com.xjeffrose.chicago;
 
-import com.xjeffrose.chicago.codec.ChicagoCodec;
-import com.xjeffrose.chicago.processors.ChicagoAdminProcessor;
-import com.xjeffrose.chicago.processors.ChicagoProcessor;
-import com.xjeffrose.chicago.processors.ChicagoStatsProcessor;
 import com.xjeffrose.xio.SSL.XioSecurityHandlerImpl;
 import com.xjeffrose.xio.core.XioAggregatorFactory;
 import com.xjeffrose.xio.core.XioCodecFactory;
 import com.xjeffrose.xio.core.XioNoOpHandler;
+import com.xjeffrose.xio.core.XioNoOpSecurityFactory;
 import com.xjeffrose.xio.core.XioRoutingFilterFactory;
 import com.xjeffrose.xio.core.XioSecurityFactory;
 import com.xjeffrose.xio.core.XioSecurityHandlers;
@@ -40,9 +37,9 @@ public class DBRouter implements Closeable {
   private final DBManager dbManager;
   private XioBootstrap x;
 
-  public DBRouter(ChiConfig config) {
+  public DBRouter(ChiConfig config, DBManager dbManager) {
     this.config = config;
-    this.dbManager = new DBManager(config);
+    this.dbManager = dbManager;
     config.setDbRouter(this);
   }
 
@@ -138,17 +135,18 @@ public class DBRouter implements Closeable {
     XioServerDef dbServer = new XioServerDefBuilder()
         .name("Chicago Server")
         .listen(new InetSocketAddress(config.getDBBindIP(), config.getDBPort()))
-        .withSecurityFactory(new XioSecurityFactory() {
-          @Override
-          public XioSecurityHandlers getSecurityHandlers(XioServerDef xioServerDef, XioServerConfig xioServerConfig) {
-            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
-          }
-
-          @Override
-          public XioSecurityHandlers getSecurityHandlers() {
-            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
-          }
-        })
+        .withSecurityFactory(new XioNoOpSecurityFactory())
+//        .withSecurityFactory(new XioSecurityFactory() {
+//          @Override
+//          public XioSecurityHandlers getSecurityHandlers(XioServerDef xioServerDef, XioServerConfig xioServerConfig) {
+//            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
+//          }
+//
+//          @Override
+//          public XioSecurityHandlers getSecurityHandlers() {
+//            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
+//          }
+//        })
         .withProcessorFactory(new XioProcessorFactory() {
           @Override
           public XioProcessor getProcessor() {
@@ -212,6 +210,7 @@ public class DBRouter implements Closeable {
   @Override
   public void close() throws IOException {
     x.stop();
+    dbManager.destroy();
   }
 
   public void stop() {

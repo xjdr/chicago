@@ -4,13 +4,14 @@ import com.typesafe.config.Config;
 import com.xjeffrose.xio.core.XioMetrics;
 import com.xjeffrose.xio.server.XioServerDef;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
+import org.apache.curator.framework.recipes.leader.LeaderSelector;
 
 public class ChiConfig {
   private final int dbPort;
+  private final String zkHosts;
   private String dbBindIP;
   private String X509_CERT;
   private String PRIVATE_KEY;
@@ -28,6 +29,8 @@ public class ChiConfig {
   private String cert;
   private String key;
   private String dbPath;
+  private LeaderSelector leaderSelector;
+  private ZkClient zkClient;
 
   public ChiConfig(Config conf) {
 
@@ -50,6 +53,8 @@ public class ChiConfig {
     this.statsPort = conf.getInt("stats_port");
     this.dbBindIP = conf.getString("db_bind_ip");
     this.dbPort = conf.getInt("db_port");
+    this.zkHosts = conf.getString("zk_hosts");
+
   }
 
   public void setDbRouter(DBRouter dbRouter) {
@@ -103,4 +108,25 @@ public class ChiConfig {
   public String getDBPath() {
     return dbPath;
   }
+
+  public String getZkHosts() {
+    return zkHosts;
+  }
+
+  public void setLeaderSelector(LeaderSelector leaderSelector) {
+    this.leaderSelector = leaderSelector;
+  }
+
+  public void setZkClient(ZkClient zkClient) {
+    this.zkClient = zkClient;
+  }
+
+  public LeaderSelector getLeaderSelector() {
+    return leaderSelector;
+  }
+
+  public ZkClient getZkClient() {
+    return zkClient;
+  }
+
 }
