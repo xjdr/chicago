@@ -1,12 +1,14 @@
 package com.xjeffrose.chicago.client;
 
+import java.util.Arrays;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import org.apache.log4j.Logger;
 
 class ChicagoListener implements Listener<byte[]> {
   private static final Logger log = Logger.getLogger(ChicagoListener.class);
 
-  private byte[] response;
-  private boolean success;
+  private ConcurrentLinkedDeque<byte[]> responseList = new ConcurrentLinkedDeque<>();
+  private ConcurrentLinkedDeque<Boolean> successList = new ConcurrentLinkedDeque<>();
 
   @Override
   public void onRequestSent() {
@@ -14,9 +16,12 @@ class ChicagoListener implements Listener<byte[]> {
   }
 
   @Override
-  public void onResponseReceived(byte[] message, boolean _success) {
-    response = message;
-    success = _success;
+  public void onResponseReceived(byte[] message, boolean success) {
+    responseList.add(message);
+    successList.add(success);
+    if (!success) {
+      log.error("Unsuccessful request");
+    }
   }
 
   @Override
@@ -26,12 +31,16 @@ class ChicagoListener implements Listener<byte[]> {
 
   @Override
   public byte[] getResponse() {
-    if (response != null) {
-      return response;
+    if (responseList.size() == 3) {
+      if (Arrays.equals(responseList.getFirst(), responseList.getLast())) {
+        return responseList.getFirst();
+      } else {
+        log.error("Error with the read request - Corrupt Data");
+        return null;
+      }
     } else {
       try {
         Thread.sleep(1);
-        getResponse();
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
@@ -41,16 +50,15 @@ class ChicagoListener implements Listener<byte[]> {
 
   @Override
   public boolean getStatus() {
-    if (response != null) {
-      return success;
+    if (successList.size() == 3) {
+      return successList.stream().allMatch(b -> b);
     } else {
       try {
         Thread.sleep(1);
-        getStatus();
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
-      return success;
+      return getStatus();
     }
   }
 }
