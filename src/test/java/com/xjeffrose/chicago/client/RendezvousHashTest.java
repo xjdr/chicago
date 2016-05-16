@@ -12,10 +12,27 @@ import static org.junit.Assert.*;
 public class RendezvousHashTest {
   private static final Funnel<CharSequence> strFunnel = Funnels.stringFunnel(Charset.defaultCharset());
 
+
   @Test
-  public void get() throws Exception {
+  public void getTest() throws Exception {
     List<String> nodes = Lists.newArrayList();
-    for(int i = 0 ; i < 12; i ++) {
+    for (int i = 0; i < 12; i++) {
+      nodes.add("node" + i);
+    }
+    RendezvousHash rendezvousHash1 = new RendezvousHash(strFunnel, nodes);
+    RendezvousHash rendezvousHash2 = new RendezvousHash(strFunnel, nodes);
+
+    for (int i = 0; i < 10; i++) {
+      byte[] x = ("key" + i).getBytes();
+      assertEquals(rendezvousHash1.getOld(x), rendezvousHash1.get(x));
+      assertEquals(rendezvousHash2.getOld(x), rendezvousHash2.get(x));
+    }
+  }
+
+  @Test
+  public void getMany() throws Exception {
+    List<String> nodes = Lists.newArrayList();
+    for(int i = 0 ; i < 200; i ++) {
       nodes.add("node"+i);
     }
     RendezvousHash rendezvousHash1 = new RendezvousHash(strFunnel , nodes);
@@ -71,8 +88,6 @@ public class RendezvousHashTest {
         break;
       }
     }
-
-
   }
 
 }

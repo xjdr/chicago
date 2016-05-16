@@ -2,7 +2,7 @@ package com.xjeffrose.chicago.client;
 
 import org.apache.log4j.Logger;
 
-public class ChicagoListener implements Listener<byte[]> {
+class ChicagoListener implements Listener<byte[]> {
   private static final Logger log = Logger.getLogger(ChicagoListener.class);
 
   private byte[] response;

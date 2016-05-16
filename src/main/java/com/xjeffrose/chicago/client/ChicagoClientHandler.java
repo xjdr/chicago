@@ -4,7 +4,7 @@ import com.xjeffrose.chicago.ChicagoMessage;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-public class ChicagoClientHandler extends SimpleChannelInboundHandler<ChicagoMessage> {
+class ChicagoClientHandler extends SimpleChannelInboundHandler<ChicagoMessage> {
   private Listener<byte[]> listener;
 
   public ChicagoClientHandler(Listener<byte[]> listener) {

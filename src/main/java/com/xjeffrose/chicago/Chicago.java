@@ -3,6 +3,7 @@ package com.xjeffrose.chicago;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import java.io.File;
+import java.util.Random;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.leader.LeaderSelector;
@@ -49,7 +50,7 @@ public class Chicago {
           .create()
           .creatingParentsIfNeeded()
           .withMode(CreateMode.EPHEMERAL)
-          .forPath(NODE_LIST_PATH + "/" + config.getDBBindIP(), ConfigSerializer.serialize(config).getBytes());
+          .forPath(NODE_LIST_PATH + "/" + config.getDBBindIP() + new Random().ints(4), ConfigSerializer.serialize(config).getBytes());
 
       config.setLeaderSelector(leaderSelector);
       config.setZkClient(zkClient);
@@ -60,6 +61,8 @@ public class Chicago {
 
       DBRouter dbRouter = new DBRouter(config, dbManager);
       dbRouter.run();
+
+      System.out.println("====================================" + leaderSelector.hasLeadership());
     } catch (Exception e) {
       System.exit(-1);
     }

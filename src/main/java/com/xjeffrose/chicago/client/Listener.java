@@ -1,7 +1,7 @@
 package com.xjeffrose.chicago.client;
 
 
-public interface Listener<T> {
+interface Listener<T> {
 
   void onRequestSent();
 

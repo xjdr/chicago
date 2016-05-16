@@ -12,10 +12,10 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class ChicagoClientTest {
-  static TestingServer testingServer;// = new TestingServer(2190);
-  static Chicago chicago;// = new Chicago();
-  static ChicagoClient chicagoClientSingle;// = new ChicagoClient(new InetSocketAddress("127.0.0.1", 12000));
-  static ChicagoClient chicagoClientDHT;// = new ChicagoClient(new InetSocketAddress("127.0.0.1", 12000));
+  static TestingServer testingServer;
+  static Chicago chicago;
+  static ChicagoClient chicagoClientSingle;
+  static ChicagoClient chicagoClientDHT;
 
   @BeforeClass
   static public void setupFixture() throws Exception {
@@ -39,7 +39,8 @@ public class ChicagoClientTest {
       String _v = "val" +i;
       byte[] val = _v.getBytes();
       assertEquals(true, chicagoClientDHT.delete(key));
-    }  }
+    }
+  }
 
   @Test
   public void read() throws Exception {
@@ -57,7 +58,6 @@ public class ChicagoClientTest {
     }
   }
 
-
   @Test
   public void writeSingle() throws Exception {
     assertEquals(true, chicagoClientSingle.write("key".getBytes(), "val".getBytes()));
@@ -73,5 +73,4 @@ public class ChicagoClientTest {
       assertEquals(true, chicagoClientDHT.write(key, val));
     }
   }
-
 }
