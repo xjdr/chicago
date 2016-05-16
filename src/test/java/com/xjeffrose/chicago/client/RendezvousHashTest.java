@@ -30,6 +30,38 @@ public class RendezvousHashTest {
   }
 
   @Test
+  public void getListTest() throws Exception {
+    List<String> nodes = Lists.newArrayList();
+    for (int i = 0; i < 12; i++) {
+      nodes.add("node" + i);
+    }
+    RendezvousHash rendezvousHash1 = new RendezvousHash(strFunnel, nodes);
+    RendezvousHash rendezvousHash2 = new RendezvousHash(strFunnel, nodes);
+
+    for (int i = 0; i < 10; i++) {
+      byte[] x = ("key" + i).getBytes();
+      assertEquals(rendezvousHash1.getList(x), rendezvousHash2.getList(x));
+      assertEquals(rendezvousHash2.getOld(x), rendezvousHash2.getList(x).get(0));
+    }
+
+    List<String> xx =  rendezvousHash2.getList("key1".getBytes());
+
+    rendezvousHash1.remove("node11");
+    rendezvousHash2.remove("node11");
+    assertEquals(rendezvousHash1.getList("key1".getBytes()), rendezvousHash2.getList("key1".getBytes()));
+    assertEquals(rendezvousHash2.getOld("key1".getBytes()), xx.get(1));
+
+    rendezvousHash1.add("node11");
+    rendezvousHash2.add("node11");
+    rendezvousHash1.remove("node1");
+    rendezvousHash2.remove("node1");
+
+    assertEquals(rendezvousHash1.getList("key1".getBytes()), rendezvousHash2.getList("key1".getBytes()));
+    assertEquals(rendezvousHash2.getOld("key1".getBytes()), xx.get(0));
+
+  }
+
+  @Test
   public void getMany() throws Exception {
     List<String> nodes = Lists.newArrayList();
     for(int i = 0 ; i < 200; i ++) {
