@@ -34,14 +34,14 @@ public class ChicagoClient {
   private final static String NODE_LIST_PATH = "/chicago/node-list";
 
   private final InetSocketAddress single_server;
-  private final RendezvousHash rendezvousHash;
+//  private final RendezvousHash rendezvousHash;
   private final ZkClient zkClient;
 
   ChicagoClient(InetSocketAddress server) {
 
     this.single_server = server;
     this.zkClient = null;
-    this.rendezvousHash = null;
+//    this.rendezvousHash = null;
   }
 
   public ChicagoClient(String zkConnectionString) throws InterruptedException {
@@ -50,7 +50,7 @@ public class ChicagoClient {
     this.zkClient = new ZkClient(zkConnectionString);
     zkClient.start();
 
-    this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), buildNodeList());
+//    this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), buildNodeList());
   }
 
   private Collection buildNodeList() {
@@ -63,7 +63,9 @@ public class ChicagoClient {
     if (single_server != null) {
       connect(single_server, Op.READ, key, null, listener);
     } else {
-      connect(new InetSocketAddress((String) rendezvousHash.get(key), 12000), Op.READ, key, null, listener);
+      new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), buildNodeList()).get(key).forEach(xs -> {
+        connect(new InetSocketAddress((String) xs, 12000), Op.READ, key, null, listener);
+      });
     }
 
     return listener.getResponse();
@@ -75,10 +77,12 @@ public class ChicagoClient {
     if (single_server != null) {
       connect(single_server, Op.WRITE, key, value, listener);
     } else {
-      connect(new InetSocketAddress((String) rendezvousHash.get(key), 12000), Op.WRITE, key, value, listener);
-
+      new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), buildNodeList()).get(key).forEach(xs -> {
+        connect(new InetSocketAddress((String) xs, 12000), Op.WRITE, key, value, listener);
+      });
     }
 
+    //TODO(JR): This only indicated that one returned correctly.
     return listener.getStatus();
   }
 
@@ -88,9 +92,12 @@ public class ChicagoClient {
     if (single_server != null) {
       connect(single_server, Op.DELETE, key, null, listener);
     } else {
-      connect(new InetSocketAddress((String) rendezvousHash.get(key), 12000), Op.DELETE, key, null, listener);
+      new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), buildNodeList()).get(key).forEach(xs -> {
+        connect(new InetSocketAddress((String) xs, 12000), Op.DELETE, key, null, listener);
+      });
     }
 
+    //TODO(JR): This only indicated that one returned correctly.
     return listener.getStatus();
   }
 
@@ -104,7 +111,7 @@ public class ChicagoClient {
         .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024)
         .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
         .option(ChannelOption.TCP_NODELAY, true);
-    bootstrap.group(new NioEventLoopGroup(2))
+    bootstrap.group(new NioEventLoopGroup(3))
         .channel(NioSocketChannel.class)
         .handler(new ChannelInitializer<SocketChannel>() {
           @Override

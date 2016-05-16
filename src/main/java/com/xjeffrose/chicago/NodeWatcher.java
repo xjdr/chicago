@@ -77,12 +77,12 @@ public class NodeWatcher {
           break;
         case NODE_ADDED:
           if (initialized) {
-            nodeAdded();
+//            nodeAdded();
           }
           break;
         case NODE_REMOVED:
           if (initialized) {
-            nodeRemoved();
+//            nodeRemoved();
           }
           break;
         default: {
