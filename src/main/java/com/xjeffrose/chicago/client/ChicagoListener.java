@@ -31,11 +31,11 @@ class ChicagoListener implements Listener<byte[]> {
 
   @Override
   public byte[] getResponse() {
-    if (responseList.size() == 3) {
-      if (Arrays.equals(responseList.getFirst(), responseList.getLast())) {
-        return responseList.getFirst();
-      } else {
-        log.error("Error with the read request - Corrupt Data");
+    if (responseList.size() > 0) {
+      if (successList.removeFirst()) {
+        return responseList.removeFirst();
+      } else if (responseList.size() == 3 && successList.size() == 0) {
+        log.error("There were no successful read requests");
         return null;
       }
     } else {
@@ -46,6 +46,7 @@ class ChicagoListener implements Listener<byte[]> {
       }
       return getResponse();
     }
+    return getResponse();
   }
 
   @Override
