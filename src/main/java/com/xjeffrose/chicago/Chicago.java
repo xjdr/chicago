@@ -50,7 +50,7 @@ public class Chicago {
           .create()
           .creatingParentsIfNeeded()
           .withMode(CreateMode.EPHEMERAL)
-          .forPath(NODE_LIST_PATH + "/" + config.getDBBindIP() + new Random().ints(4), ConfigSerializer.serialize(config).getBytes());
+          .forPath(NODE_LIST_PATH + "/" + config.getDBBindIP(), ConfigSerializer.serialize(config).getBytes());
 
       config.setLeaderSelector(leaderSelector);
       config.setZkClient(zkClient);

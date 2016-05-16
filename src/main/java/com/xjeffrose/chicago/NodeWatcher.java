@@ -71,7 +71,7 @@ public class NodeWatcher {
     public void childEvent(CuratorFramework curatorFramework, TreeCacheEvent event) throws Exception {
       switch (event.getType()) {
         case INITIALIZED:
-          redistributeKeys();
+//          redistributeKeys();
           latch.countDown();
           initialized = true;
           break;
