@@ -57,7 +57,12 @@ public class Chicago {
       leaderSelector.start();
 
       ZkClient zkClient = new ZkClient(curator);
-      zkClient.getClient().create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(NODE_LIST_PATH + "/" + config.getDBBindIP(), null);
+      zkClient
+          .getClient()
+          .create()
+          .creatingParentsIfNeeded()
+          .withMode(CreateMode.EPHEMERAL)
+          .forPath(NODE_LIST_PATH + "/" + config.getDBBindIP(), ConfigSerializer.serialize(config).getBytes());
 
       dbRouter.run();
     } catch (Exception e) {

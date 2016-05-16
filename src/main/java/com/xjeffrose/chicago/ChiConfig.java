@@ -4,7 +4,6 @@ import com.typesafe.config.Config;
 import com.xjeffrose.xio.core.XioMetrics;
 import com.xjeffrose.xio.server.XioServerDef;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -110,4 +109,15 @@ public class ChiConfig {
   public String getZkHosts() {
     return zkHosts;
   }
+
+//  @Override
+//  public String toString() {
+//    Gson gson = new Gson();
+//
+//    String string = gson.toJson(this);
+//    return string;
+//
+////    return gson.toJson(this);
+//  }
+
 }

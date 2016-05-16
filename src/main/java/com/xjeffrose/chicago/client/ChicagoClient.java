@@ -55,6 +55,9 @@ public class ChicagoClient {
   }
 
   private Collection buildNodeList() {
+    zkClient.list(NODE_LIST_PATH).forEach(xs -> {
+      System.out.println(zkClient.get(NODE_LIST_PATH+"/"+xs));
+    });
     return zkClient.list(NODE_LIST_PATH);
   }
 
