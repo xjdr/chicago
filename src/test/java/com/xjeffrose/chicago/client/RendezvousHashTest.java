@@ -24,8 +24,8 @@ public class RendezvousHashTest {
 
     for (int i = 0; i < 10; i++) {
       byte[] x = ("key" + i).getBytes();
-//      assertEquals(rendezvousHash1.getOld(x), rendezvousHash1.get(x));
-//      assertEquals(rendezvousHash2.getOld(x), rendezvousHash2.get(x));
+      assertEquals(rendezvousHash1.get(x), rendezvousHash2.get(x));
+//      assertEquals(rendezvousHash2.get(x), rendezvousHash2.get(x));
     }
   }
 
@@ -40,24 +40,24 @@ public class RendezvousHashTest {
 
     for (int i = 0; i < 10; i++) {
       byte[] x = ("key" + i).getBytes();
-//      assertEquals(rendezvousHash1.getList(x), rendezvousHash2.getList(x));
+      assertEquals(rendezvousHash1.get(x), rendezvousHash2.get(x));
 //      assertEquals(rendezvousHash2.getOld(x), rendezvousHash2.getList(x).get(0));
     }
 
-//    List<String> xx =  rendezvousHash2.getList("key1".getBytes());
+    List<String> xx =  rendezvousHash2.get("key1".getBytes());
 
     rendezvousHash1.remove("node11");
     rendezvousHash2.remove("node11");
-//    assertEquals(rendezvousHash1.getList("key1".getBytes()), rendezvousHash2.getList("key1".getBytes()));
-//    assertEquals(rendezvousHash2.getOld("key1".getBytes()), xx.get(1));
+    assertEquals(rendezvousHash1.get("key1".getBytes()), rendezvousHash2.get("key1".getBytes()));
+    assertEquals(rendezvousHash2.get("key1".getBytes()).get(0), xx.get(1));
 
     rendezvousHash1.add("node11");
     rendezvousHash2.add("node11");
     rendezvousHash1.remove("node1");
     rendezvousHash2.remove("node1");
 
-//    assertEquals(rendezvousHash1.getList("key1".getBytes()), rendezvousHash2.getList("key1".getBytes()));
-//    assertEquals(rendezvousHash2.getOld("key1".getBytes()), xx.get(0));
+    assertEquals(rendezvousHash1.get("key1".getBytes()), rendezvousHash2.get("key1".getBytes()));
+    assertEquals(rendezvousHash2.get("key1".getBytes()), xx);
 
   }
 
