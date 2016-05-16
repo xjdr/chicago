@@ -1,6 +1,5 @@
 package com.xjeffrose.chicago.client;
 
-import com.google.common.collect.Lists;
 import com.google.common.hash.Funnels;
 import com.xjeffrose.chicago.ChicagoMessage;
 import com.xjeffrose.chicago.DefaultChicagoMessage;
@@ -24,7 +23,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.log4j.Logger;
@@ -45,7 +43,7 @@ public class ChicagoClient {
     this.rendezvousHash = null;
   }
 
-  ChicagoClient(String zkConnectionString) throws InterruptedException {
+  public ChicagoClient(String zkConnectionString) throws InterruptedException {
 
     this.single_server = null;
     this.zkClient = new ZkClient(zkConnectionString);
@@ -55,9 +53,6 @@ public class ChicagoClient {
   }
 
   private Collection buildNodeList() {
-    zkClient.list(NODE_LIST_PATH).forEach(xs -> {
-      System.out.println(zkClient.get(NODE_LIST_PATH+"/"+xs));
-    });
     return zkClient.list(NODE_LIST_PATH);
   }
 

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
+import org.apache.curator.framework.recipes.leader.LeaderSelector;
 
 public class ChiConfig {
   private final int dbPort;
@@ -28,6 +29,8 @@ public class ChiConfig {
   private String cert;
   private String key;
   private String dbPath;
+  private LeaderSelector leaderSelector;
+  private ZkClient zkClient;
 
   public ChiConfig(Config conf) {
 
@@ -110,14 +113,20 @@ public class ChiConfig {
     return zkHosts;
   }
 
-//  @Override
-//  public String toString() {
-//    Gson gson = new Gson();
-//
-//    String string = gson.toJson(this);
-//    return string;
-//
-////    return gson.toJson(this);
-//  }
+  public void setLeaderSelector(LeaderSelector leaderSelector) {
+    this.leaderSelector = leaderSelector;
+  }
+
+  public void setZkClient(ZkClient zkClient) {
+    this.zkClient = zkClient;
+  }
+
+  public LeaderSelector getLeaderSelector() {
+    return leaderSelector;
+  }
+
+  public ZkClient getZkClient() {
+    return zkClient;
+  }
 
 }

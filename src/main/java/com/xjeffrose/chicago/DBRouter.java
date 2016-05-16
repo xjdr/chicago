@@ -37,9 +37,9 @@ public class DBRouter implements Closeable {
   private final DBManager dbManager;
   private XioBootstrap x;
 
-  public DBRouter(ChiConfig config) {
+  public DBRouter(ChiConfig config, DBManager dbManager) {
     this.config = config;
-    this.dbManager = new DBManager(config);
+    this.dbManager = dbManager;
     config.setDbRouter(this);
   }
 

@@ -16,6 +16,7 @@ public class ZkClient {
 
   public ZkClient(CuratorFramework client) {
     this.client = client;
+    this.connectionString = client.getZookeeperClient().getCurrentConnectionString();
   }
 
   public ZkClient(String serverSet) {
@@ -95,6 +96,10 @@ public class ZkClient {
   /* package access only */
   public CuratorFramework getClient() {
     return client;
+  }
+
+  public String getConnectionString() {
+    return connectionString;
   }
 }
 

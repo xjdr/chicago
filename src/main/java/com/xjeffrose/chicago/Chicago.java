@@ -6,8 +6,6 @@ import java.io.File;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.leader.LeaderSelector;
-import org.apache.curator.framework.recipes.leader.LeaderSelectorListener;
-import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.log4j.Logger;
 import org.apache.zookeeper.CreateMode;
@@ -33,7 +31,6 @@ public class Chicago {
     }
 
     ChiConfig config = new ChiConfig(_conf);
-    DBRouter dbRouter = new DBRouter(config);
 
     try {
       CuratorFramework curator = CuratorFrameworkFactory.newClient(config.getZkHosts(),
@@ -41,17 +38,7 @@ public class Chicago {
       curator.start();
       curator.blockUntilConnected();
 
-      LeaderSelector leaderSelector = new LeaderSelector(curator, ELECTION_PATH, new LeaderSelectorListener() {
-        @Override
-        public void takeLeadership(CuratorFramework curatorFramework) throws Exception {
-
-        }
-
-        @Override
-        public void stateChanged(CuratorFramework curatorFramework, ConnectionState connectionState) {
-
-        }
-      });
+      LeaderSelector leaderSelector = new LeaderSelector(curator, ELECTION_PATH, new ChiLeaderSelectorListener());
 
       leaderSelector.autoRequeue();
       leaderSelector.start();
@@ -64,6 +51,14 @@ public class Chicago {
           .withMode(CreateMode.EPHEMERAL)
           .forPath(NODE_LIST_PATH + "/" + config.getDBBindIP(), ConfigSerializer.serialize(config).getBytes());
 
+      config.setLeaderSelector(leaderSelector);
+      config.setZkClient(zkClient);
+
+      DBManager dbManager = new DBManager(config);
+      NodeWatcher nodeWatcher = new NodeWatcher();
+      nodeWatcher.refresh(zkClient, leaderSelector, dbManager);
+
+      DBRouter dbRouter = new DBRouter(config, dbManager);
       dbRouter.run();
     } catch (Exception e) {
       System.exit(-1);

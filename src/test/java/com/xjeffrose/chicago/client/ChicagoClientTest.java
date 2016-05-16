@@ -3,6 +3,7 @@ package com.xjeffrose.chicago.client;
 import com.netflix.curator.test.TestingServer;
 import com.xjeffrose.chicago.Chicago;
 import java.net.InetSocketAddress;
+import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -72,6 +73,5 @@ public class ChicagoClientTest {
       assertEquals(true, chicagoClientDHT.write(key, val));
     }
   }
-
 
 }

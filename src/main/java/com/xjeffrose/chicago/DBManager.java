@@ -1,18 +1,31 @@
 package com.xjeffrose.chicago;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.log4j.Logger;
+import org.rocksdb.Env;
 import org.rocksdb.Options;
+import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
+import org.rocksdb.RocksIterator;
+import org.rocksdb.WriteOptions;
 
-public class DBManager {
+class DBManager {
   private static final Logger log = Logger.getLogger(DBManager.class);
 
-  private RocksDB db;
+  private final Options options = new Options();
+  private final ReadOptions readOptions = new ReadOptions();
+  private final WriteOptions writeOptions = new WriteOptions();
 
-  public DBManager(ChiConfig config) {
+  private  RocksDB db;
+
+  DBManager(ChiConfig config) {
     RocksDB.loadLibrary();
-    Options options = new Options().setCreateIfMissing(true);
+
+    configOptions();
+    configReadOptions();
+    configWriteOptions();
 
     try {
       this.db = RocksDB.open(options, config.getDBPath());
@@ -22,7 +35,24 @@ public class DBManager {
     }
   }
 
-  public boolean write(byte[] key, byte[] value) {
+  private void configOptions() {
+    options.setCreateIfMissing(true);
+
+    Env env = Env.getDefault();
+    env.setBackgroundThreads(20);
+
+    options.setEnv(env);
+  }
+
+  private void configReadOptions() {
+//    readOptions.setTailing(true);
+  }
+
+  private void configWriteOptions() {
+//    writeOptions.setDisableWAL(true);
+  }
+
+  boolean write(byte[] key, byte[] value) {
     if (key == null) {
       log.error("Tried to write a null key");
       return false;
@@ -31,7 +61,7 @@ public class DBManager {
       return false;
     } else {
       try {
-        db.put(key, value);
+        db.put(writeOptions, key, value);
       } catch (RocksDBException e) {
         log.error("Error writing record: " + new String(key), e);
         return false;
@@ -41,13 +71,13 @@ public class DBManager {
     return true;
   }
 
-  public byte[] read(byte[] key) {
+  byte[] read(byte[] key) {
     if (key == null) {
       log.error("Tried to read a null key");
       return null;
     } else {
       try {
-        return db.get(key);
+        return db.get(readOptions, key);
       } catch (RocksDBException e) {
         log.error("Error getting record: " + new String(key), e);
         return null;
@@ -55,7 +85,7 @@ public class DBManager {
     }
   }
 
-  public boolean delete(byte[] key) {
+  boolean delete(byte[] key) {
     if (key == null) {
       log.error("Tried to delete a null key");
       return false;
@@ -70,7 +100,21 @@ public class DBManager {
     }
   }
 
-  public void destroy() {
+  List<byte[]> getKeys(ReadOptions readOptions) {
+    RocksIterator i = db.newIterator(readOptions);
+    List<byte[]> keySet = new ArrayList();
+    i.seekToFirst();
+
+    while (i.isValid()) {
+      keySet.add(i.key());
+      i.next();
+    }
+
+    return keySet;
+  }
+
+  void destroy() {
     db.close();
   }
+
 }
