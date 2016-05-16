@@ -3,8 +3,10 @@ package com.xjeffrose.chicago.client;
 import com.google.common.hash.Funnel;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 class RendezvousHash<N> {
@@ -40,6 +42,28 @@ class RendezvousHash<N> {
         });
 
     return hashMap.get(hashMap.keySet().stream().max(Long::compare).get());
+  }
+
+  List<N> getList(byte[] key) {
+    HashMap<Long, N> hashMap = new HashMap();
+    List<N> nodeList = new ArrayList<>();
+
+    while (nodeList.size() < 3) {
+      ordered.stream()
+          .filter(xs -> !nodeList.contains(xs))
+          .forEach(xs -> {
+            hashMap.put(hasher.newHasher()
+                .putBytes(key)
+                .putObject(xs, nodeFunnel)
+                .hash().asLong(), xs);
+          });
+
+      nodeList.add(hashMap.get(hashMap.keySet().stream().max(Long::compare).get()));
+      hashMap.clear();
+    }
+
+    System.out.println(nodeList.toString());
+    return nodeList;
   }
 
   // For testing only, will be removed
