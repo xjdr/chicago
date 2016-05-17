@@ -16,4 +16,4 @@ java  -ea                         \
   -Xms1024M                       \
   -Xmx12G                         \
   -server                         \
-  -cp ../target/chiacgo-0.1.0-SNAPSHOT.jar com.xjeffrose.chicago.Chicago #"$@"
+  -cp target/chicago-0.1.0-SNAPSHOT.jar com.xjeffrose.chicago.Chicago application.conf
