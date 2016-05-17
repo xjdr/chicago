@@ -1,6 +1,5 @@
 package com.xjeffrose.chicago.client;
 
-import java.util.Arrays;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import org.apache.log4j.Logger;
 

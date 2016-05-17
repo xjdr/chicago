@@ -1,7 +1,7 @@
 Chicago
 =======
 
-High performance distributed K/V store, build on [xio](https://github.com/xjdr/xio) , [bookkeeper](https://)
+High performance distributed K/V store, built on [xio](https://github.com/xjdr/xio)
 and [rocksdb](https://github.com/facebook/rocksdb)
 
 Chicago is horizontally scalable to N nodes but using a [RendezvousHash](https://en.wikipedia.org/wiki/Rendezvous_hashing)
