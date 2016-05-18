@@ -55,7 +55,7 @@ public class NodeWatcher {
         //TODO(JR): When should we re-balance replica sets?
       } else {
         log.error("Would have written " + new String(xs) + " on redistribute keys");
-//        chicagoClient.write(xs, chicagoClient.read(xs));
+        chicagoClient.write(xs, chicagoClient.read(xs));
       }
     });
   }

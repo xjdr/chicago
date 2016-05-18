@@ -62,7 +62,7 @@ public class Chicago {
       DBRouter dbRouter = new DBRouter(config, dbManager);
       dbRouter.run();
 
-      System.out.println("====================================" + leaderSelector.hasLeadership());
+      log.info("I am the Leader: " + leaderSelector.hasLeadership());
     } catch (Exception e) {
       System.exit(-1);
     }
