@@ -42,8 +42,7 @@ public class ChicagoClient {
   private final Map<String, ChannelFuture> connectionPool = new HashMap<>();
 
 
-  ChicagoClient(InetSocketAddress server) {
-
+  public ChicagoClient(InetSocketAddress server) {
     this.single_server = server;
     this.zkClient = null;
     this.rendezvousHash = null;
