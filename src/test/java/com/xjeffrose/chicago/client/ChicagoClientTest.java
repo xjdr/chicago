@@ -12,18 +12,30 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class ChicagoClientTest {
-  static TestingServer testingServer;
-  static Chicago chicago;
-  static ChicagoClient chicagoClientSingle;
-  static ChicagoClient chicagoClientDHT;
+  static TestingServer testingServer;// = new TestingServer(2190);
+  static Chicago chicago1;// = new Chicago();
+  static Chicago chicago2;// = new Chicago();
+  static Chicago chicago3;// = new Chicago();
+  static Chicago chicago4;// = new Chicago();
+
+  static ChicagoClient chicagoClientSingle;// = new ChicagoClient(new InetSocketAddress("127.0.0.1", 12000));
+  static ChicagoClient chicagoClientDHT;// = new ChicagoClient(new InetSocketAddress("127.0.0.1", 12000));
 
   @BeforeClass
   static public void setupFixture() throws Exception {
-    testingServer = new TestingServer(2181);
-    chicago = new Chicago();
-    chicago.main(new String[]{});
+    testingServer = new TestingServer(2182);
+    chicago1 = new Chicago();
+    chicago1.main(new String[]{"", "src/test/resources/test1.conf"});
+    chicago2 = new Chicago();
+    chicago2.main(new String[]{"", "src/test/resources/test2.conf"});
+    chicago3 = new Chicago();
+    chicago3.main(new String[]{"", "src/test/resources/test3.conf"});
+    chicago4 = new Chicago();
+    chicago4.main(new String[]{"", "src/test/resources/test4.conf"});
     chicagoClientSingle = new ChicagoClient(new InetSocketAddress("127.0.0.1", 12000));
+//    chicagoClientDHT = new ChicagoClient("10.25.160.234:2181");
     chicagoClientDHT = new ChicagoClient(testingServer.getConnectString());
+
   }
 
   @Test
@@ -39,8 +51,7 @@ public class ChicagoClientTest {
       String _v = "val" +i;
       byte[] val = _v.getBytes();
       assertEquals(true, chicagoClientDHT.delete(key));
-    }
-  }
+    }  }
 
   @Test
   public void read() throws Exception {
@@ -58,6 +69,7 @@ public class ChicagoClientTest {
     }
   }
 
+
   @Test
   public void writeSingle() throws Exception {
     assertEquals(true, chicagoClientSingle.write("key".getBytes(), "val".getBytes()));
@@ -65,7 +77,7 @@ public class ChicagoClientTest {
 
   @Test
   public void writeMany() throws Exception {
-    for (int i = 0; i < 1500; i++) {
+    for (int i = 0; i < 200; i++) {
       String _k = "key"+i;
       byte[] key = _k.getBytes();
       String _v = "val" +i;
@@ -73,4 +85,6 @@ public class ChicagoClientTest {
       assertEquals(true, chicagoClientDHT.write(key, val));
     }
   }
+
+
 }

@@ -1,6 +1,9 @@
 package com.xjeffrose.chicago;
 
+import com.google.common.hash.Funnels;
 import com.xjeffrose.chicago.client.ChicagoClient;
+import com.xjeffrose.chicago.client.RendezvousHash;
+import java.nio.charset.Charset;
 import java.util.concurrent.CountDownLatch;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
@@ -18,15 +21,17 @@ public class NodeWatcher {
   private ZkClient zkClient;
   private LeaderSelector leaderSelector;
   private DBManager dbManager;
+  private ChiConfig config;
 
   public NodeWatcher() {
   }
 
-  public void refresh(ZkClient zkClient, LeaderSelector leaderSelector, DBManager dbManager) {
+  public void refresh(ZkClient zkClient, LeaderSelector leaderSelector, DBManager dbManager, ChiConfig config) {
     nodeList = new TreeCacheInstance(zkClient, NODE_LIST_PATH);
     this.zkClient = zkClient;
     this.leaderSelector = leaderSelector;
     this.dbManager = dbManager;
+    this.config = config;
     nodeList.getCache().getListenable().addListener(new GenericListener(NODE_LIST_PATH));
     try {
       this.chicagoClient = new ChicagoClient(zkClient.getConnectionString());
@@ -37,18 +42,22 @@ public class NodeWatcher {
 
     try {
       latch.await();
-      log.info("ConfigWatcher initialization completed");
+      log.info("NodeWatcher initialization completed");
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }
   }
 
   private void redistributeKeys() {
-    if (leaderSelector.hasLeadership()) {
-      dbManager.getKeys(new ReadOptions()).forEach(xs -> {
-        chicagoClient.write(xs, chicagoClient.read(xs));
-      });
-    }
+    RendezvousHash rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), zkClient.list(NODE_LIST_PATH));
+    dbManager.getKeys(new ReadOptions()).forEach(xs -> {
+      if (rendezvousHash.get(xs).contains(config.getDBBindIP())) {
+        //TODO(JR): When should we re-balance replica sets?
+      } else {
+        log.error("Would have written " + new String(xs) + " on redistribute keys");
+//        chicagoClient.write(xs, chicagoClient.read(xs));
+      }
+    });
   }
 
   private void nodeAdded() {
@@ -71,7 +80,9 @@ public class NodeWatcher {
     public void childEvent(CuratorFramework curatorFramework, TreeCacheEvent event) throws Exception {
       switch (event.getType()) {
         case INITIALIZED:
-//          redistributeKeys();
+          if (initialized) {
+            redistributeKeys();
+          }
           latch.countDown();
           initialized = true;
           break;

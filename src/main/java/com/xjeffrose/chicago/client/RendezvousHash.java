@@ -13,75 +13,41 @@ public class RendezvousHash<N> {
 
   private final HashFunction hasher;
   private final Funnel<N> nodeFunnel;
-  private final ConcurrentSkipListSet<N> ordered;
+  private final ConcurrentSkipListSet<N> nodeList;
 
   public RendezvousHash(Funnel<N> nodeFunnel, Collection<N> init) {
     this.hasher = Hashing.murmur3_128();
     this.nodeFunnel = nodeFunnel;
-    this.ordered = new ConcurrentSkipListSet<N>(init);
+    this.nodeList = new ConcurrentSkipListSet<N>(init);
   }
 
   boolean remove(N node) {
-    return ordered.remove(node);
+    return nodeList.remove(node);
   }
 
   boolean add(N node) {
-    return ordered.add(node);
+    return nodeList.add(node);
   }
-
-  public N get(byte[] key) {
-    //TODO(JR): May need to improve performance for a large cluster ( > 200 nodes)
+  
+  public List<N> get(byte[] key) {
     HashMap<Long, N> hashMap = new HashMap();
+    List<N> _nodeList = new ArrayList<>();
 
-    ordered.stream()
-        .forEach(xs -> {
-          hashMap.put(hasher.newHasher()
-              .putBytes(key)
-              .putObject(xs, nodeFunnel)
-              .hash().asLong(), xs);
-        });
-
-    return hashMap.get(hashMap.keySet().stream().max(Long::compare).get());
-  }
-
-  List<N> getList(byte[] key) {
-    HashMap<Long, N> hashMap = new HashMap();
-    List<N> nodeList = new ArrayList<>();
-
-    while (nodeList.size() < 3) {
-      ordered.stream()
-          .filter(xs -> !nodeList.contains(xs))
+      nodeList.stream()
+          .filter(xs -> !_nodeList.contains(xs))
           .forEach(xs -> {
             hashMap.put(hasher.newHasher()
                 .putBytes(key)
                 .putObject(xs, nodeFunnel)
                 .hash().asLong(), xs);
-          });
 
-      nodeList.add(hashMap.get(hashMap.keySet().stream().max(Long::compare).get()));
-      hashMap.clear();
+    });
+
+    for (int i = 0; i < 3; i++) {
+      _nodeList.add(hashMap.remove(hashMap.keySet().stream().max(Long::compare).orElse(null)));
     }
 
-    System.out.println(nodeList.toString());
-    return nodeList;
-  }
-
-  // For testing only, will be removed
-  @Deprecated
-  N getOld(byte[] key) {
-    long maxValue = Long.MIN_VALUE;
-    N max = null;
-    for (N node : ordered) {
-      long nodesHash = hasher.newHasher()
-          .putBytes(key)
-          .putObject(node, nodeFunnel)
-          .hash().asLong();
-      if (nodesHash > maxValue) {
-        max = node;
-        maxValue = nodesHash;
-      }
-    }
-    return max;
+    return _nodeList;
   }
 
 }
