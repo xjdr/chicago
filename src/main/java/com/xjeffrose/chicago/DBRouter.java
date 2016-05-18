@@ -139,7 +139,7 @@ public class DBRouter implements Closeable {
     XioServerDef dbServer = new XioServerDefBuilder()
         .name("Chicago Server")
         .listen(new InetSocketAddress(config.getDBBindIP(), config.getDBPort()))
-        .withSecurityFactory(new XioNoOpSecurityFactory())
+//        .withSecurityFactory(new XioNoOpSecurityFactory())
         .withSecurityFactory(new XioSecurityFactory() {
           @Override
           public XioSecurityHandlers getSecurityHandlers(XioServerDef xioServerDef, XioServerConfig xioServerConfig) {
