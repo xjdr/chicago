@@ -110,32 +110,16 @@ public class ChicagoClient {
   public boolean delete(byte[] key) {
     List<Boolean> responseList = new ArrayList<>();
 
-//    if (single_server != null) {
-////      connect(single_server, Op.DELETE, key, value, listener);
-//    } else {
-////      if (connectionPool.size() == 0) {
-//        try {
-//          Thread.sleep(200);
-//          return delete(key);
-//        } catch (InterruptedException e) {
-//          log.error(e);
-//        }
-//      }
-//      rendezvousHash.get(key).forEach(xs -> {
-////        ChannelFuture cf = connectionPool.get(xs);
-//        if (cf.channel().isWritable()) {
-//          cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.DELETE, key, null));
-//          responseList.add(listenerMap.get(xs).getStatus());
-//        } else {
-//          delete(key);
-//        }
-//      });
-//    }
-//
-//    return responseList.stream().allMatch(b -> b);
+    rendezvousHash.get(key).forEach(xs -> {
+      ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
+      if (cf.channel().isWritable()) {
+        cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.DELETE, key, null));
+        responseList.add(connectionPoolMgr.getListener((String) xs).getStatus());
+      }
 
-    return false;
-  }
+    });
+
+    return responseList.stream().allMatch(b -> b);  }
 
 
 //  private void connect(InetSocketAddress server, Listener listener) {

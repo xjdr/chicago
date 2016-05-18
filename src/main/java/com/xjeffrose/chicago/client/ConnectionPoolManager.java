@@ -56,7 +56,7 @@ public class ConnectionPoolManager {
     ChannelFuture cf = connectionMap.get(node);
    if (cf == null) {
      try {
-       Thread.sleep(200);
+       Thread.sleep(5);
        return getNode(node);
      } catch (InterruptedException e) {
        e.printStackTrace();

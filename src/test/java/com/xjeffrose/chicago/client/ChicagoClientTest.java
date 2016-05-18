@@ -43,7 +43,7 @@ public class ChicagoClientTest {
 
   @Test
   public void deleteMany() throws Exception {
-    for (int i = 0; i < 20000; i++) {
+    for (int i = 0; i < 20; i++) {
       String _k = "key" + i;
       byte[] key = _k.getBytes();
       String _v = "val" + i;
@@ -59,7 +59,7 @@ public class ChicagoClientTest {
 
   @Test
   public void readMany() throws Exception {
-    for (int i = 0; i < 20000; i++) {
+    for (int i = 0; i < 20; i++) {
       String _k = "key" + i;
       byte[] key = _k.getBytes();
       String _v = "val" + i;
