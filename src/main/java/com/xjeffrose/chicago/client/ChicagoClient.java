@@ -1,7 +1,6 @@
 package com.xjeffrose.chicago.client;
 
 import com.google.common.hash.Funnels;
-import com.xjeffrose.chicago.ChicagoMessage;
 import com.xjeffrose.chicago.DefaultChicagoMessage;
 import com.xjeffrose.chicago.Op;
 import com.xjeffrose.chicago.ZkClient;
@@ -12,7 +11,6 @@ import com.xjeffrose.xio.client.retry.TracerDriver;
 import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
@@ -23,7 +21,10 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.log4j.Logger;
@@ -34,14 +35,19 @@ public class ChicagoClient {
   private final static String NODE_LIST_PATH = "/chicago/node-list";
 
   private final InetSocketAddress single_server;
-//  private final RendezvousHash rendezvousHash;
+  private final RendezvousHash rendezvousHash;
+  private final ClientNodeWatcher clientNodeWatcher;
   private final ZkClient zkClient;
+  private final Map<String, Listener> listenerMap = new HashMap<>();
+  private final Map<String, ChannelFuture> connectionPool = new HashMap<>();
+
 
   ChicagoClient(InetSocketAddress server) {
 
     this.single_server = server;
     this.zkClient = null;
-//    this.rendezvousHash = null;
+    this.rendezvousHash = null;
+    this.clientNodeWatcher = null;
   }
 
   public ChicagoClient(String zkConnectionString) throws InterruptedException {
@@ -50,59 +56,117 @@ public class ChicagoClient {
     this.zkClient = new ZkClient(zkConnectionString);
     zkClient.start();
 
-//    this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), buildNodeList());
+    this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), buildNodeList());
+    this.clientNodeWatcher = new ClientNodeWatcher();
+    clientNodeWatcher.refresh(zkClient, rendezvousHash);
+
+    refreshPool();
   }
 
-  private Collection buildNodeList() {
+  public void refreshPool() {
+    connectionPool.clear();
+    buildNodeList().stream().forEach(xs -> {
+      listenerMap.put(xs, new ChicagoListener());
+      connect(new InetSocketAddress(xs, 12000), listenerMap.get(xs));
+    });
+  }
+
+  public List<String> buildNodeList() {
     return zkClient.list(NODE_LIST_PATH);
   }
 
   public byte[] read(byte[] key) {
-    Listener<byte[]> listener = new ChicagoListener();
+    List<byte[]> responseList = new ArrayList<>();
 
     if (single_server != null) {
-      connect(single_server, Op.READ, key, null, listener);
+//      connect(single_server, Op.READ, key, value, listener);
     } else {
-      new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), buildNodeList()).get(key).forEach(xs -> {
-        connect(new InetSocketAddress((String) xs, 12000), Op.READ, key, null, listener);
+      if (connectionPool.isEmpty()) {
+        try {
+          Thread.sleep(200);
+          return read(key);
+        } catch (InterruptedException e) {
+          log.error(e);
+        }
+      }
+      rendezvousHash.get(key).forEach(xs -> {
+        ChannelFuture cf = connectionPool.get(xs);
+        if (cf.channel().isWritable()) {
+          cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.READ, key, null));
+          responseList.add((byte[]) listenerMap.get(xs).getResponse());
+        }
+        else {
+          refreshPool();
+          read(key);
+        }
       });
     }
 
-    return listener.getResponse();
+    return responseList.stream().findFirst().orElse(null);
   }
 
   public boolean write(byte[] key, byte[] value) {
-    Listener<byte[]> listener = new ChicagoListener();
+    List<Boolean> responseList = new ArrayList<>();
 
     if (single_server != null) {
-      connect(single_server, Op.WRITE, key, value, listener);
+//      connect(single_server, Op.WRITE, key, value, listener);
     } else {
-      new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), buildNodeList()).get(key).forEach(xs -> {
-        connect(new InetSocketAddress((String) xs, 12000), Op.WRITE, key, value, listener);
+      if (connectionPool.size() == 0) {
+        try {
+          Thread.sleep(200);
+          return write(key, value);
+        } catch (InterruptedException e) {
+          log.error(e);
+        }
+      }
+      rendezvousHash.get(key).forEach(xs -> {
+        ChannelFuture cf = connectionPool.get(xs);
+        if (cf.channel().isWritable()) {
+          cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.WRITE, key, value));
+          responseList.add(listenerMap.get(xs).getStatus());
+        }
+        else {
+          refreshPool();
+          write(key, value);
+        }
       });
     }
 
-    //TODO(JR): This only indicated that one returned correctly.
-    return listener.getStatus();
+    return responseList.stream().allMatch(b -> b);
   }
 
   public boolean delete(byte[] key) {
-    Listener<byte[]> listener = new ChicagoListener();
+    List<Boolean> responseList = new ArrayList<>();
 
     if (single_server != null) {
-      connect(single_server, Op.DELETE, key, null, listener);
+//      connect(single_server, Op.DELETE, key, value, listener);
     } else {
-      new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), buildNodeList()).get(key).forEach(xs -> {
-        connect(new InetSocketAddress((String) xs, 12000), Op.DELETE, key, null, listener);
+      if (connectionPool.size() == 0) {
+        try {
+          Thread.sleep(200);
+          return delete(key);
+        } catch (InterruptedException e) {
+          log.error(e);
+        }
+      }
+      rendezvousHash.get(key).forEach(xs -> {
+        ChannelFuture cf = connectionPool.get(xs);
+        if (cf.channel().isWritable()) {
+          cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.DELETE, key, null));
+          responseList.add(listenerMap.get(xs).getStatus());
+        }
+        else {
+          refreshPool();
+          delete(key);
+        }
       });
     }
 
-    //TODO(JR): This only indicated that one returned correctly.
-    return listener.getStatus();
+    return responseList.stream().allMatch(b -> b);
   }
 
 
-  private void connect(InetSocketAddress server, Op op, byte[] key, byte[] val, Listener listener) {
+  private void connect(InetSocketAddress server, Listener listener) {
     // Start the connection attempt.
     Bootstrap bootstrap = new Bootstrap();
     bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 500)
@@ -111,13 +175,13 @@ public class ChicagoClient {
         .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024)
         .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
         .option(ChannelOption.TCP_NODELAY, true);
-    bootstrap.group(new NioEventLoopGroup(3))
+    bootstrap.group(new NioEventLoopGroup(20))
         .channel(NioSocketChannel.class)
         .handler(new ChannelInitializer<SocketChannel>() {
           @Override
           protected void initChannel(SocketChannel channel) throws Exception {
             ChannelPipeline cp = channel.pipeline();
-//            cp.addLast(new XioSecurityHandlerImpl(true).getEncryptionHandler());
+            cp.addLast(new XioSecurityHandlerImpl(true).getEncryptionHandler());
 //            cp.addLast(new XioSecurityHandlerImpl(true).getAuthenticationHandler());
             cp.addLast(new XioIdleDisconnectHandler(60, 60, 60));
             cp.addLast(new ChicagoClientCodec());
@@ -139,11 +203,10 @@ public class ChicagoClient {
     };
 
     RetryLoop retryLoop = new RetryLoop(retry, new AtomicReference<>(tracerDriver));
-    connect2(server, op, key, val, bootstrap, retryLoop);
-
+    connect2(server, bootstrap, retryLoop);
   }
 
-  private void connect2(InetSocketAddress server, Op op, byte[] key, byte[] val, Bootstrap bootstrap, RetryLoop retryLoop) {
+  private void connect2(InetSocketAddress server, Bootstrap bootstrap, RetryLoop retryLoop) {
     ChannelFutureListener listener = new ChannelFutureListener() {
       @Override
       public void operationComplete(ChannelFuture future) {
@@ -151,25 +214,23 @@ public class ChicagoClient {
           try {
             retryLoop.takeException((Exception) future.cause());
             log.error("==== Service connect failure (will retry)", future.cause());
-            connect2(server, op, key, val, bootstrap, retryLoop);
+            connect2(server, bootstrap, retryLoop);
           } catch (Exception e) {
             log.error("==== Service connect failure ", future.cause());
             // Close the connection if the connection attempt has failed.
+            future.channel().close();
           }
         } else {
           log.debug("Chicago connected: ");
-          Channel ch = future.channel();
-
-          ChicagoMessage chicagoMessage = new DefaultChicagoMessage(op, key, val);
-
-          try {
-            ch.writeAndFlush(chicagoMessage);
-          } catch (Exception e) {
-            e.printStackTrace();
+          String hostname = ((InetSocketAddress) future.channel().remoteAddress()).getHostName();
+          if (hostname.equals("localhost")) {
+            hostname = "127.0.0.1";
           }
+          connectionPool.put(hostname, future);
         }
       }
     };
+
     bootstrap.connect(server).addListener(listener);
   }
 }

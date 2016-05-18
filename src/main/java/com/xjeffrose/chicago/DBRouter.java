@@ -1,5 +1,6 @@
 package com.xjeffrose.chicago;
 
+import com.google.common.collect.ImmutableMap;
 import com.xjeffrose.xio.SSL.XioSecurityHandlerImpl;
 import com.xjeffrose.xio.core.XioAggregatorFactory;
 import com.xjeffrose.xio.core.XioCodecFactory;
@@ -16,6 +17,7 @@ import com.xjeffrose.xio.server.XioServerDef;
 import com.xjeffrose.xio.server.XioServerDefBuilder;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInboundHandler;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -23,7 +25,9 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import org.apache.log4j.Logger;
@@ -136,17 +140,17 @@ public class DBRouter implements Closeable {
         .name("Chicago Server")
         .listen(new InetSocketAddress(config.getDBBindIP(), config.getDBPort()))
         .withSecurityFactory(new XioNoOpSecurityFactory())
-//        .withSecurityFactory(new XioSecurityFactory() {
-//          @Override
-//          public XioSecurityHandlers getSecurityHandlers(XioServerDef xioServerDef, XioServerConfig xioServerConfig) {
-//            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
-//          }
-//
-//          @Override
-//          public XioSecurityHandlers getSecurityHandlers() {
-//            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
-//          }
-//        })
+        .withSecurityFactory(new XioSecurityFactory() {
+          @Override
+          public XioSecurityHandlers getSecurityHandlers(XioServerDef xioServerDef, XioServerConfig xioServerConfig) {
+            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
+          }
+
+          @Override
+          public XioSecurityHandlers getSecurityHandlers() {
+            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
+          }
+        })
         .withProcessorFactory(new XioProcessorFactory() {
           @Override
           public XioProcessor getProcessor() {
@@ -187,6 +191,7 @@ public class DBRouter implements Closeable {
         .setBossThreadExecutor(Executors.newCachedThreadPool())
         .setWorkerThreadCount(config.getWorkers())
         .setWorkerThreadExecutor(Executors.newCachedThreadPool())
+//        .setBootstrapOptions((Map<ChannelOption<Object>, Object>) new HashMap<>().put(ChannelOption.SO_KEEPALIVE, true))
         .build();
 
     ChannelGroup channels = new DefaultChannelGroup(new NioEventLoopGroup(config.getWorkers()).next());

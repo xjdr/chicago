@@ -30,14 +30,7 @@ class ChicagoListener implements Listener<byte[]> {
 
   @Override
   public byte[] getResponse() {
-    if (responseList.size() > 0) {
-      if (successList.removeFirst()) {
-        return responseList.removeFirst();
-      } else if (responseList.size() == 3 && successList.size() == 0) {
-        log.error("There were no successful read requests");
-        return null;
-      }
-    } else {
+    if (responseList.isEmpty()) {
       try {
         Thread.sleep(1);
       } catch (InterruptedException e) {
@@ -45,20 +38,27 @@ class ChicagoListener implements Listener<byte[]> {
       }
       return getResponse();
     }
-    return getResponse();
+
+    if (!successList.getFirst()) {
+      log.error("READ operation unsuccessful");
+      return null;
+    }
+
+    return responseList.removeFirst();
   }
 
   @Override
   public boolean getStatus() {
-    if (successList.size() == 3) {
-      return successList.stream().allMatch(b -> b);
-    } else {
+    //TODO(JR): Add timeout
+    if (successList.isEmpty()) {
       try {
         Thread.sleep(1);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
       return getStatus();
+    } else {
+      return successList.removeFirst();
     }
   }
 }
