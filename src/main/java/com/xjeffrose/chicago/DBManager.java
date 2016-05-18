@@ -18,7 +18,7 @@ class DBManager {
   private final ReadOptions readOptions = new ReadOptions();
   private final WriteOptions writeOptions = new WriteOptions();
 
-  private  RocksDB db;
+  private RocksDB db;
 
   DBManager(ChiConfig config) {
     RocksDB.loadLibrary();

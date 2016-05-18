@@ -9,13 +9,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentSkipListSet;
 
-class RendezvousHash<N> {
+public class RendezvousHash<N> {
 
   private final HashFunction hasher;
   private final Funnel<N> nodeFunnel;
   private final ConcurrentSkipListSet<N> ordered;
 
-  RendezvousHash(Funnel<N> nodeFunnel, Collection<N> init) {
+  public RendezvousHash(Funnel<N> nodeFunnel, Collection<N> init) {
     this.hasher = Hashing.murmur3_128();
     this.nodeFunnel = nodeFunnel;
     this.ordered = new ConcurrentSkipListSet<N>(init);
@@ -29,7 +29,7 @@ class RendezvousHash<N> {
     return ordered.add(node);
   }
 
-  N get(byte[] key) {
+  public N get(byte[] key) {
     //TODO(JR): May need to improve performance for a large cluster ( > 200 nodes)
     HashMap<Long, N> hashMap = new HashMap();
 

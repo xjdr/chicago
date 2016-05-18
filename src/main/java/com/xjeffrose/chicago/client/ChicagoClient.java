@@ -37,8 +37,7 @@ public class ChicagoClient {
   private final RendezvousHash rendezvousHash;
   private final ZkClient zkClient;
 
-  ChicagoClient(InetSocketAddress server) {
-
+  public ChicagoClient(InetSocketAddress server) {
     this.single_server = server;
     this.zkClient = null;
     this.rendezvousHash = null;
