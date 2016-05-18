@@ -33,7 +33,9 @@ public class ChicagoClientTest {
     chicago4 = new Chicago();
     chicago4.main(new String[]{"", "src/test/resources/test4.conf"});
     chicagoClientSingle = new ChicagoClient(new InetSocketAddress("127.0.0.1", 12000));
+//    chicagoClientDHT = new ChicagoClient("10.25.160.234:2181");
     chicagoClientDHT = new ChicagoClient(testingServer.getConnectString());
+
   }
 
   @Test

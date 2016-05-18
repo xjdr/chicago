@@ -34,14 +34,16 @@ public class ChicagoClient {
   private final static String NODE_LIST_PATH = "/chicago/node-list";
 
   private final InetSocketAddress single_server;
-//  private final RendezvousHash rendezvousHash;
+  private final RendezvousHash rendezvousHash;
+  private final ClientNodeWatcher clientNodeWatcher;
   private final ZkClient zkClient;
 
   ChicagoClient(InetSocketAddress server) {
 
     this.single_server = server;
     this.zkClient = null;
-//    this.rendezvousHash = null;
+    this.rendezvousHash = null;
+    this.clientNodeWatcher = null;
   }
 
   public ChicagoClient(String zkConnectionString) throws InterruptedException {
@@ -50,7 +52,9 @@ public class ChicagoClient {
     this.zkClient = new ZkClient(zkConnectionString);
     zkClient.start();
 
-//    this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), buildNodeList());
+    this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), buildNodeList());
+    this.clientNodeWatcher = new ClientNodeWatcher();
+    clientNodeWatcher.refresh(zkClient, rendezvousHash);
   }
 
   private Collection buildNodeList() {
@@ -63,7 +67,8 @@ public class ChicagoClient {
     if (single_server != null) {
       connect(single_server, Op.READ, key, null, listener);
     } else {
-      new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), buildNodeList()).get(key).forEach(xs -> {
+//      new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), buildNodeList()).get(key).forEach(xs -> {
+      rendezvousHash.get(key).forEach(xs -> {
         connect(new InetSocketAddress((String) xs, 12000), Op.READ, key, null, listener);
       });
     }
@@ -77,7 +82,8 @@ public class ChicagoClient {
     if (single_server != null) {
       connect(single_server, Op.WRITE, key, value, listener);
     } else {
-      new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), buildNodeList()).get(key).forEach(xs -> {
+//      new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), buildNodeList()).get(key).forEach(xs -> {
+      rendezvousHash.get(key).forEach(xs -> {
         connect(new InetSocketAddress((String) xs, 12000), Op.WRITE, key, value, listener);
       });
     }
@@ -92,7 +98,8 @@ public class ChicagoClient {
     if (single_server != null) {
       connect(single_server, Op.DELETE, key, null, listener);
     } else {
-      new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), buildNodeList()).get(key).forEach(xs -> {
+//      new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), buildNodeList()).get(key).forEach(xs -> {
+      rendezvousHash.get(key).forEach(xs -> {
         connect(new InetSocketAddress((String) xs, 12000), Op.DELETE, key, null, listener);
       });
     }
