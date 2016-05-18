@@ -23,7 +23,7 @@ public class ChicagoLoadTest {
 
   @Test
   public void writeMany() throws Exception {
-    for (int i = 0; i < 500; i++) {
+    for (int i = 0; i < 1; i++) {
       String _k = "key" + i;
       byte[] key = _k.getBytes();
       String _v = "val" + i;
@@ -35,11 +35,20 @@ public class ChicagoLoadTest {
   @Test
   public void readMany() throws Exception {
     for (int i = 0; i < 600; i++) {
-      String _k = "key"+i;
+      String _k = "key" + i;
       byte[] key = _k.getBytes();
-      String _v = "val" +i;
+      String _v = "val" + i;
       byte[] val = _v.getBytes();
       assertEquals(new String(val), new String(chicagoClientDHT.read(key)));
     }
   }
+
+    @Test
+    public void deleteMany() throws Exception {
+      for (int i = 0; i < 10; i++) {
+        String _k = "sm" + i;
+        byte[] key = _k.getBytes();
+        assertEquals(true, chicagoClientDHT.delete(key));
+      }
+    }
 }

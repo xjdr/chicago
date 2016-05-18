@@ -17,24 +17,24 @@ import org.rocksdb.WriteOptions;
  * Created by root on 5/17/16.
  */
 public class DBRead {
-
   public static void main(String args[]) throws Exception{
-    //ChicagoClient cc = new ChicagoClient(new InetSocketAddress("10.25.69.226", 12000));
-    //String k = "key"+3;
-    //System.out.println(new String(cc.read(k.getBytes())));
-    //System.exit(-1);
-    ArrayList<String> nodes = new ArrayList<>();
-    nodes.add("10.24.25.123");
-    nodes.add("10.24.25.189");
-    nodes.add("10.25.145.56");
-    nodes.add("10.24.33.188");
-    RendezvousHash rendezvousHash = new RendezvousHash(
-        Funnels.stringFunnel(Charset.defaultCharset()), nodes);
+    ChicagoClient cc = new ChicagoClient(new InetSocketAddress("10.24.25.188", 12000));
+    String k = "sm0";
+    System.out.println("Found value in 10.24.25.188" + new String(cc.read(k.getBytes())));
 
-    for (int i = 0; i < 500; i++) {
-      String _k = "key" + i;
-      System.out.println("key = "+ _k +" , "+(String) rendezvousHash.get(_k.getBytes()));
-    }
+    cc = new ChicagoClient(new InetSocketAddress("10.25.145.56", 12000));
+    k = "sm0";
+    System.out.println("Found value in 10.25.145.56 " + new String(cc.read(k.getBytes())));
+
+    cc = new ChicagoClient(new InetSocketAddress("10.24.25.189", 12000));
+    k = "sm0";
+    System.out.println("Found value in 10.24.25.189 " + new String(cc.read(k.getBytes())));
+
+    cc = new ChicagoClient(new InetSocketAddress("10.24.33.123", 12000));
+    k = "sm0";
+    System.out.println("Found value in 10.24.33.123 " + new String(cc.read(k.getBytes())));
+
+    System.exit(-1);
 
   }
 
