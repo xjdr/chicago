@@ -2,19 +2,11 @@ package com.xjeffrose.chicago;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.typesafe.config.ConfigFactory;
-import com.xjeffrose.chicago.ChiConfig;
-import com.xjeffrose.chicago.ChicagoObjectDecoder;
-import com.xjeffrose.chicago.ChicagoProcessor;
-import com.xjeffrose.chicago.DBManager;
 import com.xjeffrose.chicago.fixtures.TestCTX;
 import com.xjeffrose.xio.core.ConnectionContext;
 import com.xjeffrose.xio.server.RequestContext;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.Test;
@@ -28,10 +20,11 @@ public class ChicagoProcessorTest {
 
   @Test
   public void process() throws Exception {
+    byte[] colFam = "new_colFam".getBytes();
     byte[] key = "new_key".getBytes();
     byte[] val = "new_value".getBytes();
 
-    ListenableFuture<Boolean> processFuture = processor.process(new TestCTX(), new DefaultChicagoMessage(Op.fromInt(1), key, val), new RequestContext() {
+    ListenableFuture<Boolean> processFuture = processor.process(new TestCTX(), new DefaultChicagoMessage(Op.fromInt(1), colFam, key, val), new RequestContext() {
       @Override
       public ConnectionContext getConnectionContext() {
         return null;
@@ -64,8 +57,8 @@ public class ChicagoProcessorTest {
     });
 
     assertEquals(true, processFuture.get());
-    assertEquals(new String(val), new String(dbManager.read(key)));
-    assertTrue(dbManager.delete(key));
+    assertEquals(new String(val), new String(dbManager.read(colFam, key)));
+    assertTrue(dbManager.delete(colFam, key));
 
 
   }
