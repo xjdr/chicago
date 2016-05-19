@@ -54,9 +54,6 @@ public class ChicagoClient {
   public byte[] read(byte[] key) {
     List<byte[]> responseList = new ArrayList<>();
 
-    if (single_server != null) {
-    }
-
     rendezvousHash.get(key).stream().filter(x -> x!=null).forEach(xs -> {
       ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
       if (cf.channel().isWritable()) {
@@ -71,11 +68,7 @@ public class ChicagoClient {
 
   public boolean write(byte[] key, byte[] value) {
     List<Boolean> responseList = new ArrayList<>();
-
-    if (single_server != null) {
-//      connect(single_server, Op.WRITE, key, value, listener);
-    }
-
+    long start_time = System.currentTimeMillis();
       rendezvousHash.get(key).stream().filter(x -> x!=null).forEach(xs -> {
         ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
         if (cf.channel().isWritable()) {
@@ -83,7 +76,7 @@ public class ChicagoClient {
           responseList.add(connectionPoolMgr.getListener((String) xs).getStatus());
         }
     });
-
+    System.out.println("return response in "+ (System.currentTimeMillis() - start_time));
     return responseList.stream().allMatch(b -> b);
   }
 

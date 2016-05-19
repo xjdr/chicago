@@ -57,10 +57,10 @@ public class ConnectionPoolManager {
 
   public ChannelFuture getNode(String node) {
     ChannelFuture cf = connectionMap.get(node);
-    if (cf == null) {
+    while(cf == null){
       try {
-        Thread.sleep(5);
-        return getNode(node);
+        Thread.sleep(1);
+        cf = connectionMap.get(node);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
@@ -140,6 +140,7 @@ public class ConnectionPoolManager {
             log.error("==== Service connect failure ", future.cause());
             // Close the connection if the connection attempt has failed.
             future.channel().close();
+            connectionMap.remove(server.getHostName());
           }
         } else {
           log.debug("Chicago connected: ");

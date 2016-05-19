@@ -61,7 +61,7 @@ public class ChicagoClientTest {
 
   @Test
   public void readMany() throws Exception {
-    for (int i = 0; i < 2000; i++) {
+    for (int i = 0; i < 10; i++) {
       String _k = "key" + i;
       byte[] key = _k.getBytes();
       String _v = "val" + i;
@@ -78,7 +78,8 @@ public class ChicagoClientTest {
 
   @Test
   public void writeMany() throws Exception {
-    for (int i = 0; i < 2000; i++) {
+    long start_time = System.currentTimeMillis();
+    for (int i = 0; i < 10; i++) {
       String _k = "key" + i;
       byte[] key = _k.getBytes();
       String _v = "val" + i;
@@ -87,6 +88,9 @@ public class ChicagoClientTest {
 //      System.out.println(resp);
       assertEquals(true, resp);
     }
+    long diff = System.currentTimeMillis() - start_time;
+    System.out.println("total time = " + diff);
+    System.out.println("Avg per write = " + diff/10);
   }
 
 }

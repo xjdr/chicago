@@ -30,13 +30,12 @@ class ChicagoListener implements Listener<byte[]> {
 
   @Override
   public byte[] getResponse() {
-    if(responseList.isEmpty()){
+    while(responseList.isEmpty()){
       try {
-        Thread.sleep(50);
+        Thread.sleep(1);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
-      return getResponse();
     }
 
     if (successList.isEmpty()) {
@@ -50,15 +49,13 @@ class ChicagoListener implements Listener<byte[]> {
   @Override
   public boolean getStatus() {
     //TODO(JR): Add timeout
-    if (successList.isEmpty()) {
+    while (successList.isEmpty()) {
       try {
-        Thread.sleep(50);
+        Thread.sleep(1);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
-      return getStatus();
-    } else {
-      return successList.removeFirst();
     }
+    return successList.removeFirst();
   }
 }
