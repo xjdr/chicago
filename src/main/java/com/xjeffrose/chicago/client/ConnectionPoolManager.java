@@ -8,15 +8,12 @@ import com.xjeffrose.xio.client.retry.TracerDriver;
 import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
-
-import io.netty.channel.pool.SimpleChannelPool;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import java.net.InetSocketAddress;
@@ -54,24 +51,23 @@ public class ConnectionPoolManager {
 
   public ChannelFuture getNode(String node) {
     ChannelFuture cf = connectionMap.get(node);
-   if (cf == null) {
-     try {
-       Thread.sleep(5);
-       return getNode(node);
-     } catch (InterruptedException e) {
-       e.printStackTrace();
-     }
-   }
-    if (cf.isSuccess()) {
-      if (cf.channel().isWritable()) {
-        return cf;
+    if (cf == null) {
+      try {
+        Thread.sleep(5);
+        return getNode(node);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
       }
     }
 
+    if (cf.channel().isWritable()) {
+      return cf;
+    }
+
+    cf.channel().close();
     cf.cancel(true);
     connectionMap.remove(node);
     connect(new InetSocketAddress(node, 12000), listenerMap.get(node));
-
     return getNode(node);
   }
 
