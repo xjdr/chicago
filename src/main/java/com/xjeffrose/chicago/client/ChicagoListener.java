@@ -32,14 +32,14 @@ class ChicagoListener implements Listener<byte[]> {
   public byte[] getResponse() {
     if (responseList.isEmpty()) {
       try {
-        Thread.sleep(5);
+        Thread.sleep(50);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
       return getResponse();
     }
 
-    if (!successList.getFirst()) {
+    if (successList.isEmpty()) {
       log.error("READ operation unsuccessful");
       return null;
     }
@@ -52,7 +52,7 @@ class ChicagoListener implements Listener<byte[]> {
     //TODO(JR): Add timeout
     if (successList.isEmpty()) {
       try {
-        Thread.sleep(5);
+        Thread.sleep(50);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
