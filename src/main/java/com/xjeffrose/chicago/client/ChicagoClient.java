@@ -66,7 +66,7 @@ public class ChicagoClient {
 
     });
 
-    return responseList.stream().findFirst().orElse(null);
+    return responseList.stream().filter(x-> x!= null).findFirst().orElse(null);
   }
 
   public boolean write(byte[] key, byte[] value) {
