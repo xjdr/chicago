@@ -17,38 +17,46 @@ public class ChicagoLoadTest {
 
   @BeforeClass
   static public void setupFixture() throws Exception {
-    chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181/chicago");
+    chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
     //chicagoClientDHT = new ChicagoClient("10.22.100.183:2181/chicago");
   }
 
   @Test
   public void writeMany() throws Exception {
-    for (int i = 0; i < 1; i++) {
+    long start_time = System.currentTimeMillis();
+    for (int i = 0; i < 100; i++) {
       String _k = "key" + i;
       byte[] key = _k.getBytes();
       String _v = "val" + i;
       byte[] val = _v.getBytes();
       assertEquals(true, chicagoClientDHT.write(key, val));
     }
+    long end_time = System.currentTimeMillis();
+    long difference = end_time-start_time;
+    System.out.println(difference);
   }
 
   @Test
   public void readMany() throws Exception {
-    for (int i = 0; i < 600; i++) {
+    long start_time = System.currentTimeMillis();
+    for (int i = 0; i < 100; i++) {
       String _k = "key" + i;
       byte[] key = _k.getBytes();
       String _v = "val" + i;
       byte[] val = _v.getBytes();
       assertEquals(new String(val), new String(chicagoClientDHT.read(key)));
     }
+    System.out.println(System.currentTimeMillis() - start_time);
   }
 
     @Test
     public void deleteMany() throws Exception {
-      for (int i = 0; i < 10; i++) {
-        String _k = "sm" + i;
+      long start_time = System.currentTimeMillis();
+      for (int i = 0; i < 100; i++) {
+        String _k = "key" + i;
         byte[] key = _k.getBytes();
         assertEquals(true, chicagoClientDHT.delete(key));
       }
+      System.out.println(System.currentTimeMillis() - start_time);
     }
 }
