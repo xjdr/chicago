@@ -28,7 +28,7 @@ public class RendezvousHash<N> {
   boolean add(N node) {
     return nodeList.add(node);
   }
-
+  
   public List<N> get(byte[] key) {
     HashMap<Long, N> hashMap = new HashMap();
     List<N> _nodeList = new ArrayList<>();
