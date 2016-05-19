@@ -15,22 +15,34 @@ public class ChicagoObjectEncoder extends MessageToMessageEncoder<Object> {
   public ChicagoObjectEncoder() {
   }
 
-  public byte[] encode(Op _op, byte[] key, byte[] val) {
+  public byte[] encode(Op _op, byte[] colFam, byte[] key, byte[] val) {
 
     if (val == null) {
       val = new byte[0];
     }
 
     byte[] op = Ints.toByteArray(_op.getOp());
+    byte[] colFamSize = Ints.toByteArray(colFam.length);
     byte[] keySize = Ints.toByteArray(key.length);
     byte[] valSize = Ints.toByteArray(val.length);
-    byte[] msgArray = new byte[op.length + keySize.length + key.length + valSize.length + val.length];
+    int msgSize = op.length + colFamSize.length + colFamSize.length + colFam.length + keySize.length + key.length + valSize.length + val.length;
+    byte[] msgArray = new byte[msgSize];
 
-    System.arraycopy(op, 0, msgArray, 0, op.length);
-    System.arraycopy(keySize, 0, msgArray, op.length, keySize.length);
-    System.arraycopy(key, 0, msgArray, op.length + keySize.length, key.length);
-    System.arraycopy(valSize, 0, msgArray, op.length + keySize.length + key.length , valSize.length);
-    System.arraycopy(val, 0, msgArray, op.length + keySize.length + key.length + valSize.length, val.length);
+    int trailing = 0;
+    System.arraycopy(op, 0, msgArray, trailing, op.length);
+    trailing = trailing + op.length;
+    System.arraycopy(colFamSize, 0, msgArray, trailing, colFamSize.length );
+    trailing = trailing + colFamSize.length;
+    System.arraycopy(colFam, 0, msgArray, trailing, colFam.length );
+    trailing = trailing + colFam.length;
+    System.arraycopy(keySize, 0, msgArray, trailing, keySize.length);
+    trailing = trailing + keySize.length;
+    System.arraycopy(key, 0, msgArray, trailing, key.length);
+    trailing = trailing + key.length;
+    System.arraycopy(valSize, 0, msgArray, trailing , valSize.length);
+    trailing = trailing + valSize.length;
+    System.arraycopy(val, 0, msgArray, trailing, val.length);
+
 
     byte[] hash = Hashing.murmur3_32().hashBytes(msgArray).asBytes();
 
@@ -51,7 +63,7 @@ public class ChicagoObjectEncoder extends MessageToMessageEncoder<Object> {
       log.error("Object not an instance of ChicagoMessage: " + msg);
     }
 
-    ByteBuf _msg = ctx.alloc().directBuffer().writeBytes(encode(chiMessage.getOp(), chiMessage.getKey(), chiMessage.getVal()));
+    ByteBuf _msg = ctx.alloc().directBuffer().writeBytes(encode(chiMessage.getOp(), chiMessage.getColFam(), chiMessage.getKey(), chiMessage.getVal()));
     out.add(_msg);
   }
 }

@@ -10,11 +10,12 @@ public class ChicagoObjectEncoderTest {
 
   @Test
   public void encode1() throws Exception {
-    byte[] result = encoder.encode(Op.fromInt(0), "foo".getBytes(), "asdfgjlkasdf".getBytes());
+    byte[] result = encoder.encode(Op.fromInt(0), "colFamxxxx".getBytes(), "foo".getBytes(), "asdfgjlkasdf".getBytes());
 
     ChicagoMessage message = decoder.decode(result);
 
     assertEquals(Op.READ, message.getOp());
+    assertEquals("colFamxxxx", new String(message.getColFam()));
     assertEquals("foo", new String(message.getKey()));
     assertEquals("asdfgjlkasdf", new String(message.getVal()));
   }

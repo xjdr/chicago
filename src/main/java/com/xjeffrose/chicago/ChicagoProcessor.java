@@ -32,7 +32,7 @@ public class ChicagoProcessor implements XioProcessor {
     return service.submit(() -> {
 
       if (finalMsg == null) {
-        reqCtx.setContextData(reqCtx.getConnectionId(), new DefaultChicagoMessage(Op.fromInt(3), Boolean.toString(false).getBytes(), "x".getBytes()));
+        reqCtx.setContextData(reqCtx.getConnectionId(), new DefaultChicagoMessage(Op.fromInt(3), "x".getBytes(), Boolean.toString(false).getBytes(), "x".getBytes()));
 
         return false;
       }
@@ -56,7 +56,7 @@ public class ChicagoProcessor implements XioProcessor {
           break;
       }
 
-      reqCtx.setContextData(reqCtx.getConnectionId(), new DefaultChicagoMessage(Op.fromInt(3), Boolean.toString(status).getBytes(), readResponse) );
+      reqCtx.setContextData(reqCtx.getConnectionId(), new DefaultChicagoMessage(Op.fromInt(3), "x".getBytes(), Boolean.toString(status).getBytes(), readResponse) );
       return true;
     });
   }

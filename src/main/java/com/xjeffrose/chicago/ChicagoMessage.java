@@ -9,4 +9,6 @@ public interface ChicagoMessage extends ChicagoObject {
   byte[] getVal();
 
   boolean getSuccess();
+
+  byte[] getColFam();
 }
