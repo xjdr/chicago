@@ -41,6 +41,12 @@ public class ConnectionPoolManager {
     refreshPool();
   }
 
+  public ConnectionPoolManager(String hostname) {
+    this.zkClient = null;
+    listenerMap.put(hostname, new ChicagoListener());
+    connect(new InetSocketAddress(hostname, 12000), listenerMap.get(hostname));
+  }
+
   private List<String> buildNodeList() {
     return zkClient.list(NODE_LIST_PATH);
   }

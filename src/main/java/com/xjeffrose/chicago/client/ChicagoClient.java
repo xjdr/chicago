@@ -46,9 +46,11 @@ public class ChicagoClient {
   public ChicagoClient(InetSocketAddress server) {
     this.single_server = server;
     this.zkClient = null;
-    this.rendezvousHash = null;
+    ArrayList<String> nodeList = new ArrayList<>();
+    nodeList.add(server.getHostName());
+    this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList);
     this.clientNodeWatcher = null;
-    connectionPoolMgr = null;
+    connectionPoolMgr = new ConnectionPoolManager(server.getHostName());
   }
 
   public ChicagoClient(String zkConnectionString) throws InterruptedException {
@@ -75,7 +77,7 @@ public class ChicagoClient {
     if (single_server != null) {
     }
 
-    rendezvousHash.get(key).forEach(xs -> {
+    rendezvousHash.get(key).stream().filter(x -> x!=null).forEach(xs -> {
       ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
       if (cf.channel().isWritable()) {
         cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.READ, key, null));
@@ -94,7 +96,7 @@ public class ChicagoClient {
 //      connect(single_server, Op.WRITE, key, value, listener);
     }
 
-      rendezvousHash.get(key).forEach(xs -> {
+      rendezvousHash.get(key).stream().filter(x -> x!=null).forEach(xs -> {
         ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
         if (cf.channel().isWritable()) {
           cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.WRITE, key, value));
@@ -109,7 +111,7 @@ public class ChicagoClient {
   public boolean delete(byte[] key) {
     List<Boolean> responseList = new ArrayList<>();
 
-    rendezvousHash.get(key).forEach(xs -> {
+    rendezvousHash.get(key).stream().filter(x -> x != null).forEach(xs -> {
       ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
       if (cf.channel().isWritable()) {
         cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.DELETE, key, null));
