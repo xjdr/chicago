@@ -3,6 +3,7 @@ package com.xjeffrose.chicago;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderResult;
+import org.rocksdb.WriteBatch;
 
 public class DefaultChicagoMessage implements ChicagoMessage {
   private final Op _op;
