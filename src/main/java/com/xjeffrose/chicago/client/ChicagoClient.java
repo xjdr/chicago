@@ -61,7 +61,7 @@ public class ChicagoClient {
     if (single_server != null) {
     }
 
-    rendezvousHash.get(key).stream().filter(x -> x!=null).forEach(xs -> {
+    rendezvousHash.get(key).stream().filter(x -> x != null).forEach(xs -> {
       ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
       if (cf.channel().isWritable()) {
         cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.READ, colFam, key, null));
@@ -77,19 +77,22 @@ public class ChicagoClient {
     return write("chicago".getBytes(), key, value);
   }
 
-    public boolean write(byte[] colFam, byte[] key, byte[] value) {
+  public boolean write(byte[] colFam, byte[] key, byte[] value) {
     List<Boolean> responseList = new ArrayList<>();
 
     if (single_server != null) {
 //      connect(single_server, Op.WRITE, key, value, listener);
     }
 
-      rendezvousHash.get(key).stream().filter(x -> x!=null).forEach(xs -> {
-        ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
-        if (cf.channel().isWritable()) {
-          cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.WRITE, colFam, key, value));
-          responseList.add(connectionPoolMgr.getListener((String) xs).getStatus());
-        }
+    rendezvousHash.get(key).stream().filter(x -> x != null).forEach(xs -> {
+      ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
+      if (cf.channel().isWritable()) {
+        cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.WRITE, colFam, key, value));
+
+        responseList.add(connectionPoolMgr.getListener((String) xs).getStatus());
+
+
+      }
     });
 
     return responseList.stream().allMatch(b -> b);
@@ -99,14 +102,16 @@ public class ChicagoClient {
     return delete("chicago".getBytes(), key);
   }
 
-    public boolean delete(byte[] colFam, byte[] key) {
+  public boolean delete(byte[] colFam, byte[] key) {
     List<Boolean> responseList = new ArrayList<>();
 
     rendezvousHash.get(key).stream().filter(x -> x != null).forEach(xs -> {
       ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
       if (cf.channel().isWritable()) {
         cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.DELETE, colFam, key, null));
+
         responseList.add(connectionPoolMgr.getListener((String) xs).getStatus());
+
       }
 
     });
