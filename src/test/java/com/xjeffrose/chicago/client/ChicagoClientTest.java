@@ -31,9 +31,9 @@ public class ChicagoClientTest {
     chicago4 = new Chicago();
     chicago4.main(new String[]{"", "src/test/resources/test4.conf"});
 //    chicagoClientSingle = new ChicagoClient(new InetSocketAddress("127.0.0.1", 12000));
-//    chicagoClientDHT = new ChicagoClient("10.25.160.234:2181");
+    chicagoClientDHT = new ChicagoClient("10.25.160.234:2181");
 //    chicagoClientDHT = new ChicagoClient("10.22.100.183:2181");
-    chicagoClientDHT = new ChicagoClient(testingServer.getConnectString());
+//    chicagoClientDHT = new ChicagoClient(testingServer.getConnectString());
 //    chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
 
   }

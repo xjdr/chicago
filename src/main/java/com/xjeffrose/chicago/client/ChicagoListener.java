@@ -63,7 +63,7 @@ class ChicagoListener implements Listener<byte[]> {
   private byte[] _getResponse() {
     if (responseMap.isEmpty()) {
       try {
-        Thread.sleep(1);
+        Thread.sleep(5);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
@@ -85,12 +85,13 @@ class ChicagoListener implements Listener<byte[]> {
     }
 
     try {
-      Thread.sleep(1);
+      Thread.sleep(5);
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
 
-    return getResponse();  }
+    return getResponse();
+  }
 
   @Override
   public boolean getStatus() {
@@ -108,7 +109,7 @@ class ChicagoListener implements Listener<byte[]> {
   private boolean _getStatus() {
     if (statusMap.isEmpty()) {
       try {
-        Thread.sleep(1);
+        Thread.sleep(5);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
@@ -124,7 +125,7 @@ class ChicagoListener implements Listener<byte[]> {
     }
 
     try {
-      Thread.sleep(1);
+      Thread.sleep(5);
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
