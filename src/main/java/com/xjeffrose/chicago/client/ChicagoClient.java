@@ -52,7 +52,7 @@ public class ChicagoClient {
   }
 
   public byte[] read(byte[] key) {
-    return read("default".getBytes(), key);
+    return read("chicago".getBytes(), key);
   }
 
   public byte[] read(byte[] colFam, byte[] key) {
@@ -74,7 +74,7 @@ public class ChicagoClient {
   }
 
   public boolean write(byte[] key, byte[] value) {
-    return write("default".getBytes(), key, value);
+    return write("chicago".getBytes(), key, value);
   }
 
     public boolean write(byte[] colFam, byte[] key, byte[] value) {
@@ -96,7 +96,7 @@ public class ChicagoClient {
   }
 
   public boolean delete(byte[] key) {
-    return delete("default".getBytes(), key);
+    return delete("chicago".getBytes(), key);
   }
 
     public boolean delete(byte[] colFam, byte[] key) {

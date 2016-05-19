@@ -13,13 +13,13 @@ public class DBManagerTest {
 
   @Test
   public void singleEntry() throws Exception {
-//    byte[] key = new byte[4];
+    byte[] colFam = "ColFam".getBytes();
     byte[] key = "Key".getBytes();
     byte[] val = "Valure".getBytes();
 
-    assertTrue(dbManager.write(key, val));
-    assertEquals(new String(val), new String(dbManager.read(key)));
-    assertTrue(dbManager.delete(key));
+    assertTrue(dbManager.write(colFam, key, val));
+    assertEquals(new String(val), new String(dbManager.read(colFam, key)));
+    assertTrue(dbManager.delete(colFam, key));
   }
 
 

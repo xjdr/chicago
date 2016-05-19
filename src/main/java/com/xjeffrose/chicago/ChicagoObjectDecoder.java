@@ -67,9 +67,9 @@ public class ChicagoObjectDecoder extends ByteToMessageDecoder {
     int trailing = 0;
     System.arraycopy(op, 0, msgArray, trailing, op.length);
     trailing = trailing + op.length;
-    System.arraycopy(colFamSize, 0, msgArray, trailing, op.length );
+    System.arraycopy(colFamSize, 0, msgArray, trailing, colFamSize.length );
     trailing = trailing + colFamSize.length;
-    System.arraycopy(colFam, 0, msgArray, trailing, op.length );
+    System.arraycopy(colFam, 0, msgArray, trailing, colFam.length );
     trailing = trailing + colFam.length;
     System.arraycopy(keySize, 0, msgArray, trailing, keySize.length);
     trailing = trailing + keySize.length;

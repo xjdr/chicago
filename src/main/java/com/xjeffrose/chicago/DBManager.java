@@ -1,5 +1,7 @@
 package com.xjeffrose.chicago;
 
+import com.google.common.io.Files;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,11 +36,25 @@ class DBManager {
     configWriteOptions();
 
     try {
+      File f = new File(config.getDBPath());
+      if (f.exists()) {
+        deleteDir(f);
+      }
       this.db = RocksDB.open(options, config.getDBPath());
     } catch (RocksDBException e) {
-      log.error("Could not load DB: " + config.getDBPath() + e.getMessage());
+      log.error("Could not load DB: " + config.getDBPath() + " " + e.getMessage());
       System.exit(-1);
     }
+  }
+
+  void deleteDir(File file) {
+    File[] contents = file.listFiles();
+    if (contents != null) {
+      for (File f : contents) {
+        deleteDir(f);
+      }
+    }
+    file.delete();
   }
 
   private void configOptions() {
@@ -87,32 +103,33 @@ class DBManager {
     }
   }
 
-  boolean write(byte[] key, byte[] value) {
+  boolean write(byte[] colFam, byte[] key, byte[] value) {
     if (key == null) {
       log.error("Tried to write a null key");
       return false;
     } else if (value == null) {
       log.error("Tried to write a null value");
       return false;
-    } else {
+    } else if (!colFamilyExists(colFam)) {
+      createColumnFamily(colFam);
+    }
       try {
-        db.put(writeOptions, key, value);
+        db.put(columnFamilies.get(new String(colFam)), writeOptions, key, value);
+        return true;
       } catch (RocksDBException e) {
         log.error("Error writing record: " + new String(key), e);
         return false;
       }
-    }
-
-    return true;
   }
 
-  byte[] read(byte[] key) {
+  byte[] read(byte[] colFam, byte[] key) {
     if (key == null) {
       log.error("Tried to read a null key");
       return null;
     } else {
       try {
-        return db.get(readOptions, key);
+        byte[] res = db.get(columnFamilies.get(new String(colFam)), readOptions, key);
+        return res;
       } catch (RocksDBException e) {
         log.error("Error getting record: " + new String(key), e);
         return null;
@@ -120,13 +137,13 @@ class DBManager {
     }
   }
 
-  boolean delete(byte[] key) {
+  boolean delete(byte[] colFam, byte[] key) {
     if (key == null) {
       log.error("Tried to delete a null key");
       return false;
     } else {
       try {
-        db.remove(key);
+        db.remove(columnFamilies.get(new String(colFam)), key);
         return true;
       } catch (RocksDBException e) {
         log.error("Error deleting record: " + new String(key), e);

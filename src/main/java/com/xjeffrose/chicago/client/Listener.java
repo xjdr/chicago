@@ -12,4 +12,6 @@ interface Listener<T> {
   T getResponse();
 
   boolean getStatus();
+
+  void onChannelReadComplete();
 }

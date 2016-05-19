@@ -25,7 +25,7 @@ public class ChicagoObjectEncoder extends MessageToMessageEncoder<Object> {
     byte[] colFamSize = Ints.toByteArray(colFam.length);
     byte[] keySize = Ints.toByteArray(key.length);
     byte[] valSize = Ints.toByteArray(val.length);
-    int msgSize = op.length + colFamSize.length + colFamSize.length + colFam.length + keySize.length + key.length + valSize.length + val.length;
+    int msgSize = op.length + colFamSize.length + colFam.length + keySize.length + key.length + valSize.length + val.length;
     byte[] msgArray = new byte[msgSize];
 
     int trailing = 0;
