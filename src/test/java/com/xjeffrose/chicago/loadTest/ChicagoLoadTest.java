@@ -1,9 +1,6 @@
 package com.xjeffrose.chicago.loadTest;
 
-import com.netflix.curator.test.TestingServer;
-import com.xjeffrose.chicago.Chicago;
 import com.xjeffrose.chicago.client.ChicagoClient;
-import java.net.InetSocketAddress;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -17,12 +14,13 @@ public class ChicagoLoadTest {
 
   @BeforeClass
   static public void setupFixture() throws Exception {
-    chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
+    //chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
     //chicagoClientDHT = new ChicagoClient("10.22.100.183:2181/chicago");
   }
 
   @Test
   public void writeMany() throws Exception {
+    chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
     long start_time = System.currentTimeMillis();
     for (int i = 0; i < 100; i++) {
       String _k = "key" + i;
@@ -38,6 +36,7 @@ public class ChicagoLoadTest {
 
   @Test
   public void readMany() throws Exception {
+    chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
     long start_time = System.currentTimeMillis();
     for (int i = 0; i < 100; i++) {
       String _k = "key" + i;
@@ -51,6 +50,7 @@ public class ChicagoLoadTest {
 
     @Test
     public void deleteMany() throws Exception {
+      chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
       long start_time = System.currentTimeMillis();
       for (int i = 0; i < 100; i++) {
         String _k = "key" + i;
