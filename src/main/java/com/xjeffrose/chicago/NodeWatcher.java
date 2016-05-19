@@ -51,12 +51,9 @@ public class NodeWatcher {
   private void redistributeKeys() {
     RendezvousHash rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), zkClient.list(NODE_LIST_PATH));
     dbManager.getKeys(new ReadOptions()).forEach(xs -> {
-      if (rendezvousHash.get(xs).contains(config.getDBBindIP())) {
-        //TODO(JR): When should we re-balance replica sets?
-      } else {
-        log.error("Would have written " + new String(xs) + " on redistribute keys");
-        chicagoClient.write(xs, chicagoClient.read(xs));
-      }
+      rendezvousHash.get(xs).stream()
+          .filter(xxs -> xxs == config.getDBBindIP())
+          .forEach(xxs -> chicagoClient.write(xs, dbManager.read(xs)));
     });
   }
 

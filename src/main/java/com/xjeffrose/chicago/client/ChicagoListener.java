@@ -30,7 +30,7 @@ class ChicagoListener implements Listener<byte[]> {
 
   @Override
   public byte[] getResponse() {
-    if (responseList.isEmpty()) {
+    if (responseList == null || successList == null) {
       try {
         Thread.sleep(50);
       } catch (InterruptedException e) {
