@@ -3,20 +3,21 @@ package com.xjeffrose.chicago.client;
 import com.netflix.curator.test.TestingServer;
 import com.xjeffrose.chicago.Chicago;
 import java.net.InetSocketAddress;
+import java.util.Random;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
 public class ChicagoClientTest {
-  static TestingServer testingServer;// = new TestingServer(2190);
-  static Chicago chicago1;// = new Chicago();
-  static Chicago chicago2;// = new Chicago();
-  static Chicago chicago3;// = new Chicago();
-  static Chicago chicago4;// = new Chicago();
+  static TestingServer testingServer;
+  static Chicago chicago1;
+  static Chicago chicago2;
+  static Chicago chicago3;
+  static Chicago chicago4;
 
-  static ChicagoClient chicagoClientSingle;// = new ChicagoClient(new InetSocketAddress("127.0.0.1", 12000));
-  static ChicagoClient chicagoClientDHT;// = new ChicagoClient(new InetSocketAddress("127.0.0.1", 12000));
+  static ChicagoClient chicagoClientSingle;
+  static ChicagoClient chicagoClientDHT;
 
   @BeforeClass
   static public void setupFixture() throws Exception {
@@ -32,8 +33,8 @@ public class ChicagoClientTest {
     chicagoClientSingle = new ChicagoClient(new InetSocketAddress("127.0.0.1", 12000));
 //    chicagoClientDHT = new ChicagoClient("10.25.160.234:2181");
 //    chicagoClientDHT = new ChicagoClient("10.22.100.183:2181");
-//    chicagoClientDHT = new ChicagoClient(testingServer.getConnectString());
-    chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
+    chicagoClientDHT = new ChicagoClient(testingServer.getConnectString());
+//    chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
 
   }
 
@@ -87,4 +88,5 @@ public class ChicagoClientTest {
       assertEquals(true, resp);
     }
   }
+
 }

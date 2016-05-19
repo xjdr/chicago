@@ -30,9 +30,9 @@ class ChicagoListener implements Listener<byte[]> {
 
   @Override
   public byte[] getResponse() {
-    if (responseList.isEmpty()) {
+    if (responseList == null || successList == null) {
       try {
-        Thread.sleep(1);
+        Thread.sleep(5);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
@@ -52,7 +52,7 @@ class ChicagoListener implements Listener<byte[]> {
     //TODO(JR): Add timeout
     if (successList.isEmpty()) {
       try {
-        Thread.sleep(1);
+        Thread.sleep(5);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
