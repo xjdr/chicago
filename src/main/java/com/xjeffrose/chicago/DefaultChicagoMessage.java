@@ -7,29 +7,20 @@ import org.rocksdb.WriteBatch;
 
 public class DefaultChicagoMessage implements ChicagoMessage {
   private final Op _op;
+  private final byte[] colFam;
   private final byte[] key;
   private final byte[] val;
   private DecoderResult decoderResult;
 
-  public DefaultChicagoMessage(Op _op, byte[] key, byte[] val) {
+  public DefaultChicagoMessage(Op _op, byte[] colFam, byte[] key, byte[] val) {
     this._op = _op;
+    this.colFam = colFam;
     this.key = key;
     this.val = val;
   }
 
   public ByteBuf encode() {
-    byte[] op = {(byte) _op.getOp()};
-    byte[] keySize = {(byte) key.length};
-    byte[] valSize ={(byte) val.length};
-    byte[] msgArray = new byte[op.length + keySize.length + key.length + valSize.length + val.length];
-
-    System.arraycopy(op, 0, msgArray, 0, op.length);
-    System.arraycopy(keySize, 0, msgArray, op.length, keySize.length);
-    System.arraycopy(key, 0, msgArray, op.length + keySize.length, key.length);
-    System.arraycopy(valSize, 0, msgArray, op.length + keySize.length + key.length , valSize.length);
-    System.arraycopy(val, 0, msgArray, op.length + keySize.length + key.length + valSize.length, val.length);
-
-    return Unpooled.directBuffer().writeBytes(msgArray);
+    return Unpooled.directBuffer().writeBytes(new ChicagoObjectEncoder().encode(_op, colFam, key, val));
   }
 
   @Override
@@ -60,5 +51,10 @@ public class DefaultChicagoMessage implements ChicagoMessage {
   @Override
   public boolean getSuccess() {
     return true;
+  }
+
+  @Override
+  public byte[] getColFam() {
+    return colFam;
   }
 }

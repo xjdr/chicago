@@ -25,6 +25,7 @@ public class ChicagoObjectDecoder extends ByteToMessageDecoder {
   private ChicagoMessage _decode(ByteBuf msg) {
     final byte[] hash = new byte[4];
     final byte[] op = new byte[4];
+    final byte[] colFamSize = new byte[4];
     final byte[] keySize = new byte[4];
     final byte[] valSize = new byte[4];
 
@@ -34,6 +35,14 @@ public class ChicagoObjectDecoder extends ByteToMessageDecoder {
 
     // Determine the operation type
     msg.readBytes(op, 0, op.length);
+
+    // Get the colFam Length
+    msg.readBytes(colFamSize, 0, colFamSize.length);
+    final int colFamLength = Ints.fromByteArray(colFamSize);
+    final byte[] colFam = new byte[colFamLength];
+
+    // Get the Col Fam
+    msg.readBytes(colFam, 0, colFam.length);
 
     // Get the Key Length
     msg.readBytes(keySize, 0, keySize.length);
@@ -51,15 +60,24 @@ public class ChicagoObjectDecoder extends ByteToMessageDecoder {
     // Get the Value
     msg.readBytes(val, 0, valLength);
 
-    DefaultChicagoMessage _msg = new DefaultChicagoMessage(Op.fromInt(Ints.fromByteArray(op)), key, val);
+    DefaultChicagoMessage _msg = new DefaultChicagoMessage(Op.fromInt(Ints.fromByteArray(op)), colFam, key, val);
 
-    byte[] msgArray = new byte[op.length + keySize.length + key.length + valSize.length + val.length];
+    byte[] msgArray = new byte[op.length + colFamSize.length + colFam.length + keySize.length + key.length + valSize.length + val.length];
 
-    System.arraycopy(op, 0, msgArray, 0, op.length);
-    System.arraycopy(keySize, 0, msgArray, op.length, keySize.length);
-    System.arraycopy(key, 0, msgArray, op.length + keySize.length, key.length);
-    System.arraycopy(valSize, 0, msgArray, op.length + keySize.length + key.length , valSize.length);
-    System.arraycopy(val, 0, msgArray, op.length + keySize.length + key.length + valSize.length, val.length);
+    int trailing = 0;
+    System.arraycopy(op, 0, msgArray, trailing, op.length);
+    trailing = trailing + op.length;
+    System.arraycopy(colFamSize, 0, msgArray, trailing, op.length );
+    trailing = trailing + colFamSize.length;
+    System.arraycopy(colFam, 0, msgArray, trailing, op.length );
+    trailing = trailing + colFam.length;
+    System.arraycopy(keySize, 0, msgArray, trailing, keySize.length);
+    trailing = trailing + keySize.length;
+    System.arraycopy(key, 0, msgArray, trailing, key.length);
+    trailing = trailing + key.length;
+    System.arraycopy(valSize, 0, msgArray, trailing , valSize.length);
+    trailing = trailing + valSize.length;
+    System.arraycopy(val, 0, msgArray, trailing, val.length);
 
     HashCode messageHash = Hashing.murmur3_32().hashBytes(msgArray);
 
