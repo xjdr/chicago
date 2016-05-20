@@ -67,7 +67,7 @@ public class ChicagoClientTest {
 
   @Test
   public void transactManyCF() throws Exception {
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < 500; i++) {
       String _k = "key" + i;
       byte[] key = _k.getBytes();
       String _v = "val" + i;
@@ -81,9 +81,9 @@ public class ChicagoClientTest {
 
   @Test
   public void transactManyCFConcurrent() throws Exception {
-    final int[] count = {0};
-//    CountDownLatch latch = new CountDownLatch(count);
-    for (int i = 0; i < 5; i++) {
+    int count = 3;
+    CountDownLatch latch = new CountDownLatch(count);
+    for (int i = 0; i < count; i++) {
       String _k = "key" + i;
       byte[] key = _k.getBytes();
       String _v = "val" + i;
@@ -95,16 +95,11 @@ public class ChicagoClientTest {
           assertEquals(true, chicagoClientDHT.write("colfam".getBytes(), key, val));
           assertEquals(new String(val), new String(chicagoClientDHT.read("colfam".getBytes(), key)));
           assertEquals(true, chicagoClientDHT.delete("colfam".getBytes(), key));
-//          latch.countDown();
-          count[0]++;
-
+          latch.countDown();
         }
       }).start();
     }
-
-    while (count[0] < 20) {
-      Thread.sleep(1);
-    }
+    latch.await();
   }
 
 }

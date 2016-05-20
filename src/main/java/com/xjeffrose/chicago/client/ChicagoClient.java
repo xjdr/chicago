@@ -60,26 +60,27 @@ public class ChicagoClient {
     if (single_server != null) {
     }
 
-    rendezvousHash.get(key).stream().filter(x -> x != null).forEach(xs -> {
-      try {
-        ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
-        if (cf.channel().isWritable()) {
-          cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.READ, colFam, key, null));
-          responseList.add((byte[]) connectionPoolMgr.getListener((String) xs).getResponse());
-        }
-      } catch (ChicagoClientTimeoutException e) {
-        Thread.currentThread().interrupt();
-        throw new RuntimeException(e);
-      }
-    });
+    try {
 
-    while (responseList.isEmpty()) {
-      try {
-        Thread.sleep(1);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
+      List<String> hashList = rendezvousHash.get(key);
+
+      for (String node : hashList) {
+        if (node == null) {
+
+        } else {
+          ChannelFuture cf = connectionPoolMgr.getNode(node);
+          if (cf.channel().isWritable()) {
+            cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.READ, colFam, key, null));
+            responseList.add((byte[]) connectionPoolMgr.getListener(node).getResponse());
+          }
+        }
       }
+    } catch (ChicagoClientTimeoutException e) {
+      log.error("Client Timeout", e);
+      return null;
     }
+
+
     return responseList.stream().findFirst().orElse(null);
   }
 
@@ -94,18 +95,26 @@ public class ChicagoClient {
 //      connect(single_server, Op.WRITE, key, value, listener);
     }
 
-    rendezvousHash.get(key).stream().filter(x -> x != null).forEach(xs -> {
-      try {
-        ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
-        if (cf.channel().isWritable()) {
-          cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.WRITE, colFam, key, value));
-          responseList.add(connectionPoolMgr.getListener((String) xs).getStatus());
+    try {
+
+      List<String> hashList = rendezvousHash.get(key);
+
+      for (String node : hashList) {
+        if (node == null) {
+
+        } else {
+          ChannelFuture cf = connectionPoolMgr.getNode(node);
+          if (cf.channel().isWritable()) {
+            cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.WRITE, colFam, key, value));
+            responseList.add(connectionPoolMgr.getListener(node).getStatus());
+          }
         }
-      } catch (ChicagoClientTimeoutException e) {
-        Thread.currentThread().interrupt();
-        throw new RuntimeException(e);
       }
-    });
+
+    } catch (ChicagoClientTimeoutException e) {
+      log.error("Client Timeout", e);
+      return false;
+    }
 
     return responseList.stream().allMatch(b -> b);
   }
@@ -117,19 +126,26 @@ public class ChicagoClient {
   public boolean delete(byte[] colFam, byte[] key) {
     List<Boolean> responseList = new ArrayList<>();
 
-    rendezvousHash.get(key).stream().filter(x -> x != null).forEach(xs -> {
-      try {
+    try {
 
-        ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
-        if (cf.channel().isWritable()) {
-          cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.DELETE, colFam, key, null));
-          responseList.add(connectionPoolMgr.getListener((String) xs).getStatus());
+      List<String> hashList = rendezvousHash.get(key);
+
+      for (String node : hashList) {
+        if (node == null) {
+
+        } else {
+          ChannelFuture cf = connectionPoolMgr.getNode(node);
+          if (cf.channel().isWritable()) {
+            cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.DELETE, colFam, key, null));
+            responseList.add(connectionPoolMgr.getListener(node).getStatus());
+          }
         }
-      } catch (ChicagoClientTimeoutException e) {
-        Thread.currentThread().interrupt();
-        throw new RuntimeException(e);
       }
-    });
+
+    } catch (ChicagoClientTimeoutException e) {
+      log.error("Client Timeout", e);
+      return false;
+    }
 
     return responseList.stream().allMatch(b -> b);
   }
