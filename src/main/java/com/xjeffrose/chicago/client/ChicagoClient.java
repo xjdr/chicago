@@ -58,6 +58,7 @@ public class ChicagoClient {
     List<byte[]> responseList = new ArrayList<>();
 
     if (single_server != null) {
+
     }
 
     try {
@@ -79,7 +80,6 @@ public class ChicagoClient {
       log.error("Client Timeout", e);
       return null;
     }
-
 
     return responseList.stream().findFirst().orElse(null);
   }

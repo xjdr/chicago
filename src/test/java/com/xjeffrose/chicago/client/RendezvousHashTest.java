@@ -31,35 +31,71 @@ public class RendezvousHashTest {
 
   @Test
   public void getListTest() throws Exception {
-    List<String> nodes = Lists.newArrayList();
-    for (int i = 0; i < 12; i++) {
-      nodes.add("node" + i);
-    }
-    RendezvousHash rendezvousHash1 = new RendezvousHash(strFunnel, nodes);
-    RendezvousHash rendezvousHash2 = new RendezvousHash(strFunnel, nodes);
+    for (int d = 0; d < 20000; d++) {
+      List<String> nodes = Lists.newArrayList();
+      for (int i = 0; i < 12; i++) {
+        nodes.add("node" + i);
+      }
+      RendezvousHash rendezvousHash1 = new RendezvousHash(strFunnel, nodes);
+      RendezvousHash rendezvousHash2 = new RendezvousHash(strFunnel, nodes);
 
-    for (int i = 0; i < 10; i++) {
-      byte[] x = ("key" + i).getBytes();
-      assertEquals(rendezvousHash1.get(x), rendezvousHash2.get(x));
+      for (int i = 0; i < 10; i++) {
+        byte[] x = ("key" + i).getBytes();
+        assertEquals(rendezvousHash1.get(x), rendezvousHash2.get(x));
 //      assertEquals(rendezvousHash2.getOld(x), rendezvousHash2.getList(x).get(0));
+      }
+
+      List<String> xx = rendezvousHash2.get("key1".getBytes());
+
+      rendezvousHash1.remove("node11");
+      rendezvousHash2.remove("node11");
+      assertEquals(rendezvousHash1.get("key1".getBytes()), rendezvousHash2.get("key1".getBytes()));
+      assertEquals(rendezvousHash2.get("key1".getBytes()).get(0), xx.get(1));
+
+      rendezvousHash1.add("node11");
+      rendezvousHash2.add("node11");
+      rendezvousHash1.remove("node1");
+      rendezvousHash2.remove("node1");
+
+      assertEquals(rendezvousHash1.get("key1".getBytes()), rendezvousHash2.get("key1".getBytes()));
+      assertEquals(rendezvousHash2.get("key1".getBytes()), xx);
     }
-
-    List<String> xx =  rendezvousHash2.get("key1".getBytes());
-
-    rendezvousHash1.remove("node11");
-    rendezvousHash2.remove("node11");
-    assertEquals(rendezvousHash1.get("key1".getBytes()), rendezvousHash2.get("key1".getBytes()));
-    assertEquals(rendezvousHash2.get("key1".getBytes()).get(0), xx.get(1));
-
-    rendezvousHash1.add("node11");
-    rendezvousHash2.add("node11");
-    rendezvousHash1.remove("node1");
-    rendezvousHash2.remove("node1");
-
-    assertEquals(rendezvousHash1.get("key1".getBytes()), rendezvousHash2.get("key1".getBytes()));
-    assertEquals(rendezvousHash2.get("key1".getBytes()), xx);
-
   }
+
+  @Test
+  public void getChrisListTest() throws Exception {
+    for (int d = 0; d < 20000; d++) {
+      List<String> nodes = Lists.newArrayList();
+      for (int i = 0; i < 12; i++) {
+        nodes.add("node" + i);
+      }
+      RendezvousHash rendezvousHash1 = new RendezvousHash(strFunnel, nodes);
+      RendezvousHash rendezvousHash2 = new RendezvousHash(strFunnel, nodes);
+
+      for (int i = 0; i < 10; i++) {
+        byte[] x = ("key" + i).getBytes();
+        assertEquals(rendezvousHash1.this_is_why_i_pay_chris(x), rendezvousHash2.this_is_why_i_pay_chris(x));
+//      assertEquals(rendezvousHash2.getOld(x), rendezvousHash2.getList(x).get(0));
+      }
+
+      List<String> xx = rendezvousHash2.this_is_why_i_pay_chris("key1".getBytes());
+
+      rendezvousHash1.remove("node11");
+      rendezvousHash2.remove("node11");
+      assertEquals(rendezvousHash1.this_is_why_i_pay_chris("key1".getBytes()), rendezvousHash2.this_is_why_i_pay_chris("key1".getBytes()));
+      assertEquals(rendezvousHash2.this_is_why_i_pay_chris("key1".getBytes()).get(0), xx.get(1));
+
+      rendezvousHash1.add("node11");
+      rendezvousHash2.add("node11");
+      rendezvousHash1.remove("node1");
+      rendezvousHash2.remove("node1");
+
+      assertEquals(rendezvousHash1.this_is_why_i_pay_chris("key1".getBytes()), rendezvousHash2.this_is_why_i_pay_chris("key1".getBytes()));
+      assertEquals(rendezvousHash2.this_is_why_i_pay_chris("key1".getBytes()), xx);
+
+    }
+  }
+
 
   @Test
   public void getMany() throws Exception {
