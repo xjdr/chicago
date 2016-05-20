@@ -18,10 +18,13 @@ class ChicagoListener implements Listener<byte[]> {
   private final AtomicInteger responseRefNumber = new AtomicInteger();
 
   private final Map<Integer, Map<byte[], Boolean>> responseMap = new ConcurrentHashMap<>();
-  private final XioTimer xioTimer = new XioTimer("Client Timeout Timer");
 
   int status = 0;
   int response = 0;
+
+  public ChicagoListener() {
+
+  }
 
 
   @Override
@@ -47,27 +50,29 @@ class ChicagoListener implements Listener<byte[]> {
 
 
   @Override
-  public  byte[] getResponse() {
+  public byte[] getResponse() throws ChicagoClientTimeoutException {
+    XioTimer xioTimer = new XioTimer("Client Timeout Timer");
+
     xioTimer.newTimeout(new TimerTask() {
       @Override
       public void run(Timeout timeout) throws Exception {
-        Thread.interrupted();
+        Thread.currentThread().interrupt();
         throw new ChicagoClientTimeoutException();
       }
     }, 500, TimeUnit.MILLISECONDS);
 
-    return _getResponse();
+    return _getResponse(xioTimer);
   }
 
 
-  private byte[] _getResponse() {
+  private byte[] _getResponse(XioTimer xioTimer) {
     if (responseMap.isEmpty()) {
       try {
         Thread.sleep(1);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
-      return getResponse();
+      return _getResponse(xioTimer);
     }
 
     if (responseMap.containsKey(response)) {
@@ -77,6 +82,8 @@ class ChicagoListener implements Listener<byte[]> {
       byte[] _resp = (byte[]) _respMap.keySet().toArray()[0];
 
       if (_respMap.get(_resp)) {
+
+        xioTimer.stop();
         return _resp;
       } else {
         log.error("AHHHHHHHHH response");
@@ -90,29 +97,31 @@ class ChicagoListener implements Listener<byte[]> {
       e.printStackTrace();
     }
 
-    return getResponse();  }
+    return _getResponse(xioTimer);
+  }
 
   @Override
-  public boolean getStatus() {
+  public boolean getStatus() throws ChicagoClientTimeoutException {
+    XioTimer xioTimer = new XioTimer("Client Timeout Timer");
+
     xioTimer.newTimeout(new TimerTask() {
       @Override
       public void run(Timeout timeout) throws Exception {
-        Thread.interrupted();
+        Thread.currentThread().interrupt();
         throw new ChicagoClientTimeoutException();
       }
     }, 500, TimeUnit.MILLISECONDS);
-
-    return _getStatus();
+    return _getStatus(xioTimer);
   }
 
-  private boolean _getStatus() {
+  private boolean _getStatus(XioTimer xioTimer) {
     if (statusMap.isEmpty()) {
       try {
         Thread.sleep(1);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
-      return _getStatus();
+      return _getStatus(xioTimer);
     }
 
     boolean stat;
@@ -120,6 +129,7 @@ class ChicagoListener implements Listener<byte[]> {
       stat = statusMap.get(status);
       status++;
 
+      xioTimer.stop();
       return stat;
     }
 
@@ -128,7 +138,7 @@ class ChicagoListener implements Listener<byte[]> {
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
-    return _getStatus();
+    return _getStatus(xioTimer);
   }
 
   @Override
