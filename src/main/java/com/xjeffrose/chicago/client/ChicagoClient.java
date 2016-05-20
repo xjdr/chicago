@@ -94,7 +94,7 @@ public class ChicagoClient {
     if (single_server != null) {
 //      connect(single_server, Op.WRITE, key, value, listener);
     }
-
+    long start_time = System.currentTimeMillis();
     try {
 
       List<String> hashList = rendezvousHash.get(key);
@@ -115,7 +115,8 @@ public class ChicagoClient {
       log.error("Client Timeout", e);
       return false;
     }
-
+    long diff = System.currentTimeMillis() - start_time;
+    System.out.println("ChicagoClient write time = " + diff);
     return responseList.stream().allMatch(b -> b);
   }
 

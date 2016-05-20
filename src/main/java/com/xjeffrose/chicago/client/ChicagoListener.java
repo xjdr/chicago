@@ -80,7 +80,7 @@ class ChicagoListener implements Listener<byte[]> {
     Map<byte[], Boolean> _resp = responseMap.get(currentResponse.getAndIncrement());
 
 
-    byte[] resp = (byte[]) _resp.keySet().toArray()[0];
+      byte[] resp = (byte[]) _resp.keySet().toArray()[0];
 
     if (_resp.get(resp)) {
       return resp;
