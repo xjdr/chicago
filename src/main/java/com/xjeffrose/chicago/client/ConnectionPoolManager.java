@@ -23,10 +23,12 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.log4j.Logger;
+import org.apache.log4j.net.SyslogAppender;
 
 public class ConnectionPoolManager {
   private static final Logger log = Logger.getLogger(ChicagoClient.class);
   private final static String NODE_LIST_PATH = "/chicago/node-list";
+  private static final long TIMEOUT = 1000;
 
   private final Map<String, Listener> listenerMap = new HashMap<>();
   private final Map<String, ChannelFuture> connectionMap = new HashMap<>();
@@ -55,16 +57,24 @@ public class ConnectionPoolManager {
     });
   }
 
-  public ChannelFuture getNode(String node) {
-    ChannelFuture cf = connectionMap.get(node);
-    if (cf == null) {
+  public ChannelFuture getNode(String node) throws ChicagoClientTimeoutException {
+    return _getNode(node, System.currentTimeMillis());
+  }
+
+  private ChannelFuture _getNode(String node, long startTime) throws ChicagoClientTimeoutException {
+    while (connectionMap.get(node) == null) {
+      if ((System.currentTimeMillis() - startTime) > TIMEOUT) {
+        Thread.currentThread().interrupt();
+        throw new ChicagoClientTimeoutException();
+      }
       try {
-        Thread.sleep(5);
-        return getNode(node);
+        Thread.sleep(1);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
     }
+
+    ChannelFuture cf = connectionMap.get(node);
 
     if (cf.channel().isWritable()) {
       return cf;
@@ -75,6 +85,7 @@ public class ConnectionPoolManager {
     connectionMap.remove(node);
     connect(new InetSocketAddress(node, 12000), listenerMap.get(node));
     return getNode(node);
+
   }
 
   public Listener getListener(String node) {

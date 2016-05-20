@@ -4,6 +4,7 @@ import com.netflix.curator.test.TestingServer;
 import com.xjeffrose.chicago.Chicago;
 import java.net.InetSocketAddress;
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -80,19 +81,29 @@ public class ChicagoClientTest {
 
   @Test
   public void transactManyCFConcurrent() throws Exception {
-    for (int i = 0; i < 500; i++) {
+    final int[] count = {0};
+//    CountDownLatch latch = new CountDownLatch(count);
+    for (int i = 0; i < 5; i++) {
       String _k = "key" + i;
       byte[] key = _k.getBytes();
       String _v = "val" + i;
       byte[] val = _v.getBytes();
+      int xi = i;
       new Thread(new Runnable() {
         @Override
         public void run() {
           assertEquals(true, chicagoClientDHT.write("colfam".getBytes(), key, val));
           assertEquals(new String(val), new String(chicagoClientDHT.read("colfam".getBytes(), key)));
           assertEquals(true, chicagoClientDHT.delete("colfam".getBytes(), key));
+//          latch.countDown();
+          count[0]++;
+
         }
       }).start();
+    }
+
+    while (count[0] < 20) {
+      Thread.sleep(1);
     }
   }
 

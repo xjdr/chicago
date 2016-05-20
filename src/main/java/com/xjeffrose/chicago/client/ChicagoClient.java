@@ -61,14 +61,15 @@ public class ChicagoClient {
     }
 
     rendezvousHash.get(key).stream().filter(x -> x != null).forEach(xs -> {
-      ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
-      if (cf.channel().isWritable()) {
-        cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.READ, colFam, key, null));
-        try {
+      try {
+        ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
+        if (cf.channel().isWritable()) {
+          cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.READ, colFam, key, null));
           responseList.add((byte[]) connectionPoolMgr.getListener((String) xs).getResponse());
-        } catch (ChicagoClientTimeoutException e) {
-          throw new RuntimeException(e);
         }
+      } catch (ChicagoClientTimeoutException e) {
+        Thread.currentThread().interrupt();
+        throw new RuntimeException(e);
       }
     });
 
@@ -94,14 +95,15 @@ public class ChicagoClient {
     }
 
     rendezvousHash.get(key).stream().filter(x -> x != null).forEach(xs -> {
-      ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
-      if (cf.channel().isWritable()) {
-        cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.WRITE, colFam, key, value));
-        try {
+      try {
+        ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
+        if (cf.channel().isWritable()) {
+          cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.WRITE, colFam, key, value));
           responseList.add(connectionPoolMgr.getListener((String) xs).getStatus());
-        } catch (ChicagoClientTimeoutException e) {
-          throw new RuntimeException(e);
         }
+      } catch (ChicagoClientTimeoutException e) {
+        Thread.currentThread().interrupt();
+        throw new RuntimeException(e);
       }
     });
 
@@ -116,14 +118,16 @@ public class ChicagoClient {
     List<Boolean> responseList = new ArrayList<>();
 
     rendezvousHash.get(key).stream().filter(x -> x != null).forEach(xs -> {
-      ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
-      if (cf.channel().isWritable()) {
-        cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.DELETE, colFam, key, null));
-        try {
+      try {
+
+        ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
+        if (cf.channel().isWritable()) {
+          cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.DELETE, colFam, key, null));
           responseList.add(connectionPoolMgr.getListener((String) xs).getStatus());
-        } catch (ChicagoClientTimeoutException e) {
-          throw new RuntimeException(e);
         }
+      } catch (ChicagoClientTimeoutException e) {
+        Thread.currentThread().interrupt();
+        throw new RuntimeException(e);
       }
     });
 
