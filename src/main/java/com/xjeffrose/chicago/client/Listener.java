@@ -9,9 +9,9 @@ interface Listener<T> {
 
   void onChannelError(Exception requestException);
 
-  T getResponse();
+  T getResponse() throws ChicagoClientTimeoutException;
 
-  boolean getStatus();
+  boolean getStatus() throws ChicagoClientTimeoutException;
 
   void onChannelReadComplete();
 }
