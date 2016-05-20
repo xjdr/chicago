@@ -39,7 +39,7 @@ keys as appropriate. The strategy for replica rebalancing is configurable, but b
 is it calculated in the hash. The trade off here is additional write requests to ensure correctness and durability. Other tradeoffs
 can be configured via replication strategies depending on your use case (TODO).
 
-### View
+## Views
 A view is a list of nodes kept in zookpeer for which the client will perform the local hash to attempt to set or
 retrieve a key. In it's simplest form the client receives a single view for reads and writes. For local quorum,
 cross dc replication, or whatever use case your heart desires, you can customize views (and thus the subsequent hash ring)
