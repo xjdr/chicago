@@ -83,6 +83,8 @@ public class ChicagoClient {
     try {
       c.await();
     }catch (InterruptedException e){
+      log.error(e);
+      return null;
     }
     return responseList.stream().findFirst().orElse(null);
   }
@@ -121,8 +123,9 @@ public class ChicagoClient {
     });
     try {
       c.await();
-    }catch (Exception e){
-
+    }catch (InterruptedException e){
+      log.error(e);
+      return false;
     }
     long diff = System.currentTimeMillis() - start_time;
     System.out.println("ChicagoClient write time = " + diff);
@@ -159,7 +162,8 @@ public class ChicagoClient {
     try {
       c.await();
     }catch (InterruptedException e){
-
+      log.error(e);
+      return false;
     }
 
     return responseList.stream().allMatch(b -> b);
