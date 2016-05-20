@@ -35,7 +35,7 @@ public class ChicagoClientTest {
 //    chicagoClientDHT = new ChicagoClient("10.22.100.183:2181");
 //    chicagoClientDHT = new ChicagoClient(testingServer.getConnectString());
 //    chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
-
+//      chicagoClientDHT = new ChicagoClient("10.22.100.183:2181,10.25.180.234:2181,10.22.103.86:2181,10.25.180.247:2181,10.25.69.226:2181/chicago");
   }
 
   @Test
