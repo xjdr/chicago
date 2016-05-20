@@ -1,9 +1,6 @@
 package com.xjeffrose.chicago.loadTest;
 
-import com.netflix.curator.test.TestingServer;
-import com.xjeffrose.chicago.Chicago;
 import com.xjeffrose.chicago.client.ChicagoClient;
-import java.net.InetSocketAddress;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -17,38 +14,51 @@ public class ChicagoLoadTest {
 
   @BeforeClass
   static public void setupFixture() throws Exception {
-    chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181/chicago");
+    //chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
     //chicagoClientDHT = new ChicagoClient("10.22.100.183:2181/chicago");
   }
 
   @Test
   public void writeMany() throws Exception {
-    for (int i = 0; i < 1; i++) {
+    chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
+    long start_time = System.currentTimeMillis();
+    for (int i = 0; i < 10; i++) {
       String _k = "key" + i;
       byte[] key = _k.getBytes();
       String _v = "val" + i;
       byte[] val = _v.getBytes();
       assertEquals(true, chicagoClientDHT.write(key, val));
     }
+    long diff = System.currentTimeMillis() - start_time;
+    System.out.println("total time = " + diff);
+    System.out.println("Avg per write = " + diff/10);
   }
 
   @Test
   public void readMany() throws Exception {
-    for (int i = 0; i < 600; i++) {
+    chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
+    long start_time = System.currentTimeMillis();
+    for (int i = 0; i < 10; i++) {
       String _k = "key" + i;
       byte[] key = _k.getBytes();
       String _v = "val" + i;
       byte[] val = _v.getBytes();
       assertEquals(new String(val), new String(chicagoClientDHT.read(key)));
     }
+    long diff = System.currentTimeMillis() - start_time;
+    System.out.println("total time = " + diff);
+    System.out.println("Avg per read = " + ((float)diff/10));
   }
 
     @Test
     public void deleteMany() throws Exception {
-      for (int i = 0; i < 10; i++) {
-        String _k = "sm" + i;
+      chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
+      long start_time = System.currentTimeMillis();
+      for (int i = 0; i < 5; i++) {
+        String _k = "key" + i;
         byte[] key = _k.getBytes();
         assertEquals(true, chicagoClientDHT.delete(key));
       }
+      System.out.println(System.currentTimeMillis() - start_time);
     }
 }
