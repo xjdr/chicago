@@ -83,23 +83,7 @@ public class ChicagoClientTest {
 
   @Test
   public void transactManyCFConcurrecnt() throws Exception {
-    for (int i = 0; i < 200; i++) {
-      String _k = "key" + i;
-      byte[] key = _k.getBytes();
-      String _v = "val" + i;
-      byte[] val = _v.getBytes();
-      new Thread(new Runnable() {
-        @Override
-        public void run() {
-          assertEquals(true, chicagoClientDHT.write("colfam".getBytes(), key, val));
-          assertEquals(new String(val), new String(chicagoClientDHT.read("colfam".getBytes(), key)));
-//     chicagoClientDHT.read("colfam".getBytes(), key);
-          assertEquals(true, chicagoClientDHT.delete("colfam".getBytes(), key));
-        }
-      }).start();
-    }
-
-    for (int i = 0; i < 200; i++) {
+    for (int i = 0; i < 100; i++) {
       String _k = "key" + i;
       byte[] key = _k.getBytes();
       String _v = "val" + i;
@@ -115,6 +99,5 @@ public class ChicagoClientTest {
       }).start();
     }
   }
-
 
 }
