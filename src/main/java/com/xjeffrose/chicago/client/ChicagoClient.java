@@ -111,6 +111,7 @@ public class ChicagoClient {
           ChannelFuture cf = connectionPoolMgr.getNode(node);
           if (cf.channel().isWritable()) {
             cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.WRITE, colFam, key, value));
+            System.out.println("node = "+node);
             responseList.add(connectionPoolMgr.getListener(node).getStatus());
             c.countDown();
           }
