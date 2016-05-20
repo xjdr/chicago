@@ -1,17 +1,15 @@
 package com.xjeffrose.chicago.client;
 
 import com.google.common.collect.ImmutableMap;
-import com.xjeffrose.xio.core.XioTimer;
-import io.netty.util.Timeout;
-import io.netty.util.TimerTask;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.log4j.Logger;
 
 class ChicagoListener implements Listener<byte[]> {
   private static final Logger log = Logger.getLogger(ChicagoListener.class);
+  private static final long TIMEOUT = 1000;
+
 
   private final AtomicInteger statusRefNumber = new AtomicInteger();
   private final Map<Integer, Boolean> statusMap = new ConcurrentHashMap<>();
@@ -19,8 +17,8 @@ class ChicagoListener implements Listener<byte[]> {
 
   private final Map<Integer, Map<byte[], Boolean>> responseMap = new ConcurrentHashMap<>();
 
-  int status = 0;
-  int response = 0;
+  int currentStatus = 0;
+  int currentResponse = 0;
 
   public ChicagoListener() {
 
@@ -51,94 +49,83 @@ class ChicagoListener implements Listener<byte[]> {
 
   @Override
   public byte[] getResponse() throws ChicagoClientTimeoutException {
-    XioTimer xioTimer = new XioTimer("Client Timeout Timer");
-
-    xioTimer.newTimeout(new TimerTask() {
-      @Override
-      public void run(Timeout timeout) throws Exception {
-        Thread.currentThread().interrupt();
-        throw new ChicagoClientTimeoutException();
-      }
-    }, 500, TimeUnit.MILLISECONDS);
-
-    return _getResponse(xioTimer);
+    return _getResponse(System.currentTimeMillis());
   }
 
-
-  private byte[] _getResponse(XioTimer xioTimer) {
-    if (responseMap.isEmpty()) {
+  private byte[] _getResponse(long startTime) throws ChicagoClientTimeoutException {
+    while (responseMap.isEmpty()) {
+      if ((System.currentTimeMillis() - startTime) > TIMEOUT) {
+//        Thread.currentThread().interrupt();
+        throw new ChicagoClientTimeoutException();
+      }
       try {
         Thread.sleep(1);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
-      return _getResponse(xioTimer);
     }
 
-    if (responseMap.containsKey(response)) {
-      Map<byte[], Boolean> _respMap = responseMap.get(response);
-      response++;
-
-      byte[] _resp = (byte[]) _respMap.keySet().toArray()[0];
-
-      if (_respMap.get(_resp)) {
-
-        xioTimer.stop();
-        return _resp;
-      } else {
-        log.error("AHHHHHHHHH response");
-//      throw new ChicagoClientException();
+    while (!responseMap.containsKey(currentResponse)) {
+      if ((System.currentTimeMillis() - startTime) > TIMEOUT) {
+//        Thread.currentThread().interrupt();
+        throw new ChicagoClientTimeoutException();
+      }
+      try {
+        Thread.sleep(1);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
       }
     }
 
-    try {
-      Thread.sleep(1);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
+    Map<byte[], Boolean> _resp = responseMap.get(currentResponse);
+    currentResponse++;
+
+    byte[] resp = (byte[]) _resp.keySet().toArray()[0];
+
+    if (_resp.get(resp)) {
+      return resp;
+    } else {
+      log.error("Invalid Response returned");
+      return null;
     }
 
-    return _getResponse(xioTimer);
   }
+
 
   @Override
   public boolean getStatus() throws ChicagoClientTimeoutException {
-    XioTimer xioTimer = new XioTimer("Client Timeout Timer");
-
-    xioTimer.newTimeout(new TimerTask() {
-      @Override
-      public void run(Timeout timeout) throws Exception {
-        Thread.currentThread().interrupt();
-        throw new ChicagoClientTimeoutException();
-      }
-    }, 500, TimeUnit.MILLISECONDS);
-    return _getStatus(xioTimer);
+    return _getStatus(System.currentTimeMillis());
   }
 
-  private boolean _getStatus(XioTimer xioTimer) {
-    if (statusMap.isEmpty()) {
+  private boolean _getStatus(long startTime) throws ChicagoClientTimeoutException {
+    while (statusMap.isEmpty()) {
+      if ((System.currentTimeMillis() - startTime) > TIMEOUT) {
+//        Thread.currentThread().interrupt();
+        throw new ChicagoClientTimeoutException();
+      }
       try {
         Thread.sleep(1);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
-      return _getStatus(xioTimer);
     }
 
-    boolean stat;
-    if (statusMap.containsKey(status)) {
-      stat = statusMap.get(status);
-      status++;
-
-      xioTimer.stop();
-      return stat;
+    while (!statusMap.containsKey(currentStatus)) {
+      if ((System.currentTimeMillis() - startTime) > TIMEOUT) {
+//        Thread.currentThread().interrupt();
+        throw new ChicagoClientTimeoutException();
+      }
+      try {
+        Thread.sleep(1);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
     }
 
-    try {
-      Thread.sleep(1);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
-    return _getStatus(xioTimer);
+    boolean resp = statusMap.get(currentStatus);
+    currentStatus++;
+
+    return resp;
   }
 
   @Override

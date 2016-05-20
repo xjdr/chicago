@@ -17,7 +17,7 @@ Chicago is optimized for low latency, high volume writes. Replicated writes shou
 3 - 5ms range at millions of objects a second (with the appropriate configuration) + network latency. Chicago
 can be implemented for local DC writes and cross DC reads by configuring the appropriate "Views" for the client.
 
-##Replications
+## Replications
 
 ### Write Replication
 By default, Chicago will write your data to 3 servers for each request in parallel. Each request is hashed and checksummed
@@ -27,19 +27,19 @@ If any of the 3 write requests return unsuccessful, the write will be retried (t
 or the retry count is exceeded. If the retry count is exceeded, the keys will be deleted from the replica set and the operation
 will return unsuccessful (TODO).
 
-## Read Replication
+### Read Replication
 With the assumption that correctness is enforced on write, read requests are sent out to each node in the replica set
 simultaneously and the first successful response is returned. Reads should be successful as long as one of the nodes in
 the replica set is available.
 
-## Key re-balancing on Node addition or Removal
+### Key re-balancing on Node addition or Removal
 Any time a node is added or removed, each server will perform an out of band operation to rebalance its keys. To accomplish this,
 each server will read all the keys from its local db, calculate the hash for the new node list (the view) and then redistribute the
 keys as appropriate. The strategy for replica rebalancing is configurable, but by default keys will be re-written by each node as
 is it calculated in the hash. The trade off here is additional write requests to ensure correctness and durability. Other tradeoffs
 can be configured via replication strategies depending on your use case (TODO).
 
-##View
+## Views
 A view is a list of nodes kept in zookpeer for which the client will perform the local hash to attempt to set or
 retrieve a key. In it's simplest form the client receives a single view for reads and writes. For local quorum,
 cross dc replication, or whatever use case your heart desires, you can customize views (and thus the subsequent hash ring)
