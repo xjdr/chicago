@@ -47,7 +47,6 @@ public class ChicagoClientTest {
       byte[] val = _v.getBytes();
       assertEquals(true, chicagoClientDHT.write(key, val));
       assertEquals(new String(val), new String(chicagoClientDHT.read(key)));
-//      chicagoClientDHT.read(key);
       assertEquals(true, chicagoClientDHT.delete(key));
     }
   }
@@ -61,7 +60,6 @@ public class ChicagoClientTest {
       byte[] val = _v.getBytes();
       assertEquals(true, chicagoClientDHT.write(key, val));
       assertEquals(new String(val), new String(chicagoClientDHT.read(key)));
-//      chicagoClientDHT.read(key);
       assertEquals(true, chicagoClientDHT.delete(key));
     }
   }
@@ -75,15 +73,14 @@ public class ChicagoClientTest {
       byte[] val = _v.getBytes();
       assertEquals(true, chicagoClientDHT.write("colfam".getBytes(), key, val));
       assertEquals(new String(val), new String(chicagoClientDHT.read("colfam".getBytes(), key)));
-//     chicagoClientDHT.read("colfam".getBytes(), key);
       assertEquals(true, chicagoClientDHT.delete("colfam".getBytes(), key));
 
     }
   }
 
   @Test
-  public void transactManyCFConcurrecnt() throws Exception {
-    for (int i = 0; i < 100; i++) {
+  public void transactManyCFConcurrent() throws Exception {
+    for (int i = 0; i < 500; i++) {
       String _k = "key" + i;
       byte[] key = _k.getBytes();
       String _v = "val" + i;
@@ -93,7 +90,6 @@ public class ChicagoClientTest {
         public void run() {
           assertEquals(true, chicagoClientDHT.write("colfam".getBytes(), key, val));
           assertEquals(new String(val), new String(chicagoClientDHT.read("colfam".getBytes(), key)));
-//     chicagoClientDHT.read("colfam".getBytes(), key);
           assertEquals(true, chicagoClientDHT.delete("colfam".getBytes(), key));
         }
       }).start();

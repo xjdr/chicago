@@ -12,7 +12,7 @@ class ChicagoListener implements Listener<byte[]> {
 
 
   private final AtomicInteger statusRefNumber = new AtomicInteger();
-  private final Map<Integer, Boolean> statusMap = new ConcurrentHashMap<>();
+  private final Map<Integer, Boolean> statusMap = new ConcurrentHashMap<>(); 
   private final AtomicInteger responseRefNumber = new AtomicInteger();
 
   private final Map<Integer, Map<byte[], Boolean>> responseMap = new ConcurrentHashMap<>();
@@ -55,7 +55,6 @@ class ChicagoListener implements Listener<byte[]> {
   private byte[] _getResponse(long startTime) throws ChicagoClientTimeoutException {
     while (responseMap.isEmpty()) {
       if ((System.currentTimeMillis() - startTime) > TIMEOUT) {
-//        Thread.currentThread().interrupt();
         throw new ChicagoClientTimeoutException();
       }
       try {
@@ -67,7 +66,6 @@ class ChicagoListener implements Listener<byte[]> {
 
     while (!responseMap.containsKey(currentResponse)) {
       if ((System.currentTimeMillis() - startTime) > TIMEOUT) {
-//        Thread.currentThread().interrupt();
         throw new ChicagoClientTimeoutException();
       }
       try {
@@ -100,7 +98,6 @@ class ChicagoListener implements Listener<byte[]> {
   private boolean _getStatus(long startTime) throws ChicagoClientTimeoutException {
     while (statusMap.isEmpty()) {
       if ((System.currentTimeMillis() - startTime) > TIMEOUT) {
-//        Thread.currentThread().interrupt();
         throw new ChicagoClientTimeoutException();
       }
       try {
@@ -112,7 +109,6 @@ class ChicagoListener implements Listener<byte[]> {
 
     while (!statusMap.containsKey(currentStatus)) {
       if ((System.currentTimeMillis() - startTime) > TIMEOUT) {
-//        Thread.currentThread().interrupt();
         throw new ChicagoClientTimeoutException();
       }
       try {
@@ -128,8 +124,10 @@ class ChicagoListener implements Listener<byte[]> {
     return resp;
   }
 
+
   @Override
   public void onChannelReadComplete() {
+
   }
 
 

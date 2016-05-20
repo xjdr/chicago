@@ -43,7 +43,6 @@ public class ChicagoClient {
     this.clientNodeWatcher = new ClientNodeWatcher();
     clientNodeWatcher.refresh(zkClient, rendezvousHash);
     this.connectionPoolMgr = new ConnectionPoolManager(zkClient);
-//    refreshPool();
   }
 
 
@@ -69,12 +68,17 @@ public class ChicagoClient {
           responseList.add((byte[]) connectionPoolMgr.getListener((String) xs).getResponse());
         } catch (ChicagoClientTimeoutException e) {
           throw new RuntimeException(e);
-
         }
       }
-
     });
 
+    while (responseList.isEmpty()) {
+      try {
+        Thread.sleep(1);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
     return responseList.stream().findFirst().orElse(null);
   }
 
@@ -93,14 +97,11 @@ public class ChicagoClient {
       ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
       if (cf.channel().isWritable()) {
         cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.WRITE, colFam, key, value));
-
         try {
           responseList.add(connectionPoolMgr.getListener((String) xs).getStatus());
         } catch (ChicagoClientTimeoutException e) {
           throw new RuntimeException(e);
         }
-
-
       }
     });
 
@@ -118,15 +119,12 @@ public class ChicagoClient {
       ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
       if (cf.channel().isWritable()) {
         cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.DELETE, colFam, key, null));
-
         try {
           responseList.add(connectionPoolMgr.getListener((String) xs).getStatus());
         } catch (ChicagoClientTimeoutException e) {
           throw new RuntimeException(e);
         }
-
       }
-
     });
 
     return responseList.stream().allMatch(b -> b);
