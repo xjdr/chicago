@@ -21,15 +21,15 @@ public class ChicagoClientTest {
 
   @BeforeClass
   static public void setupFixture() throws Exception {
-    testingServer = new TestingServer(2182);
-    chicago1 = new Chicago();
-    chicago1.main(new String[]{"", "src/test/resources/test1.conf"});
-    chicago2 = new Chicago();
-    chicago2.main(new String[]{"", "src/test/resources/test2.conf"});
-    chicago3 = new Chicago();
-    chicago3.main(new String[]{"", "src/test/resources/test3.conf"});
-    chicago4 = new Chicago();
-    chicago4.main(new String[]{"", "src/test/resources/test4.conf"});
+//    testingServer = new TestingServer(2182);
+//    chicago1 = new Chicago();
+//    chicago1.main(new String[]{"", "src/test/resources/test1.conf"});
+//    chicago2 = new Chicago();
+//    chicago2.main(new String[]{"", "src/test/resources/test2.conf"});
+//    chicago3 = new Chicago();
+//    chicago3.main(new String[]{"", "src/test/resources/test3.conf"});
+//    chicago4 = new Chicago();
+//    chicago4.main(new String[]{"", "src/test/resources/test4.conf"});
 //    chicagoClientSingle = new ChicagoClient(new InetSocketAddress("127.0.0.1", 12000));
     chicagoClientDHT = new ChicagoClient("10.25.160.234:2181");
 //    chicagoClientDHT = new ChicagoClient("10.22.100.183:2181");
@@ -39,20 +39,22 @@ public class ChicagoClientTest {
   }
 
   @Test
-  public void readManyColFam() throws Exception {
-    for (int i = 0; i < 2; i++) {
+  public void transactOnce() throws Exception {
+    for (int i = 0; i < 1; i++) {
       String _k = "key" + i;
       byte[] key = _k.getBytes();
       String _v = "val" + i;
       byte[] val = _v.getBytes();
-      assertEquals(new String(val), new String(chicagoClientDHT.read("colfam".getBytes(), key)));
+      assertEquals(true, chicagoClientDHT.write(key, val));
+      assertEquals(new String(val), new String(chicagoClientDHT.read(key)));
+//      chicagoClientDHT.read(key);
+      assertEquals(true, chicagoClientDHT.delete(key));
     }
   }
 
-
   @Test
   public void transactMany() throws Exception {
-    for (int i = 0; i < 200; i++) {
+    for (int i = 0; i < 20; i++) {
       String _k = "key" + i;
       byte[] key = _k.getBytes();
       String _v = "val" + i;
@@ -66,7 +68,7 @@ public class ChicagoClientTest {
 
   @Test
   public void transactManyCF() throws Exception {
-    for (int i = 0; i < 2000; i++) {
+    for (int i = 0; i < 20; i++) {
       String _k = "key" + i;
       byte[] key = _k.getBytes();
       String _v = "val" + i;
@@ -78,5 +80,41 @@ public class ChicagoClientTest {
 
     }
   }
+
+  @Test
+  public void transactManyCFConcurrecnt() throws Exception {
+    for (int i = 0; i < 200; i++) {
+      String _k = "key" + i;
+      byte[] key = _k.getBytes();
+      String _v = "val" + i;
+      byte[] val = _v.getBytes();
+      new Thread(new Runnable() {
+        @Override
+        public void run() {
+          assertEquals(true, chicagoClientDHT.write("colfam".getBytes(), key, val));
+          assertEquals(new String(val), new String(chicagoClientDHT.read("colfam".getBytes(), key)));
+//     chicagoClientDHT.read("colfam".getBytes(), key);
+          assertEquals(true, chicagoClientDHT.delete("colfam".getBytes(), key));
+        }
+      }).start();
+    }
+
+    for (int i = 0; i < 200; i++) {
+      String _k = "key" + i;
+      byte[] key = _k.getBytes();
+      String _v = "val" + i;
+      byte[] val = _v.getBytes();
+      new Thread(new Runnable() {
+        @Override
+        public void run() {
+          assertEquals(true, chicagoClientDHT.write("colfam".getBytes(), key, val));
+          assertEquals(new String(val), new String(chicagoClientDHT.read("colfam".getBytes(), key)));
+//     chicagoClientDHT.read("colfam".getBytes(), key);
+          assertEquals(true, chicagoClientDHT.delete("colfam".getBytes(), key));
+        }
+      }).start();
+    }
+  }
+
 
 }
