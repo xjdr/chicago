@@ -20,17 +20,22 @@ public class DBRead {
     byte[] key = _k.getBytes();
     String _v = "val";
     byte[] val = _v.getBytes();
-    //assertEquals(true, chicagoClientDHT.write(key, val));
+    assertEquals(true, chicagoClientDHT.write(key, val));
     //assertEquals("val2", new String(chicagoClientDHT.read(key)));
-    System.out.println("On 10.24.25.188, value = "+ getData("10.24.25.188",_k));
-    System.out.println("On 10.25.145.56, value = "+getData("10.25.145.56",_k));
-    System.out.println("On 10.24.25.189, value = "+getData("10.24.25.189",_k));
-    System.out.println("On 10.24.33.123, value = "+ getData("10.24.33.123",_k));
+    System.out.println("On 10.24.25.188, value = " + getData("10.24.25.188", _k));
+    System.out.println("On 10.25.145.56, value = " + getData("10.25.145.56", _k));
+    System.out.println("On 10.24.25.189, value = " + getData("10.24.25.189", _k));
+    System.out.println("On 10.24.33.123, value = " + getData("10.24.33.123", _k));
   }
 
   public String getData(String hostname, String key){
     ChicagoClient cc = new ChicagoClient(new InetSocketAddress(hostname, 12000));
-    byte[] ret = cc.read(key.getBytes());
+    byte[] ret=null;
+    try {
+      ret = cc.read(key.getBytes());
+    }catch (Exception e){
+      System.out.println(e.getCause());
+    }
     String result = (ret == null)?"":new String(ret);
     return result;
   }

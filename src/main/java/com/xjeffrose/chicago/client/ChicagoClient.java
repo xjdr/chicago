@@ -84,10 +84,7 @@ public class ChicagoClient {
 
   public boolean write(byte[] colFam, byte[] key, byte[] value) {
     List<Boolean> responseList = new ArrayList<>();
-
-    if (single_server != null) {
-//      connect(single_server, Op.WRITE, key, value, listener);
-    }
+    
     long start_time = System.currentTimeMillis();
     rendezvousHash.get(key).stream().filter(x -> x != null).forEach(xs -> {
       ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
