@@ -52,17 +52,25 @@ public class ChicagoClient {
   }
 
   public byte[] read(byte[] key) {
-    return read("default".getBytes(), key);
+    return read("chicago".getBytes(), key);
   }
 
   public byte[] read(byte[] colFam, byte[] key) {
     List<byte[]> responseList = new ArrayList<>();
 
-    rendezvousHash.get(key).stream().filter(x -> x!=null).forEach(xs -> {
+    if (single_server != null) {
+    }
+
+    rendezvousHash.get(key).stream().filter(x -> x != null).forEach(xs -> {
       ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
       if (cf.channel().isWritable()) {
         cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.READ, colFam, key, null));
-        responseList.add((byte[]) connectionPoolMgr.getListener((String) xs).getResponse());
+        try {
+          responseList.add((byte[]) connectionPoolMgr.getListener((String) xs).getResponse());
+        } catch (ChicagoClientTimeoutException e) {
+          throw new RuntimeException(e);
+
+        }
       }
 
     });
@@ -71,35 +79,50 @@ public class ChicagoClient {
   }
 
   public boolean write(byte[] key, byte[] value) {
-    return write("default".getBytes(), key, value);
+    return write("chicago".getBytes(), key, value);
   }
 
-    public boolean write(byte[] colFam, byte[] key, byte[] value) {
+  public boolean write(byte[] colFam, byte[] key, byte[] value) {
     List<Boolean> responseList = new ArrayList<>();
+
+    if (single_server != null) {
+//      connect(single_server, Op.WRITE, key, value, listener);
+    }
     long start_time = System.currentTimeMillis();
-      rendezvousHash.get(key).stream().filter(x -> x!=null).forEach(xs -> {
-        ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
-        if (cf.channel().isWritable()) {
-          cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.WRITE, colFam, key, value));
+    rendezvousHash.get(key).stream().filter(x -> x != null).forEach(xs -> {
+      ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
+      if (cf.channel().isWritable()) {
+        cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.WRITE, colFam, key, value));
+        try {
           responseList.add(connectionPoolMgr.getListener((String) xs).getStatus());
+        } catch (ChicagoClientTimeoutException e) {
+          throw new RuntimeException(e);
         }
+
+      }
     });
     System.out.println("return response in "+ (System.currentTimeMillis() - start_time));
     return responseList.stream().allMatch(b -> b);
   }
 
   public boolean delete(byte[] key) {
-    return delete("default".getBytes(), key);
+    return delete("chicago".getBytes(), key);
   }
 
-    public boolean delete(byte[] colFam, byte[] key) {
+  public boolean delete(byte[] colFam, byte[] key) {
     List<Boolean> responseList = new ArrayList<>();
 
     rendezvousHash.get(key).stream().filter(x -> x != null).forEach(xs -> {
       ChannelFuture cf = connectionPoolMgr.getNode((String) xs);
       if (cf.channel().isWritable()) {
         cf.channel().writeAndFlush(new DefaultChicagoMessage(Op.DELETE, colFam, key, null));
-        responseList.add(connectionPoolMgr.getListener((String) xs).getStatus());
+
+        try {
+          responseList.add(connectionPoolMgr.getListener((String) xs).getStatus());
+        } catch (ChicagoClientTimeoutException e) {
+          throw new RuntimeException(e);
+        }
+
       }
 
     });

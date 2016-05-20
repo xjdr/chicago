@@ -42,21 +42,21 @@ public class ChicagoProcessor implements XioProcessor {
 
       switch (finalMsg.getOp()) {
         case READ:
-          readResponse = dbManager.read(finalMsg.getKey());
+          readResponse = dbManager.read(finalMsg.getColFam(), finalMsg.getKey());
           if (readResponse != null) {
             status = true;
           }
           break;
         case WRITE:
-          status = dbManager.write(finalMsg.getKey(), finalMsg.getVal());
+          status = dbManager.write(finalMsg.getColFam(), finalMsg.getKey(), finalMsg.getVal());
           break;
         case DELETE:
-          status = dbManager.delete(finalMsg.getKey());
+          status = dbManager.delete(finalMsg.getColFam(), finalMsg.getKey());
         default:
           break;
       }
 
-      reqCtx.setContextData(reqCtx.getConnectionId(), new DefaultChicagoMessage(Op.fromInt(3), "x".getBytes(), Boolean.toString(status).getBytes(), readResponse) );
+      reqCtx.setContextData(reqCtx.getConnectionId(), new DefaultChicagoMessage(Op.fromInt(3), finalMsg.getColFam(), Boolean.toString(status).getBytes(), readResponse) );
       return true;
     });
   }

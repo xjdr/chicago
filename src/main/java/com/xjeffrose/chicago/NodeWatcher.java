@@ -50,11 +50,11 @@ public class NodeWatcher {
 
   private void redistributeKeys() {
     RendezvousHash rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), zkClient.list(NODE_LIST_PATH));
-    dbManager.getKeys(new ReadOptions()).forEach(xs -> {
-      rendezvousHash.get(xs).stream()
-          .filter(xxs -> xxs == config.getDBBindIP())
-          .forEach(xxs -> chicagoClient.write(xs, dbManager.read(xs)));
-    });
+//    dbManager.getKeys(new ReadOptions()).forEach(xs -> {
+//      rendezvousHash.get(xs).stream()
+//          .filter(xxs -> xxs == config.getDBBindIP())
+//          .forEach(xxs -> chicagoClient.write(xs, dbManager.read(finalMsg.getColFam(), xs)));
+//    });
   }
 
   private void nodeAdded() {
