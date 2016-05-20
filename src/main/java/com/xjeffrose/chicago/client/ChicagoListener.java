@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 
 class ChicagoListener implements Listener<byte[]> {
   private static final Logger log = Logger.getLogger(ChicagoListener.class);
-  private static final long TIMEOUT = 2000;
+  private static final long TIMEOUT = 1000;
 
 
   private final AtomicInteger statusRefNumber = new AtomicInteger();
