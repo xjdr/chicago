@@ -19,4 +19,6 @@ hs_err_pid*
 dependency-reduced-pom.xml
 pom.xml.releaseBackup
 release.properties
+.ensime/
+.ensime_cache/
 
