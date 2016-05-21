@@ -19,8 +19,9 @@ public class ChicagoClient {
   private static final Logger log = Logger.getLogger(ChicagoClient.class);
   private final static String NODE_LIST_PATH = "/chicago/node-list";
   private static final long TIMEOUT = 1000;
+  private static boolean TIMEOUT_ENABLED = false;
 
-  private final ExecutorService exe = Executors.newFixedThreadPool(40);
+  private final ExecutorService exe = Executors.newFixedThreadPool(20);
 
   private final InetSocketAddress single_server;
   private final RendezvousHash rendezvousHash;
@@ -195,7 +196,7 @@ public class ChicagoClient {
 
 
     while (responseList.size() < 3) {
-      if ((System.currentTimeMillis() - startTime) > TIMEOUT) {
+      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
         Thread.currentThread().interrupt();
         throw new ChicagoClientTimeoutException();
       }
@@ -261,7 +262,7 @@ public class ChicagoClient {
     }
 
         while (responseList.size() < 3) {
-          if ((System.currentTimeMillis() - startTime) > TIMEOUT) {
+          if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
             Thread.currentThread().interrupt();
             throw new ChicagoClientTimeoutException();
           }

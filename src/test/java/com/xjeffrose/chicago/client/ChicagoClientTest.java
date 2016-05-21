@@ -84,29 +84,54 @@ public class ChicagoClientTest {
   public void transactManyCFConcurrent() throws Exception {
     ExecutorService exe = Executors.newFixedThreadPool(4);
     int count = 20;
-    CountDownLatch latch = new CountDownLatch(count);
-    for (int i = 0; i < count; i++) {
-      String _k = "key" + i;
-      byte[] key = _k.getBytes();
-      String _v = "val" + i;
-      byte[] val = _v.getBytes();
-      exe.execute(new Runnable() {
-        @Override
-        public void run() {
-          try {
+    CountDownLatch latch = new CountDownLatch(count * 2);
+
+    exe.execute(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          for (int i = 0; i < count; i++) {
+            String _k = "key" + i;
+            byte[] key = _k.getBytes();
+            String _v = "val" + i;
+            byte[] val = _v.getBytes();
+
             assertEquals(true, chicagoClientDHT.write("colfam".getBytes(), key, val));
 
-          assertEquals(new String(val), new String(chicagoClientDHT.read("colfam".getBytes(), key)));
-          assertEquals(true, chicagoClientDHT.delete("colfam".getBytes(), key));
-          latch.countDown();
-          } catch (ChicagoClientTimeoutException e) {
-            e.printStackTrace();
+            assertEquals(new String(val), new String(chicagoClientDHT.read("colfam".getBytes(), key)));
+            assertEquals(true, chicagoClientDHT.delete("colfam".getBytes(), key));
+            latch.countDown();
           }
+        } catch (ChicagoClientTimeoutException e) {
+          e.printStackTrace();
         }
-      });
-    }
+      }
+    });
 
-    latch.await(10000, TimeUnit.MILLISECONDS);
+    exe.execute(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          for (int i = 0; i < count; i++) {
+            String _k = "key" + i;
+            byte[] key = _k.getBytes();
+            String _v = "val" + i;
+            byte[] val = _v.getBytes();
+
+            assertEquals(true, chicagoClientDHT.write("colfam".getBytes(), key, val));
+
+            assertEquals(new String(val), new String(chicagoClientDHT.read("colfam".getBytes(), key)));
+            assertEquals(true, chicagoClientDHT.delete("colfam".getBytes(), key));
+            latch.countDown();
+          }
+        } catch (ChicagoClientTimeoutException e) {
+          e.printStackTrace();
+        }
+      }
+    });
+
+
+    latch.await(100000, TimeUnit.MILLISECONDS);
   }
 
 }

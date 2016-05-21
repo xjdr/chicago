@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 class ChicagoListener implements Listener<byte[]> {
   private static final Logger log = Logger.getLogger(ChicagoListener.class);
   private static final long TIMEOUT = 1000;
+  private static final boolean TIMEOUT_ENABLED = false;
 
   private final ConcurrentLinkedDeque<UUID> reqIds = new ConcurrentLinkedDeque<>();
   private final ConcurrentLinkedDeque<UUID> messageIds = new ConcurrentLinkedDeque<>();
@@ -48,8 +49,8 @@ class ChicagoListener implements Listener<byte[]> {
 
   private byte[] _getResponse(UUID id, long startTime) throws ChicagoClientTimeoutException {
     while (Collections.disjoint(reqIds, messageIds)) {
-      if ((System.currentTimeMillis() - startTime) > TIMEOUT) {
-//        Thread.currentThread().interrupt();
+      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
+        Thread.currentThread().interrupt();
         throw new ChicagoClientTimeoutException();
       }
       try {
@@ -61,8 +62,8 @@ class ChicagoListener implements Listener<byte[]> {
 
     while (!responseMap.containsKey(id)) {
       try {
-        if ((System.currentTimeMillis() - startTime) > TIMEOUT) {
-//        Thread.currentThread().interrupt();
+        if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
+        Thread.currentThread().interrupt();
           throw new ChicagoClientTimeoutException();
         }
         Thread.sleep(1);
@@ -89,8 +90,8 @@ class ChicagoListener implements Listener<byte[]> {
 
   private boolean _getStatus(UUID id, long startTime) throws ChicagoClientTimeoutException {
     while (Collections.disjoint(reqIds, messageIds)) {
-      if ((System.currentTimeMillis() - startTime) > TIMEOUT) {
-//        Thread.currentThread().interrupt();
+      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
+        Thread.currentThread().interrupt();
         throw new ChicagoClientTimeoutException();
       }
       try {
@@ -102,8 +103,8 @@ class ChicagoListener implements Listener<byte[]> {
 
     while (!responseMap.containsKey(id)) {
       try {
-        if ((System.currentTimeMillis() - startTime) > TIMEOUT) {
-//        Thread.currentThread().interrupt();
+        if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
+        Thread.currentThread().interrupt();
           throw new ChicagoClientTimeoutException();
         }
         Thread.sleep(1);
