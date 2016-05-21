@@ -16,15 +16,15 @@ class ChicagoClientHandler extends SimpleChannelInboundHandler<ChicagoMessage> {
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-    log.error("Request Failure", cause);
-    ctx.fireExceptionCaught(cause);
+//    log.error("Request Failure", cause);
+//    ctx.fireExceptionCaught(cause);
   }
 
 
   @Override
   public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
     listener.onChannelReadComplete();
-    ctx.fireChannelReadComplete();
+//    ctx.fireChannelReadComplete();
   }
 
   @Override
