@@ -24,7 +24,7 @@ public class ChicagoProcessorTest {
     byte[] key = "new_key".getBytes();
     byte[] val = "new_value".getBytes();
 
-    ListenableFuture<Boolean> processFuture = processor.process(new TestCTX(), new DefaultChicagoMessage(Op.fromInt(1), colFam, key, val), new RequestContext() {
+    ListenableFuture<Boolean> processFuture = processor.process(new TestCTX(), new DefaultChicagoMessage(UUID.randomUUID(), Op.fromInt(1), colFam, key, val), new RequestContext() {
       @Override
       public ConnectionContext getConnectionContext() {
         return null;

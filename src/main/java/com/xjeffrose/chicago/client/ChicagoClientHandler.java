@@ -29,11 +29,6 @@ class ChicagoClientHandler extends SimpleChannelInboundHandler<ChicagoMessage> {
 
   @Override
   protected void channelRead0(ChannelHandlerContext ctx, ChicagoMessage chicagoMessage) throws Exception {
-    if (chicagoMessage.decoderResult().isFailure()) {
-      log.error("Request Failure");
-      listener.onResponseReceived(chicagoMessage.getVal(), false);
-    } else {
-      listener.onResponseReceived(chicagoMessage.getVal(), chicagoMessage.getSuccess());
-    }
+      listener.onResponseReceived(chicagoMessage);
   }
 }

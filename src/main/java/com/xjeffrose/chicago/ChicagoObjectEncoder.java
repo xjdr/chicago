@@ -6,7 +6,14 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import java.util.List;
+import java.util.UUID;
 import org.apache.log4j.Logger;
+
+/*
+ * | id | op | ColFam | keySize | key | valSize | val |
+ *
+ *
+ */
 
 public class ChicagoObjectEncoder extends MessageToMessageEncoder<Object> {
   private static final Logger log = Logger.getLogger(ChicagoObjectEncoder.class);
@@ -15,20 +22,23 @@ public class ChicagoObjectEncoder extends MessageToMessageEncoder<Object> {
   public ChicagoObjectEncoder() {
   }
 
-  public byte[] encode(Op _op, byte[] colFam, byte[] key, byte[] val) {
+  public byte[] encode(UUID _id, Op _op, byte[] colFam, byte[] key, byte[] val) {
 
     if (val == null) {
       val = new byte[0];
     }
 
+    byte[] id = _id.toString().getBytes();
     byte[] op = Ints.toByteArray(_op.getOp());
     byte[] colFamSize = Ints.toByteArray(colFam.length);
     byte[] keySize = Ints.toByteArray(key.length);
     byte[] valSize = Ints.toByteArray(val.length);
-    int msgSize = op.length + colFamSize.length + colFam.length + keySize.length + key.length + valSize.length + val.length;
+    int msgSize = id.length + op.length + colFamSize.length + colFam.length + keySize.length + key.length + valSize.length + val.length;
     byte[] msgArray = new byte[msgSize];
 
     int trailing = 0;
+    System.arraycopy(id, 0, msgArray, trailing, id.length);
+    trailing = trailing + id.length;
     System.arraycopy(op, 0, msgArray, trailing, op.length);
     trailing = trailing + op.length;
     System.arraycopy(colFamSize, 0, msgArray, trailing, colFamSize.length );
@@ -63,7 +73,7 @@ public class ChicagoObjectEncoder extends MessageToMessageEncoder<Object> {
       log.error("Object not an instance of ChicagoMessage: " + msg);
     }
 
-    ByteBuf _msg = ctx.alloc().directBuffer().writeBytes(encode(chiMessage.getOp(), chiMessage.getColFam(), chiMessage.getKey(), chiMessage.getVal()));
+    ByteBuf _msg = ctx.alloc().directBuffer().writeBytes(encode(chiMessage.getId(), chiMessage.getOp(), chiMessage.getColFam(), chiMessage.getKey(), chiMessage.getVal()));
     out.add(_msg);
   }
 }

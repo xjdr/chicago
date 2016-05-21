@@ -1,6 +1,9 @@
 package com.xjeffrose.chicago.client;
 
 
+import com.xjeffrose.chicago.ChicagoMessage;
+import java.util.UUID;
+
 interface Listener<T> {
 
   void onRequestSent();
@@ -9,9 +12,13 @@ interface Listener<T> {
 
   void onChannelError(Exception requestException);
 
-  T getResponse() throws ChicagoClientTimeoutException;
+  T getResponse(UUID id) throws ChicagoClientTimeoutException;
 
-  boolean getStatus() throws ChicagoClientTimeoutException;
+  boolean getStatus(UUID id) throws ChicagoClientTimeoutException;
 
   void onChannelReadComplete();
+
+  void addID(UUID id);
+
+  void onResponseReceived(ChicagoMessage chicagoMessage);
 }
