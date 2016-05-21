@@ -18,8 +18,9 @@ import org.apache.log4j.Logger;
 public class ChicagoClient {
   private static final Logger log = Logger.getLogger(ChicagoClient.class);
   private final static String NODE_LIST_PATH = "/chicago/node-list";
+  private static final long TIMEOUT = 1000;
 
-  private final ExecutorService exe = Executors.newFixedThreadPool(20);
+  private final ExecutorService exe = Executors.newFixedThreadPool(40);
 
   private final InetSocketAddress single_server;
   private final RendezvousHash rendezvousHash;
@@ -96,16 +97,25 @@ public class ChicagoClient {
             exe.execute(new Runnable() {
               @Override
               public void run() {
-                try {
+//                try {
                   UUID id = UUID.randomUUID();
                   Listener listener = connectionPoolMgr.getListener(node);
                   cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.READ, colFam, key, null));
                   listener.addID(id);
-                  responseList.add((byte[]) listener.getResponse(id));
-                } catch (ChicagoClientTimeoutException e) {
-                  log.error("You are a READING asshole");
+                  exe.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                      try {
+                        responseList.add((byte[]) listener.getResponse(id));
+                      } catch (ChicagoClientTimeoutException e) {
+                        throw new RuntimeException(e);
+                      }
+                    }
+                  });
+//                } catch (ChicagoClientTimeoutException e) {
+//                  log.error("You are a WRITING asshole");
+//                }
                 }
-              }
             });
           }
         }
@@ -127,12 +137,13 @@ public class ChicagoClient {
     return responseList.stream().findFirst().orElse(null);
   }
 
-  public boolean write(byte[] key, byte[] value) {
+  public boolean write(byte[] key, byte[] value) throws ChicagoClientTimeoutException {
     return write("chicago".getBytes(), key, value);
   }
 
-  public boolean write(byte[] colFam, byte[] key, byte[] value) {
+  public boolean write(byte[] colFam, byte[] key, byte[] value) throws ChicagoClientTimeoutException {
     ConcurrentLinkedDeque<Boolean> responseList = new ConcurrentLinkedDeque<>();
+    final long startTime = System.currentTimeMillis();
 
     if (single_server != null) {
 //      connect(single_server, Op.WRITE, key, value, listener);
@@ -151,15 +162,24 @@ public class ChicagoClient {
             exe.execute(new Runnable() {
               @Override
               public void run() {
-            try {
+//            try {
                   UUID id = UUID.randomUUID();
                   Listener listener = connectionPoolMgr.getListener(node);
                   cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.WRITE, colFam, key, value));
                   listener.addID(id);
-                  responseList.add(listener.getStatus(id));
-                } catch (ChicagoClientTimeoutException e) {
-                  log.error("You are a WRITING asshole");
-                }
+                  exe.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                      try {
+                        responseList.add(listener.getStatus(id));
+                      } catch (ChicagoClientTimeoutException e) {
+                        throw new RuntimeException(e);
+                      }
+                    }
+                  });
+//                } catch (ChicagoClientTimeoutException e) {
+//                  log.error("You are a WRITING asshole");
+//                }
               }
             });
           }
@@ -171,22 +191,32 @@ public class ChicagoClient {
       return false;
     }
 
+
+
+
     while (responseList.size() < 3) {
+      if ((System.currentTimeMillis() - startTime) > TIMEOUT) {
+        Thread.currentThread().interrupt();
+        throw new ChicagoClientTimeoutException();
+      }
       try {
         Thread.sleep(1);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
     }
+
+
     return responseList.stream().allMatch(b -> b);
   }
 
-  public boolean delete(byte[] key) {
+  public boolean delete(byte[] key) throws ChicagoClientTimeoutException {
     return delete("chicago".getBytes(), key);
   }
 
-  public boolean delete(byte[] colFam, byte[] key) {
+  public boolean delete(byte[] colFam, byte[] key) throws ChicagoClientTimeoutException {
     ConcurrentLinkedDeque<Boolean> responseList = new ConcurrentLinkedDeque<>();
+    final long startTime = System.currentTimeMillis();
 
     try {
 
@@ -201,15 +231,24 @@ public class ChicagoClient {
             exe.execute(new Runnable() {
               @Override
               public void run() {
-                try {
-                  UUID id = UUID.randomUUID();
-                  Listener listener = connectionPoolMgr.getListener(node);
-                  cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.DELETE, colFam, key, null));
-                  listener.addID(id);
-                  responseList.add(listener.getStatus(id));
-                } catch (ChicagoClientTimeoutException e) {
-                  log.error("You are a DELETING asshole");
-                }
+//                try {
+                UUID id = UUID.randomUUID();
+                Listener listener = connectionPoolMgr.getListener(node);
+                cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.DELETE, colFam, key, null));
+                listener.addID(id);
+                exe.execute(new Runnable() {
+                  @Override
+                  public void run() {
+                    try {
+                      responseList.add(listener.getStatus(id));
+                    } catch (ChicagoClientTimeoutException e) {
+                      throw new RuntimeException(e);
+                    }
+                  }
+                });
+//                } catch (ChicagoClientTimeoutException e) {
+//                  log.error("You are a WRITING asshole");
+//                }
               }
             });
           }
@@ -221,13 +260,18 @@ public class ChicagoClient {
       return false;
     }
 
-    while (responseList.size() < 3) {
-      try {
-        Thread.sleep(1);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
+        while (responseList.size() < 3) {
+          if ((System.currentTimeMillis() - startTime) > TIMEOUT) {
+            Thread.currentThread().interrupt();
+            throw new ChicagoClientTimeoutException();
+          }
+          try {
+            Thread.sleep(1);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+        }
+
 
     return responseList.stream().allMatch(b -> b);
   }
