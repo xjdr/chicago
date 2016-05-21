@@ -193,8 +193,6 @@ public class ChicagoClient {
     }
 
 
-
-
     while (responseList.size() < 3) {
       if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
         Thread.currentThread().interrupt();

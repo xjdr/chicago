@@ -20,6 +20,7 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.log4j.Logger;
@@ -29,9 +30,10 @@ public class ConnectionPoolManager {
   private static final Logger log = Logger.getLogger(ChicagoClient.class);
   private final static String NODE_LIST_PATH = "/chicago/node-list";
   private static final long TIMEOUT = 1000;
+  private static boolean TIMEOUT_ENABLED = false;
 
-  private final Map<String, Listener> listenerMap = new HashMap<>();
-  private final Map<String, ChannelFuture> connectionMap = new HashMap<>();
+  private final Map<String, Listener> listenerMap = new ConcurrentHashMap<>();
+  private final Map<String, ChannelFuture> connectionMap = new ConcurrentHashMap<>();
   private final ZkClient zkClient;
 
   public ConnectionPoolManager(ZkClient zkClient) {
@@ -63,7 +65,7 @@ public class ConnectionPoolManager {
 
   private ChannelFuture _getNode(String node, long startTime) throws ChicagoClientTimeoutException {
     while (connectionMap.get(node) == null) {
-      if ((System.currentTimeMillis() - startTime) > TIMEOUT) {
+      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
         Thread.currentThread().interrupt();
         throw new ChicagoClientTimeoutException();
       }
