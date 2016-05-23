@@ -3,7 +3,6 @@ package com.xjeffrose.chicago;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import java.io.File;
-import java.util.Random;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.leader.LeaderSelector;
@@ -15,8 +14,13 @@ public class Chicago {
   private static final Logger log = Logger.getLogger(Chicago.class.getName());
   private final static String ELECTION_PATH = "/chicago/chicago-elect";
   private final static String NODE_LIST_PATH = "/chicago/node-list";
-  private static DBRouter dbRouter;
+
   private static ZkClient zkClient;
+  private static DBManager dbManager;
+  private static NodeWatcher nodeWatcher;
+  private static DBRouter dbRouter;
+  private static ChiConfig config;
+
 
   public static void main(String[] args) {
     log.info("Starting Chicago, have a nice day");
@@ -33,7 +37,7 @@ public class Chicago {
       _conf = ConfigFactory.parseFile(new File("test.conf"));
     }
 
-    ChiConfig config = new ChiConfig(_conf);
+    config = new ChiConfig(_conf);
 
     try {
       CuratorFramework curator = CuratorFrameworkFactory.newClient(config.getZkHosts(),
@@ -57,8 +61,8 @@ public class Chicago {
       config.setLeaderSelector(leaderSelector);
       config.setZkClient(zkClient);
 
-      DBManager dbManager = new DBManager(config);
-      NodeWatcher nodeWatcher = new NodeWatcher();
+      dbManager = new DBManager(config);
+      nodeWatcher = new NodeWatcher();
       nodeWatcher.refresh(zkClient, leaderSelector, dbManager, config);
 
       dbRouter = new DBRouter(config, dbManager);
@@ -70,11 +74,16 @@ public class Chicago {
     }
   }
 
-  public static void stop() {
-    //zkClient.stop();
-    dbRouter.stop();
-    log.info("Stopping server!!! Goodbye");
-  }
+  public void stop() {
+    try {
+      zkClient.getClient().delete().forPath((NODE_LIST_PATH + "/" + config.getDBBindIP()));
+      zkClient.stop();
+      dbRouter.close();
+      dbManager.destroy();
 
+    } catch (Exception e) {
+      System.exit(-1);
+    }
+  }
 
 }

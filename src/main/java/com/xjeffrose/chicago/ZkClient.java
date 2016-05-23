@@ -105,5 +105,9 @@ public class ZkClient {
   public String getConnectionString() {
     return connectionString;
   }
+
+  public void stop() {
+    client.close();
+  }
 }
 

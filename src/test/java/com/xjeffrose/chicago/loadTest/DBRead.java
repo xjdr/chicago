@@ -13,9 +13,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- * Created by root on 5/17/16.
- */
 public class DBRead {
 
     static ChicagoClient chicagoClientDHT;
