@@ -40,11 +40,11 @@ public class ClientNodeWatcher {
   }
 
   private void nodeAdded(String path) {
-    rendezvousHash.add(path);
+    rendezvousHash.add(path.substring(path.lastIndexOf('/')+1));
   }
 
   private void nodeRemoved(String path) {
-    rendezvousHash.remove(path);
+    rendezvousHash.remove(path.substring(path.lastIndexOf('/')+1));
   }
 
   private class GenericListener implements TreeCacheListener {

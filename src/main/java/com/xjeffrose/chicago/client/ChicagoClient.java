@@ -268,8 +268,11 @@ public class ChicagoClient {
         e.printStackTrace();
       }
     }
-
-
     return responseList.stream().allMatch(b -> b);
   }
+
+  public List<String> getNodeListforKey(byte[] key){
+    return rendezvousHash.get(key);
+  }
+
 }
