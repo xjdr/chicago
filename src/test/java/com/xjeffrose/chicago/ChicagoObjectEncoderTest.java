@@ -1,5 +1,6 @@
 package com.xjeffrose.chicago;
 
+import java.util.UUID;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -10,7 +11,7 @@ public class ChicagoObjectEncoderTest {
 
   @Test
   public void encode1() throws Exception {
-    byte[] result = encoder.encode(Op.fromInt(0), "colFamxxxx".getBytes(), "foo".getBytes(), "asdfgjlkasdf".getBytes());
+    byte[] result = encoder.encode(UUID.randomUUID(), Op.fromInt(0), "colFamxxxx".getBytes(), "foo".getBytes(), "asdfgjlkasdf".getBytes());
 
     ChicagoMessage message = decoder.decode(result);
 

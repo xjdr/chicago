@@ -1,6 +1,10 @@
 package com.xjeffrose.chicago;
 
+import java.util.UUID;
+
 public interface ChicagoMessage extends ChicagoObject {
+
+  UUID getId();
 
   Op getOp();
 

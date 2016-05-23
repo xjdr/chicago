@@ -9,6 +9,14 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.DecoderResult;
 import java.util.List;
+import java.util.UUID;
+
+
+/*
+ * | checksum | id | op | ColFam | keySize | key | valSize | val |
+ *
+ */
+
 
 public class ChicagoObjectDecoder extends ByteToMessageDecoder {
 
@@ -24,6 +32,7 @@ public class ChicagoObjectDecoder extends ByteToMessageDecoder {
 
   private ChicagoMessage _decode(ByteBuf msg) {
     final byte[] hash = new byte[4];
+    final byte[] id = new byte[36];
     final byte[] op = new byte[4];
     final byte[] colFamSize = new byte[4];
     final byte[] keySize = new byte[4];
@@ -32,6 +41,9 @@ public class ChicagoObjectDecoder extends ByteToMessageDecoder {
     // Determine the operation type
     msg.readBytes(hash, 0, hash.length);
     HashCode hashCode = HashCode.fromBytes(hash);
+
+    // Determine the message ID
+    msg.readBytes(id, 0, id.length);
 
     // Determine the operation type
     msg.readBytes(op, 0, op.length);
@@ -60,11 +72,14 @@ public class ChicagoObjectDecoder extends ByteToMessageDecoder {
     // Get the Value
     msg.readBytes(val, 0, valLength);
 
-    DefaultChicagoMessage _msg = new DefaultChicagoMessage(Op.fromInt(Ints.fromByteArray(op)), colFam, key, val);
+    DefaultChicagoMessage _msg = new DefaultChicagoMessage(UUID.fromString(new String(id)), Op.fromInt(Ints.fromByteArray(op)), colFam, key, val);
 
-    byte[] msgArray = new byte[op.length + colFamSize.length + colFam.length + keySize.length + key.length + valSize.length + val.length];
+    int msgSize = id.length + op.length + colFamSize.length + colFam.length + keySize.length + key.length + valSize.length + val.length;
+    byte[] msgArray = new byte[msgSize];
 
     int trailing = 0;
+    System.arraycopy(id, 0, msgArray, trailing, id.length);
+    trailing = trailing + id.length;
     System.arraycopy(op, 0, msgArray, trailing, op.length);
     trailing = trailing + op.length;
     System.arraycopy(colFamSize, 0, msgArray, trailing, colFamSize.length );

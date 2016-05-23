@@ -1,24 +1,21 @@
 package com.xjeffrose.chicago.client;
 
-import com.google.common.collect.ImmutableMap;
+import com.xjeffrose.chicago.ChicagoMessage;
+import java.util.Collections;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import org.apache.log4j.Logger;
 
 class ChicagoListener implements Listener<byte[]> {
   private static final Logger log = Logger.getLogger(ChicagoListener.class);
   private static final long TIMEOUT = 1000;
+  private static final boolean TIMEOUT_ENABLED = true;
 
-
-  private final AtomicInteger statusRefNumber = new AtomicInteger();
-  private final Map<Integer, Boolean> statusMap = new ConcurrentHashMap<>(); 
-  private final AtomicInteger responseRefNumber = new AtomicInteger();
-
-  private final Map<Integer, Map<byte[], Boolean>> responseMap = new ConcurrentHashMap<>();
-
-  private final  AtomicInteger currentStatus = new AtomicInteger();
-  private final AtomicInteger currentResponse = new AtomicInteger();
+  private final ConcurrentLinkedDeque<UUID> reqIds = new ConcurrentLinkedDeque<>();
+  private final ConcurrentLinkedDeque<UUID> messageIds = new ConcurrentLinkedDeque<>();
+  private final Map<UUID, ChicagoMessage> responseMap = new ConcurrentHashMap<>();
 
   public ChicagoListener() {
 
@@ -27,34 +24,33 @@ class ChicagoListener implements Listener<byte[]> {
 
   @Override
   public void onRequestSent() {
-
   }
 
   @Override
   public void onResponseReceived(byte[] message, boolean success) {
-    if (message.length == 0) {
-      if (success) {
-        statusMap.put(statusRefNumber.getAndIncrement(), success);
-      }
-    } else if (message.length > 0) {
-      responseMap.put(responseRefNumber.getAndIncrement(), ImmutableMap.of(message, success));
-    }
   }
 
   @Override
-  public void onChannelError(Exception requestException) {
+  public void onResponseReceived(ChicagoMessage chicagoMessage) {
+    messageIds.add(chicagoMessage.getId());
+    responseMap.put(chicagoMessage.getId(), chicagoMessage);
+  }
+
+  @Override
+  public void onChannelError(Exception requestException) throws ChicagoClientException {
     log.error("Error Reading Response: ", requestException);
+    throw new ChicagoClientException(requestException);
   }
 
 
   @Override
-  public byte[] getResponse() throws ChicagoClientTimeoutException {
-    return _getResponse(System.currentTimeMillis());
+  public byte[] getResponse(UUID id) throws ChicagoClientTimeoutException {
+    return _getResponse(id, System.currentTimeMillis());
   }
 
-  private byte[] _getResponse(long startTime) throws ChicagoClientTimeoutException {
-    while (responseMap.isEmpty()) {
-      if ((System.currentTimeMillis() - startTime) > TIMEOUT) {
+  private byte[] _getResponse(UUID id, long startTime) throws ChicagoClientTimeoutException {
+    while (Collections.disjoint(reqIds, messageIds)) {
+      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
         Thread.currentThread().interrupt();
         throw new ChicagoClientTimeoutException();
       }
@@ -65,42 +61,37 @@ class ChicagoListener implements Listener<byte[]> {
       }
     }
 
-    while (!responseMap.containsKey(currentResponse.get())) {
-      if ((System.currentTimeMillis() - startTime) > TIMEOUT) {
-        Thread.currentThread().interrupt();
-        throw new ChicagoClientTimeoutException();
-      }
+    while (!responseMap.containsKey(id)) {
       try {
+        if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
+        Thread.currentThread().interrupt();
+          throw new ChicagoClientTimeoutException();
+        }
         Thread.sleep(1);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
     }
 
-    Map<byte[], Boolean> _resp = responseMap.get(currentResponse.getAndIncrement());
+    ChicagoMessage _resp = responseMap.get(id);
 
-
-      byte[] resp = (byte[]) _resp.keySet().toArray()[0];
-
-    if (_resp.get(resp)) {
-      return resp;
+    if (_resp.getSuccess()) {
+      return _resp.getVal();
     } else {
       log.error("Invalid Response returned");
       return null;
     }
-
   }
-
 
   @Override
-  public boolean getStatus() throws ChicagoClientTimeoutException {
-    return _getStatus(System.currentTimeMillis());
+  public boolean getStatus(UUID id) throws ChicagoClientTimeoutException {
+    boolean resp = _getStatus(id, System.currentTimeMillis());
+    return resp;
   }
 
-  private boolean _getStatus(long startTime) throws ChicagoClientTimeoutException {
-    while (statusMap.isEmpty()) {
-      if ((System.currentTimeMillis() - startTime) > TIMEOUT) {
-        System.out.println("StartTime ="+startTime+" now ="+System.currentTimeMillis());
+  private boolean _getStatus(UUID id, long startTime) throws ChicagoClientTimeoutException {
+    while (Collections.disjoint(reqIds, messageIds)) {
+      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
         Thread.currentThread().interrupt();
         throw new ChicagoClientTimeoutException();
       }
@@ -111,27 +102,34 @@ class ChicagoListener implements Listener<byte[]> {
       }
     }
 
-    while (!statusMap.containsKey(currentStatus.get())) {
-      if ((System.currentTimeMillis() - startTime) > TIMEOUT) {
-        Thread.currentThread().interrupt();
-        throw new ChicagoClientTimeoutException();
-      }
+    while (!responseMap.containsKey(id)) {
       try {
+        if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
+        Thread.currentThread().interrupt();
+          throw new ChicagoClientTimeoutException();
+        }
         Thread.sleep(1);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
     }
+    if (responseMap.get(id).getKey().length == 4) {
+      return true;
+    } else {
+      return false;
+    }
 
-    boolean resp = statusMap.get(currentStatus.getAndIncrement());
-
-    return resp;
   }
 
 
   @Override
   public void onChannelReadComplete() {
 
+  }
+
+  @Override
+  public void addID(UUID id) {
+    reqIds.add(id);
   }
 
 
