@@ -31,6 +31,10 @@ public class ZkClient {
     client = CuratorFrameworkFactory.newClient(connectionString, retryPolicy);
   }
 
+  public void stop(){
+    client.close();
+  }
+
   public void start() throws InterruptedException {
     client.start();
     client.blockUntilConnected();

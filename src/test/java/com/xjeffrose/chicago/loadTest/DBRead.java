@@ -2,8 +2,11 @@ package com.xjeffrose.chicago.loadTest;
 
 
 import com.google.common.hash.Funnels;
+import com.netflix.curator.test.TestingServer;
+import com.xjeffrose.chicago.Chicago;
 import com.xjeffrose.chicago.client.ChicagoClient;
 import java.net.InetSocketAddress;
+import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -15,21 +18,34 @@ import static org.junit.Assert.assertEquals;
  */
 public class DBRead {
 
-  static ChicagoClient chicagoClientDHT;
-  public static final int MAX_KEY=17300;
-  public static final int MAX_VAL=17300;
+    static ChicagoClient chicagoClientDHT;
+    public static final int MAX_KEY=17300;
+    public static final int MAX_VAL=17300;
+    static TestingServer testingServer;
+    static Chicago chicago1;
+    static Chicago chicago2;
+    static Chicago chicago3;
+    static Chicago chicago4;
 
   @BeforeClass
   static public void setupFixture() throws Exception {
     //chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
     //chicagoClientDHT = new ChicagoClient("10.22.100.183:2181/chicago");
-    chicagoClientDHT = new ChicagoClient(
-            "10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
+    //chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
+      testingServer = new TestingServer(2182);
+      chicago1 = new Chicago();
+      chicago1.main(new String[]{"", "src/test/resources/test1.conf"});
+      chicago2 = new Chicago();
+      chicago2.main(new String[]{"", "src/test/resources/test2.conf"});
+      chicago3 = new Chicago();
+      chicago3.main(new String[]{"", "src/test/resources/test3.conf"});
+      chicago4 = new Chicago();
+      chicago4.main(new String[]{"", "src/test/resources/test4.conf"});
+      chicagoClientDHT = new ChicagoClient("127.0.0.1:2182");
   }
 
   @Test
   public void verifyData() throws Exception {
-
     StringBuilder keystr = new StringBuilder();
     StringBuilder valstr = new StringBuilder();
     long start_time = System.currentTimeMillis();
@@ -103,4 +119,37 @@ public class DBRead {
     return result;
   }
 
+    @Test
+    public void verifyDeleteData() throws Exception {
+        long start_time = System.currentTimeMillis();
+        String _k ="smk";
+        byte[] key = _k.getBytes();
+        String _v = "vall";
+        byte[] val = _v.getBytes();
+        List<String> l = chicagoClientDHT.getNodeListforKey(key);
+        System.out.println(l.toString());
+        assertEquals(true, chicagoClientDHT.write(key, val));
+        switch(l.get(0)){
+            case "127.0.0.1":
+                System.out.println("Stopping chicago1");
+                chicago1.stop();
+                break;
+            case "127.0.0.2":
+                System.out.println("Stopping chicago2");
+                chicago2.stop();
+                break;
+            case "127.0.0.3":
+                System.out.println("Stopping chicago3");
+                chicago3.stop();
+                break;
+            case "127.0.0.4":
+                System.out.println("Stopping chicago4");
+                chicago4.stop();
+                break;
+        }
+        l = chicagoClientDHT.getNodeListforKey(key);
+        System.out.println(l.toString());
+        assertEquals(true, chicagoClientDHT.delete(key));
+        long diff = System.currentTimeMillis() - start_time;
+    }
 }

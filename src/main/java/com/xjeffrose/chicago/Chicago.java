@@ -15,6 +15,8 @@ public class Chicago {
   private static final Logger log = Logger.getLogger(Chicago.class.getName());
   private final static String ELECTION_PATH = "/chicago/chicago-elect";
   private final static String NODE_LIST_PATH = "/chicago/node-list";
+  private static DBRouter dbRouter;
+  private static ZkClient zkClient;
 
   public static void main(String[] args) {
     log.info("Starting Chicago, have a nice day");
@@ -44,7 +46,7 @@ public class Chicago {
       leaderSelector.autoRequeue();
       leaderSelector.start();
 
-      ZkClient zkClient = new ZkClient(curator);
+      zkClient = new ZkClient(curator);
       zkClient
           .getClient()
           .create()
@@ -59,13 +61,19 @@ public class Chicago {
       NodeWatcher nodeWatcher = new NodeWatcher();
       nodeWatcher.refresh(zkClient, leaderSelector, dbManager, config);
 
-      DBRouter dbRouter = new DBRouter(config, dbManager);
+      dbRouter = new DBRouter(config, dbManager);
       dbRouter.run();
 
       log.info("I am the Leader: " + leaderSelector.hasLeadership());
     } catch (Exception e) {
       System.exit(-1);
     }
+  }
+
+  public static void stop() {
+    //zkClient.stop();
+    dbRouter.stop();
+    log.info("Stopping server!!! Goodbye");
   }
 
 
