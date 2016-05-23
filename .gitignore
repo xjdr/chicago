@@ -22,3 +22,5 @@ release.properties
 .ensime/
 .ensime_cache/
 
+# docs
+docs/build
