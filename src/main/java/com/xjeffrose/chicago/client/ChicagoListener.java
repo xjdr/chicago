@@ -100,6 +100,7 @@ class ChicagoListener implements Listener<byte[]> {
   private boolean _getStatus(long startTime) throws ChicagoClientTimeoutException {
     while (statusMap.isEmpty()) {
       if ((System.currentTimeMillis() - startTime) > TIMEOUT) {
+        System.out.println("StartTime ="+startTime+" now ="+System.currentTimeMillis());
         Thread.currentThread().interrupt();
         throw new ChicagoClientTimeoutException();
       }

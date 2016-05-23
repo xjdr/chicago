@@ -23,7 +23,7 @@ public class DBRead {
     assertEquals(true, chicagoClientDHT.write(key, val));
     //assertEquals("val2", new String(chicagoClientDHT.read(key)));
     System.out.println("On 10.24.25.188, value = " + getData("10.24.25.188", _k));
-    System.out.println("On 10.25.145.56, value = " + getData("10.25.145.56", _k));
+    //System.out.println("On 10.25.145.56, value = " + getData("10.25.145.56", _k));
     System.out.println("On 10.24.25.189, value = " + getData("10.24.25.189", _k));
     System.out.println("On 10.24.33.123, value = " + getData("10.24.33.123", _k));
   }
