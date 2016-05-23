@@ -76,7 +76,7 @@ public class ConnectionPoolManager {
       }
     }
 
-    ChannelFuture cf = connectionMap.get(node);
+    ChannelFuture cf= connectionMap.get(node);
 
     if (cf.channel().isWritable()) {
       return cf;

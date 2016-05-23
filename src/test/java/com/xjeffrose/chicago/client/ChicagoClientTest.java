@@ -68,7 +68,7 @@ public class ChicagoClientTest {
 
   @Test
   public void transactManyCF() throws Exception {
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 200; i++) {
       String _k = "key" + i;
       byte[] key = _k.getBytes();
       String _v = "val" + i;
@@ -83,7 +83,7 @@ public class ChicagoClientTest {
   @Test
   public void transactManyCFConcurrent() throws Exception {
     ExecutorService exe = Executors.newFixedThreadPool(4);
-    int count = 2;
+    int count = 4;
     CountDownLatch latch = new CountDownLatch(count * 2);
 
     exe.execute(new Runnable() {
@@ -106,6 +106,8 @@ public class ChicagoClientTest {
         }
       }
     });
+
+    Thread.sleep(1000);
 
     exe.execute(new Runnable() {
       @Override

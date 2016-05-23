@@ -20,6 +20,7 @@ public class ChicagoClient {
   private final static String NODE_LIST_PATH = "/chicago/node-list";
   private static final long TIMEOUT = 1000;
   private static boolean TIMEOUT_ENABLED = true;
+  private static int MAX_RETRY = 3;
 
   private final ExecutorService exe = Executors.newFixedThreadPool(20);
 
@@ -148,6 +149,11 @@ public class ChicagoClient {
   }
 
   public boolean write(byte[] colFam, byte[] key, byte[] value) throws ChicagoClientTimeoutException {
+    return _write(colFam, key, value, 0);
+  }
+
+
+    private boolean _write(byte[] colFam, byte[] key, byte[] value, int retries) throws ChicagoClientTimeoutException {
     ConcurrentLinkedDeque<Boolean> responseList = new ConcurrentLinkedDeque<>();
     final long startTime = System.currentTimeMillis();
 
@@ -170,14 +176,14 @@ public class ChicagoClient {
               public void run() {
 //            try {
                   UUID id = UUID.randomUUID();
-                  Listener listener = connectionPoolMgr.getListener(node);
+                  Listener listener = connectionPoolMgr.getListener(node); // Blocking
                   cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.WRITE, colFam, key, value));
                   listener.addID(id);
                   exe.execute(new Runnable() {
                     @Override
                     public void run() {
                       try {
-                        responseList.add(listener.getStatus(id));
+                        responseList.add(listener.getStatus(id)); //Blocking
                       } catch (ChicagoClientTimeoutException e) {
                         Thread.currentThread().interrupt();
                         throw new RuntimeException(e);
@@ -208,8 +214,16 @@ public class ChicagoClient {
       }
     }
 
-
-    return responseList.stream().allMatch(b -> b);
+    if (responseList.stream().allMatch(b -> b)) {
+      //TODO(JR): Add max retry logic
+      return true;
+    } else {
+      if (MAX_RETRY < retries) {
+        return _write(colFam, key, value, retries++);
+      } else {
+        return false;
+      }
+    }
   }
 
   public boolean delete(byte[] key) throws ChicagoClientTimeoutException {
@@ -217,6 +231,10 @@ public class ChicagoClient {
   }
 
   public boolean delete(byte[] colFam, byte[] key) throws ChicagoClientTimeoutException {
+    return _delete(colFam, key, 0);
+  }
+
+    private boolean _delete(byte[] colFam, byte[] key, int retries) throws ChicagoClientTimeoutException {
     ConcurrentLinkedDeque<Boolean> responseList = new ConcurrentLinkedDeque<>();
     final long startTime = System.currentTimeMillis();
 
@@ -273,6 +291,15 @@ public class ChicagoClient {
         }
 
 
-    return responseList.stream().allMatch(b -> b);
-  }
+    if (responseList.stream().allMatch(b -> b)) {
+      //TODO(JR): Add max retry logic
+      return true;
+    } else {
+      if (MAX_RETRY < retries) {
+        return _delete(colFam, key, retries++);
+      } else {
+        return false;
+      }
+    }
+    }
 }

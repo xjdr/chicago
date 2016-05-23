@@ -6,16 +6,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
+import org.rocksdb.BloomFilter;
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.ColumnFamilyOptions;
+import org.rocksdb.CompactionStyle;
+import org.rocksdb.CompressionType;
 import org.rocksdb.Env;
+import org.rocksdb.Filter;
+import org.rocksdb.HashLinkedListMemTableConfig;
 import org.rocksdb.Options;
 import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 import org.rocksdb.WriteOptions;
+import org.rocksdb.util.SizeUnit;
 
 class DBManager {
   private static final Logger log = Logger.getLogger(DBManager.class);
@@ -24,6 +30,7 @@ class DBManager {
   private final ReadOptions readOptions = new ReadOptions();
   private final WriteOptions writeOptions = new WriteOptions();
   private final Map<String, ColumnFamilyHandle> columnFamilies = new HashMap<>();
+  private final Filter bloomFilter = new BloomFilter(10);
 
   private RocksDB db;
 
@@ -57,20 +64,34 @@ class DBManager {
   }
 
   private void configOptions() {
-    options.setCreateIfMissing(true);
-
     Env env = Env.getDefault();
     env.setBackgroundThreads(20);
 
-    options.setEnv(env);
+    options
+        .createStatistics()
+        .setCreateIfMissing(true)
+        .setWriteBufferSize(8 * SizeUnit.KB)
+        .setMaxWriteBufferNumber(3)
+        .setMaxBackgroundCompactions(10)
+        .setCompressionType(CompressionType.SNAPPY_COMPRESSION)
+        .setCompactionStyle(CompactionStyle.UNIVERSAL)
+        .setEnv(env);
+
+    options.setMemTableConfig(
+        new HashLinkedListMemTableConfig()
+            .setBucketCount(100000));
+
+
   }
 
   private void configReadOptions() {
-//    readOptions.setTailing(true);
+    readOptions.setFillCache(false);
   }
 
   private void configWriteOptions() {
 //    writeOptions.setDisableWAL(true);
+    writeOptions.setSync(true);
+    writeOptions.setDisableWAL(true);
   }
 
   boolean colFamilyExists(byte[] name) {

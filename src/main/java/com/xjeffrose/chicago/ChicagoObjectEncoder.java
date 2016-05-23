@@ -53,7 +53,6 @@ public class ChicagoObjectEncoder extends MessageToMessageEncoder<Object> {
     trailing = trailing + valSize.length;
     System.arraycopy(val, 0, msgArray, trailing, val.length);
 
-
     byte[] hash = Hashing.murmur3_32().hashBytes(msgArray).asBytes();
 
     byte[] hashedMessage = new byte[hash.length + msgArray.length];
