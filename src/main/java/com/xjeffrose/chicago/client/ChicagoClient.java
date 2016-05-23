@@ -19,7 +19,7 @@ public class ChicagoClient {
   private static final Logger log = Logger.getLogger(ChicagoClient.class);
   private final static String NODE_LIST_PATH = "/chicago/node-list";
   private static final long TIMEOUT = 1000;
-  private static boolean TIMEOUT_ENABLED = false;
+  private static boolean TIMEOUT_ENABLED = true;
 
   private final ExecutorService exe = Executors.newFixedThreadPool(20);
 
@@ -80,11 +80,12 @@ public class ChicagoClient {
     return zkClient.list(NODE_LIST_PATH);
   }
 
-  public byte[] read(byte[] key) {
+  public byte[] read(byte[] key) throws ChicagoClientTimeoutException {
     return read("chicago".getBytes(), key);
   }
 
-  public byte[] read(byte[] colFam, byte[] key) {
+  public byte[] read(byte[] colFam, byte[] key) throws ChicagoClientTimeoutException {
+    final long startTime = System.currentTimeMillis();
     ConcurrentLinkedDeque<byte[]> responseList = new ConcurrentLinkedDeque<>();
     if (single_server != null) {
     }
@@ -109,13 +110,11 @@ public class ChicagoClient {
                       try {
                         responseList.add((byte[]) listener.getResponse(id));
                       } catch (ChicagoClientTimeoutException e) {
+                        Thread.currentThread().interrupt();
                         throw new RuntimeException(e);
                       }
                     }
                   });
-//                } catch (ChicagoClientTimeoutException e) {
-//                  log.error("You are a WRITING asshole");
-//                }
                 }
             });
           }
@@ -123,11 +122,17 @@ public class ChicagoClient {
       }
 
     } catch (ChicagoClientTimeoutException e) {
-      log.error("Client Timeout", e);
+      Thread.currentThread().interrupt();
+      log.error("Client Timeout During Read Operation:", e);
       return null;
     }
 
+
     while (responseList.isEmpty()) {
+      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
+        Thread.currentThread().interrupt();
+        throw new ChicagoClientTimeoutException();
+      }
       try {
         Thread.sleep(1);
       } catch (InterruptedException e) {
@@ -174,13 +179,11 @@ public class ChicagoClient {
                       try {
                         responseList.add(listener.getStatus(id));
                       } catch (ChicagoClientTimeoutException e) {
+                        Thread.currentThread().interrupt();
                         throw new RuntimeException(e);
                       }
                     }
                   });
-//                } catch (ChicagoClientTimeoutException e) {
-//                  log.error("You are a WRITING asshole");
-//                }
               }
             });
           }
@@ -188,7 +191,7 @@ public class ChicagoClient {
       }
 
     } catch (ChicagoClientTimeoutException e) {
-      log.error("Client Timeout", e);
+      log.error("Client Timeout During Write Operation: ", e);
       return false;
     }
 
@@ -241,13 +244,11 @@ public class ChicagoClient {
                     try {
                       responseList.add(listener.getStatus(id));
                     } catch (ChicagoClientTimeoutException e) {
+                      Thread.currentThread().interrupt();
                       throw new RuntimeException(e);
                     }
                   }
                 });
-//                } catch (ChicagoClientTimeoutException e) {
-//                  log.error("You are a WRITING asshole");
-//                }
               }
             });
           }
@@ -255,7 +256,7 @@ public class ChicagoClient {
       }
 
     } catch (ChicagoClientTimeoutException e) {
-      log.error("Client Timeout", e);
+      log.error("Client Timeout During Delete Operation: ", e);
       return false;
     }
 

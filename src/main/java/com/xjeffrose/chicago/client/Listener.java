@@ -10,7 +10,7 @@ interface Listener<T> {
 
   void onResponseReceived(T message, boolean success);
 
-  void onChannelError(Exception requestException);
+  void onChannelError(Exception requestException) throws ChicagoClientException;
 
   T getResponse(UUID id) throws ChicagoClientTimeoutException;
 
