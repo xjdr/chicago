@@ -11,18 +11,19 @@ import static org.junit.Assert.assertEquals;
  */
 public class ChicagoLoadTest {
   static ChicagoClient chicagoClientDHT;
+  public final static int count =1000;
 
   @BeforeClass
   static public void setupFixture() throws Exception {
     //chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
+    chicagoClientDHT =  new ChicagoClient("10.22.100.183:2181,10.25.180.234:2181,10.22.103.86:2181,10.25.180.247:2181,10.25.69.226:2181/chicago");
     //chicagoClientDHT = new ChicagoClient("10.22.100.183:2181/chicago");
   }
 
   @Test
   public void writeMany() throws Exception {
-    chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
     long start_time = System.currentTimeMillis();
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < count; i++) {
       String _k = "key" + i;
       byte[] key = _k.getBytes();
       String _v = "val" + i;
@@ -31,14 +32,13 @@ public class ChicagoLoadTest {
     }
     long diff = System.currentTimeMillis() - start_time;
     System.out.println("total time = " + diff);
-    System.out.println("Avg per write = " + diff/10);
+    System.out.println("Avg per write = " + ((float)diff/count));
   }
 
   @Test
   public void readMany() throws Exception {
-    chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
     long start_time = System.currentTimeMillis();
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < count; i++) {
       String _k = "key" + i;
       byte[] key = _k.getBytes();
       String _v = "val" + i;
@@ -47,18 +47,19 @@ public class ChicagoLoadTest {
     }
     long diff = System.currentTimeMillis() - start_time;
     System.out.println("total time = " + diff);
-    System.out.println("Avg per read = " + ((float)diff/10));
+    System.out.println("Avg per read = " + ((float)diff/count));
   }
 
     @Test
     public void deleteMany() throws Exception {
-      chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
       long start_time = System.currentTimeMillis();
-      for (int i = 0; i < 5; i++) {
+      for (int i = 0; i < count; i++) {
         String _k = "key" + i;
         byte[] key = _k.getBytes();
         assertEquals(true, chicagoClientDHT.delete(key));
       }
-      System.out.println(System.currentTimeMillis() - start_time);
+      long diff = System.currentTimeMillis() - start_time;
+      System.out.println("total time = " + diff);
+      System.out.println("Avg per delete = " + ((float)diff/count));
     }
 }

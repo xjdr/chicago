@@ -49,7 +49,9 @@ public class RendezvousHash<N> {
     });
 
     for (int i = 0; i < 3; i++) {
-      _nodeList.add(hashMap.remove(hashMap.keySet().stream().max(Long::compare).orElse(null)));
+      if(!hashMap.isEmpty()) {
+        _nodeList.add(hashMap.remove(hashMap.keySet().stream().max(Long::compare).orElse(null)));
+      }
     }
 
     return _nodeList;

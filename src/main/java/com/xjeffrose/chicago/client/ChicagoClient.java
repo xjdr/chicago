@@ -18,7 +18,7 @@ import org.apache.log4j.Logger;
 public class ChicagoClient {
   private static final Logger log = Logger.getLogger(ChicagoClient.class);
   private final static String NODE_LIST_PATH = "/chicago/node-list";
-  private static final long TIMEOUT = 1000;
+  private static final long TIMEOUT = 2000;
   private static boolean TIMEOUT_ENABLED = true;
 
   private final ExecutorService exe = Executors.newFixedThreadPool(20);
@@ -139,7 +139,7 @@ public class ChicagoClient {
         e.printStackTrace();
       }
     }
-
+    System.out.println("Read done in = " + (System.currentTimeMillis() - startTime));
     return responseList.stream().findFirst().orElse(null);
   }
 
@@ -192,7 +192,6 @@ public class ChicagoClient {
       log.error("Client Timeout During Write Operation: ", e);
       return false;
     }
-    System.out.println("Write done in = " + (System.currentTimeMillis() - start_time));
 
 
     while (responseList.size() < 3) {
@@ -206,7 +205,7 @@ public class ChicagoClient {
         e.printStackTrace();
       }
     }
-
+    System.out.println("Write done in = " + (System.currentTimeMillis() - start_time));
     return responseList.stream().allMatch(b -> b);
   }
 
@@ -258,17 +257,17 @@ public class ChicagoClient {
       return false;
     }
 
-        while (responseList.size() < 3) {
-          if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
-            Thread.currentThread().interrupt();
-            throw new ChicagoClientTimeoutException();
-          }
-          try {
-            Thread.sleep(1);
-          } catch (InterruptedException e) {
-            e.printStackTrace();
-          }
-        }
+    while (responseList.size() < 3) {
+      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
+        Thread.currentThread().interrupt();
+        throw new ChicagoClientTimeoutException();
+      }
+      try {
+        Thread.sleep(1);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
 
 
     return responseList.stream().allMatch(b -> b);
