@@ -3,7 +3,6 @@ package com.xjeffrose.chicago;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import java.io.File;
-import java.io.IOException;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.leader.LeaderSelector;
@@ -20,6 +19,7 @@ public class Chicago {
   private static DBManager dbManager;
   private static NodeWatcher nodeWatcher;
   private static DBRouter dbRouter;
+  private static ChiConfig config;
 
 
   public static void main(String[] args) {
@@ -37,7 +37,7 @@ public class Chicago {
       _conf = ConfigFactory.parseFile(new File("test.conf"));
     }
 
-    ChiConfig config = new ChiConfig(_conf);
+    config = new ChiConfig(_conf);
 
     try {
       CuratorFramework curator = CuratorFrameworkFactory.newClient(config.getZkHosts(),
@@ -76,14 +76,14 @@ public class Chicago {
 
   public void stop() {
     try {
+      zkClient.getClient().delete().forPath((NODE_LIST_PATH + "/" + config.getDBBindIP()));
       zkClient.stop();
       dbRouter.close();
       dbManager.destroy();
 
-    } catch (IOException e) {
+    } catch (Exception e) {
       System.exit(-1);
     }
-
   }
 
 }

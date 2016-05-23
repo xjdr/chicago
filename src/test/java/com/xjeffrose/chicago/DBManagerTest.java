@@ -3,13 +3,19 @@ package com.xjeffrose.chicago;
 import com.typesafe.config.ConfigFactory;
 import java.io.File;
 import java.util.List;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.rocksdb.ReadOptions;
 
 import static org.junit.Assert.*;
 
 public class DBManagerTest {
-  DBManager dbManager = new DBManager(new ChiConfig(ConfigFactory.parseFile(new File("test.conf"))));
+  static DBManager dbManager;
+
+  @BeforeClass
+  static public void setupFixture() throws Exception {
+    dbManager = new DBManager(new ChiConfig(ConfigFactory.parseFile(new File("test.conf"))));
+  }
 
   @Test
   public void singleEntry() throws Exception {
@@ -26,7 +32,6 @@ public class DBManagerTest {
   @Test
   public void getKeys() throws Exception {
     List<byte[]> keySet = dbManager.getKeys(new ReadOptions());
-    System.out.println(keySet.size());
   }
 
 }

@@ -18,12 +18,13 @@ public class RendezvousHash<N> {
 
   private final HashFunction hasher;
   private final Funnel<N> nodeFunnel;
-  private final ConcurrentSkipListSet<N> nodeList;
+
+  private ConcurrentSkipListSet<N> nodeList;
 
   public RendezvousHash(Funnel<N> nodeFunnel, Collection<N> init) {
     this.hasher = Hashing.murmur3_128();
     this.nodeFunnel = nodeFunnel;
-    this.nodeList = new ConcurrentSkipListSet<N>(init);
+    this.nodeList = new ConcurrentSkipListSet<>(init);
   }
 
   boolean remove(N node) {
@@ -71,5 +72,9 @@ public class RendezvousHash<N> {
       }
     }
     return first_three;
+  }
+
+  public void refresh(List<N> list) {
+    nodeList = new ConcurrentSkipListSet<>(list);
   }
 }

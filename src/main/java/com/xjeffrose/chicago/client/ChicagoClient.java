@@ -19,7 +19,7 @@ public class ChicagoClient {
   private static final Logger log = Logger.getLogger(ChicagoClient.class);
   private final static String NODE_LIST_PATH = "/chicago/node-list";
   private static final long TIMEOUT = 1000;
-  private static boolean TIMEOUT_ENABLED = false;
+  private static boolean TIMEOUT_ENABLED = true;
   private static int MAX_RETRY = 3;
 
   private final ExecutorService exe = Executors.newFixedThreadPool(20);
@@ -71,8 +71,7 @@ public class ChicagoClient {
     zkClient.start();
 
     this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), buildNodeList());
-    this.clientNodeWatcher = new ClientNodeWatcher();
-    clientNodeWatcher.refresh(zkClient, rendezvousHash);
+    this.clientNodeWatcher = new ClientNodeWatcher(zkClient, rendezvousHash);
     this.connectionPoolMgr = new ConnectionPoolManager(zkClient);
   }
 
