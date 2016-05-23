@@ -30,7 +30,6 @@ class DBManager {
   private final ReadOptions readOptions = new ReadOptions();
   private final WriteOptions writeOptions = new WriteOptions();
   private final Map<String, ColumnFamilyHandle> columnFamilies = new HashMap<>();
-  private final Filter bloomFilter = new BloomFilter(10);
 
   private RocksDB db;
 
@@ -89,7 +88,6 @@ class DBManager {
   }
 
   private void configWriteOptions() {
-//    writeOptions.setDisableWAL(true);
     writeOptions.setSync(true);
     writeOptions.setDisableWAL(true);
   }

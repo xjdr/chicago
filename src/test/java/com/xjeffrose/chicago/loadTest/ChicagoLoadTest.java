@@ -9,21 +9,18 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- * Created by root on 5/17/16.
- */
 public class ChicagoLoadTest {
   static ChicagoClient chicagoClientDHT;
 
   @BeforeClass
   static public void setupFixture() throws Exception {
-    chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181/chicago");
+    chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
     //chicagoClientDHT = new ChicagoClient("10.22.100.183:2181/chicago");
   }
 
   @Test
   public void writeMany() throws Exception {
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 100; i++) {
       String _k = "key" + i;
       byte[] key = _k.getBytes();
       String _v = "val" + i;
@@ -34,7 +31,7 @@ public class ChicagoLoadTest {
 
   @Test
   public void readMany() throws Exception {
-    for (int i = 0; i < 600; i++) {
+    for (int i = 0; i < 100; i++) {
       String _k = "key" + i;
       byte[] key = _k.getBytes();
       String _v = "val" + i;
@@ -45,7 +42,7 @@ public class ChicagoLoadTest {
 
     @Test
     public void deleteMany() throws Exception {
-      for (int i = 0; i < 10; i++) {
+      for (int i = 0; i < 100; i++) {
         String _k = "sm" + i;
         byte[] key = _k.getBytes();
         assertEquals(true, chicagoClientDHT.delete(key));

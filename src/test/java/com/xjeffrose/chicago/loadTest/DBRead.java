@@ -13,9 +13,6 @@ import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.WriteOptions;
 
-/**
- * Created by root on 5/17/16.
- */
 public class DBRead {
   public static void main(String args[]) throws Exception{
     ChicagoClient cc = new ChicagoClient(new InetSocketAddress("10.24.25.188", 12000));

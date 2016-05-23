@@ -3,7 +3,7 @@ package com.xjeffrose.chicago;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import java.io.File;
-import java.util.Random;
+import java.io.IOException;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.leader.LeaderSelector;
@@ -15,6 +15,12 @@ public class Chicago {
   private static final Logger log = Logger.getLogger(Chicago.class.getName());
   private final static String ELECTION_PATH = "/chicago/chicago-elect";
   private final static String NODE_LIST_PATH = "/chicago/node-list";
+
+  private static ZkClient zkClient;
+  private static DBManager dbManager;
+  private static NodeWatcher nodeWatcher;
+  private static DBRouter dbRouter;
+
 
   public static void main(String[] args) {
     log.info("Starting Chicago, have a nice day");
@@ -44,7 +50,7 @@ public class Chicago {
       leaderSelector.autoRequeue();
       leaderSelector.start();
 
-      ZkClient zkClient = new ZkClient(curator);
+      zkClient = new ZkClient(curator);
       zkClient
           .getClient()
           .create()
@@ -55,11 +61,11 @@ public class Chicago {
       config.setLeaderSelector(leaderSelector);
       config.setZkClient(zkClient);
 
-      DBManager dbManager = new DBManager(config);
-      NodeWatcher nodeWatcher = new NodeWatcher();
+      dbManager = new DBManager(config);
+      nodeWatcher = new NodeWatcher();
       nodeWatcher.refresh(zkClient, leaderSelector, dbManager, config);
 
-      DBRouter dbRouter = new DBRouter(config, dbManager);
+      dbRouter = new DBRouter(config, dbManager);
       dbRouter.run();
 
       log.info("I am the Leader: " + leaderSelector.hasLeadership());
@@ -68,5 +74,16 @@ public class Chicago {
     }
   }
 
+  public void stop() {
+    try {
+      zkClient.stop();
+      dbRouter.close();
+      dbManager.destroy();
+
+    } catch (IOException e) {
+      System.exit(-1);
+    }
+
+  }
 
 }

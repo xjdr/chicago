@@ -19,7 +19,7 @@ public class ChicagoClient {
   private static final Logger log = Logger.getLogger(ChicagoClient.class);
   private final static String NODE_LIST_PATH = "/chicago/node-list";
   private static final long TIMEOUT = 1000;
-  private static boolean TIMEOUT_ENABLED = true;
+  private static boolean TIMEOUT_ENABLED = false;
   private static int MAX_RETRY = 3;
 
   private final ExecutorService exe = Executors.newFixedThreadPool(20);
@@ -77,7 +77,7 @@ public class ChicagoClient {
   }
 
 
-  private List<String> buildNodeList() {
+  protected List<String> buildNodeList() {
     return zkClient.list(NODE_LIST_PATH);
   }
 
@@ -144,16 +144,16 @@ public class ChicagoClient {
     return responseList.stream().findFirst().orElse(null);
   }
 
-  public boolean write(byte[] key, byte[] value) throws ChicagoClientTimeoutException {
+  public boolean write(byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException {
     return write("chicago".getBytes(), key, value);
   }
 
-  public boolean write(byte[] colFam, byte[] key, byte[] value) throws ChicagoClientTimeoutException {
+  public boolean write(byte[] colFam, byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException {
     return _write(colFam, key, value, 0);
   }
 
 
-    private boolean _write(byte[] colFam, byte[] key, byte[] value, int retries) throws ChicagoClientTimeoutException {
+    private boolean _write(byte[] colFam, byte[] key, byte[] value, int retries) throws ChicagoClientTimeoutException, ChicagoClientException {
     ConcurrentLinkedDeque<Boolean> responseList = new ConcurrentLinkedDeque<>();
     final long startTime = System.currentTimeMillis();
 
@@ -215,26 +215,26 @@ public class ChicagoClient {
     }
 
     if (responseList.stream().allMatch(b -> b)) {
-      //TODO(JR): Add max retry logic
       return true;
     } else {
       if (MAX_RETRY < retries) {
         return _write(colFam, key, value, retries++);
       } else {
-        return false;
+        _delete(colFam, key, 0);
+        throw new ChicagoClientException("Could not successfully complete a replicated write. Please retry the operation");
       }
     }
   }
 
-  public boolean delete(byte[] key) throws ChicagoClientTimeoutException {
+  public boolean delete(byte[] key) throws ChicagoClientTimeoutException, ChicagoClientException {
     return delete("chicago".getBytes(), key);
   }
 
-  public boolean delete(byte[] colFam, byte[] key) throws ChicagoClientTimeoutException {
+  public boolean delete(byte[] colFam, byte[] key) throws ChicagoClientTimeoutException, ChicagoClientException {
     return _delete(colFam, key, 0);
   }
 
-    private boolean _delete(byte[] colFam, byte[] key, int retries) throws ChicagoClientTimeoutException {
+    private boolean _delete(byte[] colFam, byte[] key, int retries) throws ChicagoClientTimeoutException, ChicagoClientException {
     ConcurrentLinkedDeque<Boolean> responseList = new ConcurrentLinkedDeque<>();
     final long startTime = System.currentTimeMillis();
 
@@ -292,14 +292,17 @@ public class ChicagoClient {
 
 
     if (responseList.stream().allMatch(b -> b)) {
-      //TODO(JR): Add max retry logic
       return true;
     } else {
       if (MAX_RETRY < retries) {
         return _delete(colFam, key, retries++);
       } else {
-        return false;
+        throw new ChicagoClientException("Could not successfully complete a replicated write. Please retry the operation");
       }
     }
     }
+
+  public List<String> getNodeList(byte[] key) {
+    return rendezvousHash.get(key);
+  }
 }
