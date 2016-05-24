@@ -31,6 +31,7 @@ public class ChiConfig {
   private String dbPath;
   private LeaderSelector leaderSelector;
   private ZkClient zkClient;
+  private int quorum;
 
   public ChiConfig(Config conf) {
 
@@ -53,6 +54,7 @@ public class ChiConfig {
     this.statsPort = conf.getInt("stats_port");
     this.dbBindIP = conf.getString("db_bind_ip");
     this.dbPort = conf.getInt("db_port");
+    this.quorum = conf.getInt("quorum");
     this.zkHosts = conf.getString("zk_hosts");
 
   }
@@ -128,5 +130,9 @@ public class ChiConfig {
   public ZkClient getZkClient() {
     return zkClient;
   }
+
+ public int getQuorum() {
+   return quorum;
+ }
 
 }

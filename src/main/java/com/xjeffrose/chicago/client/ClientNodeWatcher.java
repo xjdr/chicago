@@ -2,6 +2,7 @@ package com.xjeffrose.chicago.client;
 
 import com.xjeffrose.chicago.TreeCacheInstance;
 import com.xjeffrose.chicago.ZkClient;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
@@ -16,14 +17,10 @@ public class ClientNodeWatcher {
   private ZkClient zkClient;
   private RendezvousHash rendezvousHash;
 
-  public ClientNodeWatcher() {
-  }
-
-  public void refresh(ZkClient zkClient, RendezvousHash rendezvousHash) {
+  public ClientNodeWatcher(ZkClient zkClient, RendezvousHash rendezvousHash) {
     nodeList = new TreeCacheInstance(zkClient, NODE_LIST_PATH);
     this.zkClient = zkClient;
     this.rendezvousHash = rendezvousHash;
-
     nodeList.getCache().getListenable().addListener(new GenericListener(NODE_LIST_PATH));
     try {
       nodeList.start();
@@ -47,6 +44,7 @@ public class ClientNodeWatcher {
   private void nodeRemoved(String path) {
     String[] _path = path.split("/");
     rendezvousHash.remove(_path[_path.length - 1]);
+
   }
 
   private class GenericListener implements TreeCacheListener {

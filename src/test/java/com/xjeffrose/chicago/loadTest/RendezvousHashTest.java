@@ -23,7 +23,7 @@ public class RendezvousHashTest {
     nodes.add("40");
 
     RendezvousHash rendezvousHash = new RendezvousHash(
-        Funnels.stringFunnel(Charset.defaultCharset()), nodes);
+        Funnels.stringFunnel(Charset.defaultCharset()), nodes, nodes.size() - 1);
 
     for (int i = 0; i < 1; i++) {
       String _k = "key" + i;
