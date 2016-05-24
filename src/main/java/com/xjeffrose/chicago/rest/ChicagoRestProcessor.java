@@ -94,11 +94,11 @@ public class ChicagoRestProcessor implements XioProcessor{
         String json = null;
         try {
             if (method.equals(HttpMethod.POST)) {
-                ChicagoClient chicagoClient = new ChicagoClient(config.getZkHosts());
+                ChicagoClient chicagoClient = new ChicagoClient(config.getZkHosts(),config.getQuorum());
                 json = String.valueOf(chicagoClient.write(request.getKey().getBytes(), request.getValue().getBytes()));
             } else if (method.equals(HttpMethod.GET)) {
-                ChicagoClient chicagoClient = new ChicagoClient(config.getZkHosts());
-                json = new String(chicagoClient.read(params.get("key").get(0).getBytes()));
+                ChicagoClient chicagoClient = new ChicagoClient(config.getZkHosts(),config.getQuorum());
+                json = new String(chicagoClient.read(params.get("key").get(0).getBytes()).get());
             } else if (method.equals(HttpMethod.DELETE)) {
                 json = "true";
             } else {
