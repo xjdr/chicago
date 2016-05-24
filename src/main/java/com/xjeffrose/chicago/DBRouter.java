@@ -215,7 +215,7 @@ public class DBRouter implements Closeable {
   @Override
   public void close() throws IOException {
     x.stop();
-    dbManager.destroy();
+    //dbManager.destroy();
   }
 
   public void stop() {

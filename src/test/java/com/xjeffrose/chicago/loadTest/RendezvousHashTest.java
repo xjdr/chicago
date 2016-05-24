@@ -1,6 +1,7 @@
 package com.xjeffrose.chicago.loadTest;
 
 import com.google.common.hash.Funnels;
+import com.xjeffrose.chicago.client.ChicagoClient;
 import com.xjeffrose.chicago.client.RendezvousHash;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -32,6 +33,16 @@ public class RendezvousHashTest {
       l.forEach(x -> {
         System.out.println(x);
       });
+    }
+  }
+
+  @Test
+  public void testGetNodeList() throws Exception{
+    ChicagoClient chicagoClient = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
+    String k = "Key";
+    while(true) {
+      System.out.println((chicagoClient.getNodeList(k.getBytes())).toString());
+      Thread.sleep(500);
     }
   }
 }

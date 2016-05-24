@@ -24,14 +24,14 @@ public class ChicagoClientTest {
   @BeforeClass
   static public void setupFixture() throws Exception {
     testingServer = new TestingServer(2182);
-    chicago1 = new Chicago();
-    chicago1.main(new String[]{"", "src/test/resources/test1.conf"});
-    chicago2 = new Chicago();
-    chicago2.main(new String[]{"", "src/test/resources/test2.conf"});
-    chicago3 = new Chicago();
-    chicago3.main(new String[]{"", "src/test/resources/test3.conf"});
-    chicago4 = new Chicago();
-    chicago4.main(new String[]{"", "src/test/resources/test4.conf"});
+//    chicago1 = new Chicago();
+//    chicago1.main(new String[]{"", "src/test/resources/test1.conf"});
+//    chicago2 = new Chicago();
+//    chicago2.main(new String[]{"", "src/test/resources/test2.conf"});
+//    chicago3 = new Chicago();
+//    chicago3.main(new String[]{"", "src/test/resources/test3.conf"});
+//    chicago4 = new Chicago();
+//    chicago4.main(new String[]{"", "src/test/resources/test4.conf"});
 //    chicagoClientSingle = new ChicagoClient(new InetSocketAddress("127.0.0.1", 12000));
 //    chicagoClientDHT = new ChicagoClient("10.25.160.234:2181");
 //    chicagoClientDHT = new ChicagoClient("10.22.100.183:2181");

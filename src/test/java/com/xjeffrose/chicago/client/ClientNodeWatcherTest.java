@@ -22,14 +22,14 @@ public class ClientNodeWatcherTest {
   @BeforeClass
   static public void setupFixture() throws Exception {
     testingServer = new TestingServer(2182);
-    chicago1 = new Chicago();
-    chicago1.main(new String[]{"", "src/test/resources/test1.conf"});
-    chicago2 = new Chicago();
-    chicago2.main(new String[]{"", "src/test/resources/test2.conf"});
-    chicago3 = new Chicago();
-    chicago3.main(new String[]{"", "src/test/resources/test3.conf"});
-    chicago4 = new Chicago();
-    chicago4.main(new String[]{"", "src/test/resources/test4.conf"});
+//    chicago1 = new Chicago();
+//    chicago1.main(new String[]{"", "src/test/resources/test1.conf"});
+//    chicago2 = new Chicago();
+//    chicago2.main(new String[]{"", "src/test/resources/test2.conf"});
+//    chicago3 = new Chicago();
+//    chicago3.main(new String[]{"", "src/test/resources/test3.conf"});
+//    chicago4 = new Chicago();
+//    chicago4.main(new String[]{"", "src/test/resources/test4.conf"});
     chicagoClientDHT = new ChicagoClient(testingServer.getConnectString());
   }
 

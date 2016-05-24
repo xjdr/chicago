@@ -15,14 +15,19 @@ public class Chicago {
   private final static String ELECTION_PATH = "/chicago/chicago-elect";
   private final static String NODE_LIST_PATH = "/chicago/node-list";
 
-  private static ZkClient zkClient;
-  private static DBManager dbManager;
-  private static NodeWatcher nodeWatcher;
-  private static DBRouter dbRouter;
-  private static ChiConfig config;
+  private ZkClient zkClient;
+  private DBManager dbManager;
+  private NodeWatcher nodeWatcher;
+  private DBRouter dbRouter;
+  private ChiConfig config;
+  public String name;
+
+  public Chicago(String name){
+    this.name = name;
+  }
 
 
-  public static void main(String[] args) {
+  public void main(String[] args) {
     log.info("Starting Chicago, have a nice day");
 
     Config _conf;
@@ -74,12 +79,12 @@ public class Chicago {
     }
   }
 
-  public void stop() {
+  public void stop() throws Exception{
     try {
       zkClient.getClient().delete().forPath((NODE_LIST_PATH + "/" + config.getDBBindIP()));
-      zkClient.stop();
+      //dbManager.destroy();
       dbRouter.close();
-      dbManager.destroy();
+      //zkClient.stop();
 
     } catch (Exception e) {
       System.exit(-1);
