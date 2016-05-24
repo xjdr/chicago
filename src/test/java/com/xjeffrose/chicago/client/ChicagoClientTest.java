@@ -2,6 +2,8 @@ package com.xjeffrose.chicago.client;
 
 import com.netflix.curator.test.TestingServer;
 import com.xjeffrose.chicago.Chicago;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufProcessor;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -77,6 +79,44 @@ public class ChicagoClientTest {
       assertEquals(new String(val), new String(chicagoClientDHT.read("colfam".getBytes(), key)));
       assertEquals(true, chicagoClientDHT.delete("colfam".getBytes(), key));
 
+    }
+  }
+
+  int getMessageBreak(ByteBuf buf) {
+
+    return buf.forEachByte(new ByteBufProcessor() {
+      @Override
+      public boolean process(byte value) {
+        return value != '\0';
+      }
+    });
+  }
+
+  @Test
+  public void transactionStream() throws Exception {
+    final int count = 20;
+    for (int i = 0; i < count; i++) {
+      String _k = "key" + i;
+      byte[] key = _k.getBytes();
+      String _v = "val" + i;
+      byte[] val = _v.getBytes();
+      assertEquals(true, chicagoClientDHT.write("colfam".getBytes(), key, val));
+    }
+
+    ByteBuf streamBuf = chicagoClientDHT.streamFrom("colfam".getBytes(), "key0".getBytes());
+
+    for (int i = 0; i < count; i++) {
+      String _v = "val" + i;
+      System.out.println(streamBuf.readerIndex() + "Before find");
+      int x = getMessageBreak(streamBuf);
+      System.out.println(streamBuf.readerIndex() + "After find");
+      byte[] val = new byte[x];
+      streamBuf.readBytes(val, 0, x);
+      System.out.println(streamBuf.readerIndex() + "After read");
+      streamBuf.readerIndex(streamBuf.readerIndex());
+//      assertEquals(_v, new String(val));
+      System.out.println(x);
+      System.out.println(new String(val));
     }
   }
 

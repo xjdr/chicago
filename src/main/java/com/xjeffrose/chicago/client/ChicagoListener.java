@@ -1,6 +1,7 @@
 package com.xjeffrose.chicago.client;
 
 import com.xjeffrose.chicago.ChicagoMessage;
+import io.netty.buffer.ByteBuf;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
@@ -77,6 +78,47 @@ class ChicagoListener implements Listener<byte[]> {
 
     if (_resp.getSuccess()) {
       return _resp.getVal();
+    } else {
+      log.error("Invalid Response returned");
+      return null;
+    }
+  }
+
+
+  @Override
+  public ByteBuf getStream(UUID id) throws ChicagoClientTimeoutException {
+    return _getStream(id, System.currentTimeMillis());
+  }
+
+  private ByteBuf _getStream(UUID id, long startTime) throws ChicagoClientTimeoutException {
+    while (Collections.disjoint(reqIds, messageIds)) {
+      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
+        Thread.currentThread().interrupt();
+        throw new ChicagoClientTimeoutException();
+      }
+      try {
+        Thread.sleep(1);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+
+    while (!responseMap.containsKey(id)) {
+      try {
+        if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
+          Thread.currentThread().interrupt();
+          throw new ChicagoClientTimeoutException();
+        }
+        Thread.sleep(1);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+
+    ChicagoMessage _resp = responseMap.get(id);
+
+    if (_resp.getSuccess()) {
+      return _resp.getStream();
     } else {
       log.error("Invalid Response returned");
       return null;

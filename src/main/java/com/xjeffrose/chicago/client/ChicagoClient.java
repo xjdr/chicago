@@ -4,6 +4,7 @@ import com.google.common.hash.Funnels;
 import com.xjeffrose.chicago.DefaultChicagoMessage;
 import com.xjeffrose.chicago.Op;
 import com.xjeffrose.chicago.ZkClient;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
@@ -75,9 +76,69 @@ public class ChicagoClient {
     this.connectionPoolMgr = new ConnectionPoolManager(zkClient);
   }
 
-
   protected List<String> buildNodeList() {
     return zkClient.list(NODE_LIST_PATH);
+  }
+
+  public ByteBuf streamFrom(byte[] key) throws ChicagoClientTimeoutException {
+    return streamFrom("chicago".getBytes(), key);
+  }
+
+  public ByteBuf streamFrom(byte[] colFam, byte[] key) throws ChicagoClientTimeoutException {
+    final long startTime = System.currentTimeMillis();
+    ConcurrentLinkedDeque<ByteBuf> responseList = new ConcurrentLinkedDeque<>();
+    if (single_server != null) {
+    }
+    try {
+      List<String> hashList = rendezvousHash.get(key);
+      for (String node : hashList) {
+        if (node == null) {
+        } else {
+          ChannelFuture cf = connectionPoolMgr.getNode(node);
+          if (cf.channel().isWritable()) {
+            exe.execute(new Runnable() {
+              @Override
+              public void run() {
+//                try {
+                UUID id = UUID.randomUUID();
+                Listener listener = connectionPoolMgr.getListener(node);
+                cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.STREAM, colFam, key, null));
+                listener.addID(id);
+                exe.execute(new Runnable() {
+                  @Override
+                  public void run() {
+                    try {
+                      responseList.add((ByteBuf) listener.getStream(id));
+                    } catch (ChicagoClientTimeoutException e) {
+                      Thread.currentThread().interrupt();
+                      throw new RuntimeException(e);
+                    }
+                  }
+                });
+              }
+            });
+          }
+        }
+      }
+    } catch (ChicagoClientTimeoutException e) {
+      Thread.currentThread().interrupt();
+      log.error("Client Timeout During Read Operation:", e);
+      return null;
+    }
+
+    while (responseList.isEmpty()) {
+      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
+        Thread.currentThread().interrupt();
+        throw new ChicagoClientTimeoutException();
+      }
+      try {
+        Thread.sleep(1);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+
+    return responseList.stream().findFirst().orElse(null);
   }
 
   public byte[] read(byte[] key) throws ChicagoClientTimeoutException {

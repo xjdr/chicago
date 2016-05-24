@@ -1,19 +1,20 @@
 package com.xjeffrose.chicago;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.log4j.Logger;
-import org.rocksdb.BloomFilter;
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.ColumnFamilyOptions;
 import org.rocksdb.CompactionStyle;
 import org.rocksdb.CompressionType;
 import org.rocksdb.Env;
-import org.rocksdb.Filter;
 import org.rocksdb.HashLinkedListMemTableConfig;
 import org.rocksdb.Options;
 import org.rocksdb.ReadOptions;
@@ -30,6 +31,8 @@ class DBManager {
   private final ReadOptions readOptions = new ReadOptions();
   private final WriteOptions writeOptions = new WriteOptions();
   private final Map<String, ColumnFamilyHandle> columnFamilies = new HashMap<>();
+
+  private final AtomicInteger ordering = new AtomicInteger();
 
   private RocksDB db;
 
@@ -79,16 +82,15 @@ class DBManager {
     options.setMemTableConfig(
         new HashLinkedListMemTableConfig()
             .setBucketCount(100000));
-
-
   }
 
   private void configReadOptions() {
-    readOptions.setFillCache(false);
+//    readOptions.setTailing(true);
+//    readOptions.setFillCache(false);
   }
 
   private void configWriteOptions() {
-    writeOptions.setSync(true);
+//    writeOptions.setSync(true);
     writeOptions.setDisableWAL(true);
   }
 
@@ -131,13 +133,13 @@ class DBManager {
     } else if (!colFamilyExists(colFam)) {
       createColumnFamily(colFam);
     }
-      try {
-        db.put(columnFamilies.get(new String(colFam)), writeOptions, key, value);
-        return true;
-      } catch (RocksDBException e) {
-        log.error("Error writing record: " + new String(key), e);
-        return false;
-      }
+    try {
+      db.put(columnFamilies.get(new String(colFam)), writeOptions, key, value);
+      return true;
+    } catch (RocksDBException e) {
+      log.error("Error writing record: " + new String(key), e);
+      return false;
+    }
   }
 
   byte[] read(byte[] colFam, byte[] key) {
@@ -183,8 +185,46 @@ class DBManager {
     return keySet;
   }
 
+  List<byte[]> getAllAfter(byte[] colFam, byte[] key) {
+
+    RocksIterator iterator = db.newIterator(columnFamilies.get(new String(colFam)), readOptions);
+    iterator.seek(key);
+
+    List<byte[]> res = new ArrayList<>();
+
+    while (iterator.isValid()) {
+      res.add(iterator.key());
+      iterator.next();
+    }
+
+    return res;
+  }
+
+  byte[] stream(byte[] colFam) {
+    RocksIterator iterator = db.newIterator(columnFamilies.get(new String(colFam)), readOptions);
+    iterator.seekToFirst();
+
+    while (iterator.isValid()) {
+
+    }
+
+    return null;
+  }
+
+  byte[] streamFrom(byte[] colFam, byte[] key) {
+    ByteBuf streamBuf = Unpooled.buffer();
+    getAllAfter(colFam, key).stream().forEach(xs -> {
+      streamBuf.writeBytes(read(colFam, xs));
+      streamBuf.writeByte('\0');
+    });
+
+    byte[] x = streamBuf.array();
+    return x;
+  }
+
   void destroy() {
-    db.close();
+    if (db != null) db.close();
+    options.dispose();
   }
 
 }

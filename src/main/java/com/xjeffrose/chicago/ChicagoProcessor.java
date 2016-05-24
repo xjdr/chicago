@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.xjeffrose.xio.processor.XioProcessor;
 import com.xjeffrose.xio.server.RequestContext;
 import io.netty.channel.ChannelHandlerContext;
+import java.util.UUID;
 
 public class ChicagoProcessor implements XioProcessor {
   private DBManager dbManager;
@@ -32,7 +33,7 @@ public class ChicagoProcessor implements XioProcessor {
     return service.submit(() -> {
 
       if (finalMsg == null) {
-//        reqCtx.setContextData(reqCtx.getConnectionId(), new DefaultChicagoMessage(Op.fromInt(3), "x".getBytes(), Boolean.toString(false).getBytes(), "x".getBytes()));
+        reqCtx.setContextData(reqCtx.getConnectionId(), new DefaultChicagoMessage(UUID.randomUUID(), Op.fromInt(3), "x".getBytes(), Boolean.toString(false).getBytes(), "x".getBytes()));
 
         return false;
       }
@@ -46,17 +47,26 @@ public class ChicagoProcessor implements XioProcessor {
           if (readResponse != null) {
             status = true;
           }
+          reqCtx.setContextData(reqCtx.getConnectionId(), new DefaultChicagoMessage(finalMsg.getId(), Op.fromInt(3), finalMsg.getColFam(), Boolean.toString(status).getBytes(), readResponse));
           break;
         case WRITE:
           status = dbManager.write(finalMsg.getColFam(), finalMsg.getKey(), finalMsg.getVal());
+          reqCtx.setContextData(reqCtx.getConnectionId(), new DefaultChicagoMessage(finalMsg.getId(), Op.fromInt(3), finalMsg.getColFam(), Boolean.toString(status).getBytes(), null));
           break;
         case DELETE:
           status = dbManager.delete(finalMsg.getColFam(), finalMsg.getKey());
+          reqCtx.setContextData(reqCtx.getConnectionId(), new DefaultChicagoMessage(finalMsg.getId(), Op.fromInt(3), finalMsg.getColFam(), Boolean.toString(status).getBytes(), null));
+          break;
+        case STREAM:
+          readResponse = dbManager.streamFrom(finalMsg.getColFam(), finalMsg.getKey());
+          if (readResponse != null) {
+            status = true;
+          }
+          reqCtx.setContextData(reqCtx.getConnectionId(), new DefaultChicagoMessage(finalMsg.getId(), Op.fromInt(5), finalMsg.getColFam(), Boolean.toString(status).getBytes(), readResponse));
         default:
           break;
       }
 
-      reqCtx.setContextData(reqCtx.getConnectionId(), new DefaultChicagoMessage(finalMsg.getId(), Op.fromInt(3), finalMsg.getColFam(), Boolean.toString(status).getBytes(), readResponse));
       return true;
     });
   }

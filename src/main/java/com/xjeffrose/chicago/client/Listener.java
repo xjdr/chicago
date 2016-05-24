@@ -2,6 +2,7 @@ package com.xjeffrose.chicago.client;
 
 
 import com.xjeffrose.chicago.ChicagoMessage;
+import io.netty.buffer.ByteBuf;
 import java.util.UUID;
 
 interface Listener<T> {
@@ -21,4 +22,6 @@ interface Listener<T> {
   void addID(UUID id);
 
   void onResponseReceived(ChicagoMessage chicagoMessage);
+
+  ByteBuf getStream(UUID id) throws ChicagoClientTimeoutException;
 }

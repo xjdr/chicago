@@ -2,7 +2,9 @@ package com.xjeffrose.chicago;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.buffer.UnpooledHeapByteBuf;
 import io.netty.handler.codec.DecoderResult;
+import java.util.List;
 import java.util.UUID;
 
 public class DefaultChicagoMessage implements ChicagoMessage {
@@ -63,5 +65,14 @@ public class DefaultChicagoMessage implements ChicagoMessage {
   @Override
   public byte[] getColFam() {
     return colFam;
+  }
+
+  @Override
+  public ByteBuf getStream() {
+    if (getOp() == Op.STREAM_RESPONSE) {
+      return Unpooled.compositeBuffer().writeBytes(getVal());
+    } else {
+      return null;
+    }
   }
 }

@@ -5,6 +5,7 @@ import java.io.File;
 import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.rocksdb.BuiltinComparator;
 import org.rocksdb.ReadOptions;
 
 import static org.junit.Assert.*;
@@ -34,4 +35,20 @@ public class DBManagerTest {
     List<byte[]> keySet = dbManager.getKeys(new ReadOptions());
   }
 
+  @Test
+  public void getOrderedKeys() throws Exception {
+    for (int i = 0; i < 20; i++) {
+      byte[] k = ("key" + i ).getBytes();
+      byte[] v = ("val" + i ).getBytes();
+      dbManager.write("foo".getBytes(), k, v);
+    }
+
+    List<byte[]> keySet = dbManager.getAllAfter("foo".getBytes(), "key0".getBytes());
+
+    for (int i = 0; i < 20; i++) {
+      assertEquals("key" + i , new String(keySet.get(i)));
+    }
+
+
+    }
 }

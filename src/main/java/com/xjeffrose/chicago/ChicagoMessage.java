@@ -1,5 +1,6 @@
 package com.xjeffrose.chicago;
 
+import io.netty.buffer.ByteBuf;
 import java.util.UUID;
 
 public interface ChicagoMessage extends ChicagoObject {
@@ -15,4 +16,6 @@ public interface ChicagoMessage extends ChicagoObject {
   boolean getSuccess();
 
   byte[] getColFam();
+
+  ByteBuf getStream();
 }
