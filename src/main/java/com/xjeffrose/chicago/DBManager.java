@@ -6,14 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
-import org.rocksdb.BloomFilter;
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.ColumnFamilyOptions;
 import org.rocksdb.CompactionStyle;
 import org.rocksdb.CompressionType;
 import org.rocksdb.Env;
-import org.rocksdb.Filter;
 import org.rocksdb.HashLinkedListMemTableConfig;
 import org.rocksdb.Options;
 import org.rocksdb.ReadOptions;
@@ -131,13 +129,13 @@ class DBManager {
     } else if (!colFamilyExists(colFam)) {
       createColumnFamily(colFam);
     }
-      try {
-        db.put(columnFamilies.get(new String(colFam)), writeOptions, key, value);
-        return true;
-      } catch (RocksDBException e) {
-        log.error("Error writing record: " + new String(key), e);
-        return false;
-      }
+    try {
+      db.put(columnFamilies.get(new String(colFam)), writeOptions, key, value);
+      return true;
+    } catch (RocksDBException e) {
+      log.error("Error writing record: " + new String(key), e);
+      return false;
+    }
   }
 
   byte[] read(byte[] colFam, byte[] key) {

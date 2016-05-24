@@ -19,8 +19,8 @@ public class RendezvousHashTest {
     for (int i = 0; i < 12; i++) {
       nodes.add("node" + i);
     }
-    RendezvousHash rendezvousHash1 = new RendezvousHash(strFunnel, nodes);
-    RendezvousHash rendezvousHash2 = new RendezvousHash(strFunnel, nodes);
+    RendezvousHash rendezvousHash1 = new RendezvousHash(strFunnel, nodes, 3);
+    RendezvousHash rendezvousHash2 = new RendezvousHash(strFunnel, nodes, 3);
 
     for (int i = 0; i < 10; i++) {
       byte[] x = ("key" + i).getBytes();
@@ -36,8 +36,8 @@ public class RendezvousHashTest {
       for (int i = 0; i < 12; i++) {
         nodes.add("node" + i);
       }
-      RendezvousHash rendezvousHash1 = new RendezvousHash(strFunnel, nodes);
-      RendezvousHash rendezvousHash2 = new RendezvousHash(strFunnel, nodes);
+      RendezvousHash rendezvousHash1 = new RendezvousHash(strFunnel, nodes, 3);
+      RendezvousHash rendezvousHash2 = new RendezvousHash(strFunnel, nodes, 3);
 
       for (int i = 0; i < 10; i++) {
         byte[] x = ("key" + i).getBytes();
@@ -69,8 +69,8 @@ public class RendezvousHashTest {
       for (int i = 0; i < 12; i++) {
         nodes.add("node" + i);
       }
-      RendezvousHash rendezvousHash1 = new RendezvousHash(strFunnel, nodes);
-      RendezvousHash rendezvousHash2 = new RendezvousHash(strFunnel, nodes);
+      RendezvousHash rendezvousHash1 = new RendezvousHash(strFunnel, nodes, 3);
+      RendezvousHash rendezvousHash2 = new RendezvousHash(strFunnel, nodes, 3);
 
       for (int i = 0; i < 10; i++) {
         byte[] x = ("key" + i).getBytes();
@@ -103,8 +103,8 @@ public class RendezvousHashTest {
     for(int i = 0 ; i < 200; i ++) {
       nodes.add("node"+i);
     }
-    RendezvousHash rendezvousHash1 = new RendezvousHash(strFunnel , nodes);
-    RendezvousHash rendezvousHash2 = new RendezvousHash(strFunnel , nodes);
+    RendezvousHash rendezvousHash1 = new RendezvousHash(strFunnel , nodes, 3);
+    RendezvousHash rendezvousHash2 = new RendezvousHash(strFunnel , nodes, 3);
 
     int loopCount = 0;
 

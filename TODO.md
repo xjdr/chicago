@@ -15,3 +15,7 @@ TODO
 * Get all Keys
 
 * Implement offsets for ordering
+
+* Implement TSD (key, timestamp, val)
+  - Hash on key (colFam)
+  - server timestamps

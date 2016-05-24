@@ -34,7 +34,7 @@ public class NodeWatcher {
     this.config = config;
     nodeList.getCache().getListenable().addListener(new GenericListener(NODE_LIST_PATH));
     try {
-      this.chicagoClient = new ChicagoClient(zkClient.getConnectionString());
+        this.chicagoClient = new ChicagoClient(zkClient.getConnectionString(), config.getQuorum());
       nodeList.start();
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -49,7 +49,7 @@ public class NodeWatcher {
   }
 
   private void redistributeKeys() {
-    RendezvousHash rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), zkClient.list(NODE_LIST_PATH));
+      RendezvousHash rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), zkClient.list(NODE_LIST_PATH), config.getQuorum());
 //    dbManager.getKeys(new ReadOptions()).forEach(xs -> {
 //      rendezvousHash.get(xs).stream()
 //          .filter(xxs -> xxs == config.getDBBindIP())
