@@ -1,11 +1,15 @@
 package com.xjeffrose.chicago;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
+import org.apache.log4j.net.SyslogAppender;
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.ColumnFamilyOptions;
@@ -185,4 +189,42 @@ class DBManager {
     db.close();
   }
 
+  public byte[] tsWrite(byte[] colFam, byte[] value) {
+    if (value == null) {
+      log.error("Tried to ts write a null value");
+      return null;
+    } else if (!colFamilyExists(colFam)) {
+      createColumnFamily(colFam);
+    }
+    try {
+      byte[] ts = Long.toString(System.nanoTime()).getBytes();
+      db.put(columnFamilies.get(new String(colFam)), writeOptions, ts, value);
+      return ts;
+    } catch (RocksDBException e) {
+      log.error("Error writing record: " + new String(colFam), e);
+      return null;
+    }
+  }
+
+  public byte[] stream(byte[] colFam, byte[] offset) {
+    RocksIterator i = db.newIterator(columnFamilies.get(new String(colFam)), readOptions);
+    ByteBuf bb = Unpooled.buffer();
+
+    if (offset.length == 0) {
+      i.seekToFirst();
+    } else {
+      i.seek(offset);
+    }
+
+    while (i.isValid()) {
+      byte[] v = i.value();
+      byte[] _v = new byte[v.length + 1];
+      System.arraycopy(v, 0, _v, 0, v.length);
+      System.arraycopy(new byte[]{'\0'}, 0, _v, v.length, 1);
+      bb.writeBytes(_v);
+      i.next();
+    }
+
+    return bb.array();
+  }
 }

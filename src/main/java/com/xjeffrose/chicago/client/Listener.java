@@ -3,6 +3,7 @@ package com.xjeffrose.chicago.client;
 
 import com.xjeffrose.chicago.ChicagoMessage;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 interface Listener<T> {
 
@@ -21,4 +22,6 @@ interface Listener<T> {
   void addID(UUID id);
 
   void onResponseReceived(ChicagoMessage chicagoMessage);
+
+  ConcurrentLinkedDeque<UUID> getReqIds();
 }
