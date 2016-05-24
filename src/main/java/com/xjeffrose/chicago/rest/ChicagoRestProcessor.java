@@ -1,5 +1,6 @@
 package com.xjeffrose.chicago.rest;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
@@ -18,6 +19,8 @@ import io.netty.handler.codec.json.JsonObjectDecoder;
 import io.netty.util.CharsetUtil;
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.HashMap;
@@ -51,53 +54,82 @@ public class ChicagoRestProcessor implements XioProcessor{
         ListenableFuture<Boolean> responseFuture = executor.submit(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-
                 FullHttpRequest httpRequest = null;
-                JsonObject jsonRequest = null;
+                Request request = null;
+                HttpResponse response = null;
+                Gson gson = new Gson();
 
                 if (req instanceof FullHttpRequest) {
                     httpRequest = (FullHttpRequest) req;
                 }
 
                 log.debug(httpRequest);
-                httpRequest.headers().forEach(xs -> log.info(xs.getKey() + ": " + xs.getValue()));
-                QueryStringDecoder queryStringDecoder = new QueryStringDecoder(httpRequest.getUri());
+                httpRequest.headers().forEach(xs -> log.debug(xs.getKey() + ": " + xs.getValue()));
+                QueryStringDecoder queryStringDecoder = new QueryStringDecoder(httpRequest.uri());
                 Map<String, List<String>> params = queryStringDecoder.parameters();
                 if(httpRequest.headers().contains(HttpHeaderNames.CONTENT_TYPE) && httpRequest.headers().get(HttpHeaderNames.CONTENT_TYPE.toString()).contains("json")){
-                    jsonRequest = (new JsonParser()).parse(httpRequest.content().toString(CharsetUtil.UTF_8)).getAsJsonObject();
+                    request = gson.fromJson(httpRequest.content().toString(CharsetUtil.UTF_8),Request.class);
                 }
 
-
-                String json = null;
                 Route client = Route.build("/rest/v1/");
-
                 Map<Route, Method> routeMap = new HashMap<>();
-
                 String query = queryStringDecoder.path();
                 if (query != null && client.matches(query)) {
-                    if(httpRequest.method().equals(HttpMethod.POST)) {
-                        ChicagoClient chicagoClient = new ChicagoClient(config.getZkHosts());
-                        json = String.valueOf(chicagoClient.write(jsonRequest.get("key").getAsString().getBytes(),jsonRequest.get("value").getAsString().getBytes()));
-                    }else if(httpRequest.method().equals(HttpMethod.GET)) {
-                        ChicagoClient chicagoClient = new ChicagoClient(config.getZkHosts());
-                        json = new String(chicagoClient.read(params.get("key").get(0).getBytes()));
-                    }else if(httpRequest.method().equals(HttpMethod.DELETE)) {
-                        json = "{\"response\":\"true\"}";
-                    }else{
-                        json = "{\"response\" : \"Bad request\"}";
-                    }
+                    response = processRequest(ctx,httpRequest.method(),request,params);
                 } else {
-                    json = "{\"response\" : \"Bad request\"}";
+                    response = createBadResponse(ctx);
+                    reqCtx.setContextData(reqCtx.getConnectionId(), response);
+                    return true;
                 }
 
-                DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, ctx.alloc().buffer().writeBytes(json.getBytes()));
-                response.headers().set(CONTENT_TYPE, "Application/json");
-                response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
                 reqCtx.setContextData(reqCtx.getConnectionId(), response);
-
                 return true;
             }
         });
         return responseFuture;
+    }
+
+    public HttpResponse processRequest(ChannelHandlerContext ctx,HttpMethod method, Request request, Map<String, List<String>> params){
+        Response response = new Response();
+        String json = null;
+        try {
+            if (method.equals(HttpMethod.POST)) {
+                ChicagoClient chicagoClient = new ChicagoClient(config.getZkHosts());
+                json = String.valueOf(chicagoClient.write(request.getKey().getBytes(), request.getValue().getBytes()));
+            } else if (method.equals(HttpMethod.GET)) {
+                ChicagoClient chicagoClient = new ChicagoClient(config.getZkHosts());
+                json = new String(chicagoClient.read(params.get("key").get(0).getBytes()));
+            } else if (method.equals(HttpMethod.DELETE)) {
+                json = "true";
+            } else {
+                json = "Bad request";
+            }
+        }catch (Exception e){
+            log.info(e.getStackTrace());
+            json = "Bad request";
+        }
+        response.setValue(json);
+        return createResponse(ctx,response);
+    }
+
+    public HttpResponse createResponse(ChannelHandlerContext ctx, Response response){
+        StringWriter sw = new StringWriter();
+        final ObjectMapper mapper = new ObjectMapper();
+        try {
+            mapper.writeValue(sw, response);
+        } catch(IOException e) {
+            log.error(e.getMessage());
+        }
+        String json = sw.toString();
+        DefaultFullHttpResponse httpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, ctx.alloc().buffer().writeBytes(json.getBytes()));
+        httpResponse.headers().set(CONTENT_TYPE, "Application/json");
+        httpResponse.headers().set(CONTENT_LENGTH, httpResponse.content().readableBytes());
+        return httpResponse;
+    }
+
+    public HttpResponse createBadResponse(ChannelHandlerContext ctx){
+        Response res = new Response();
+        res.setValue("Bad request");
+        return createResponse(ctx,res);
     }
 }
