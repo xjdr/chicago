@@ -1,6 +1,7 @@
 package com.xjeffrose.chicago;
 
 import com.google.common.collect.ImmutableMap;
+import com.xjeffrose.chicago.rest.ChicagoRestProcessor;
 import com.xjeffrose.xio.SSL.XioSecurityHandlerImpl;
 import com.xjeffrose.xio.core.XioAggregatorFactory;
 import com.xjeffrose.xio.core.XioCodecFactory;
@@ -21,6 +22,7 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import java.io.Closeable;
 import java.io.IOException;
@@ -109,7 +111,7 @@ public class DBRouter implements Closeable {
         .withProcessorFactory(new XioProcessorFactory() {
           @Override
           public XioProcessor getProcessor() {
-            return new ChicagoStatsProcessor();
+            return new ChicagoRestProcessor(config);
           }
         })
         .withCodecFactory(new XioCodecFactory() {
@@ -121,13 +123,13 @@ public class DBRouter implements Closeable {
         .withAggregator(new XioAggregatorFactory() {
           @Override
           public ChannelHandler getAggregator() {
-            return null;
+              return new HttpObjectAggregator(16777216);
           }
         })
         .withRoutingFilter(new XioRoutingFilterFactory() {
           @Override
           public ChannelInboundHandler getRoutingFilter() {
-            return null;
+              return new XioNoOpHandler();
           }
         })
         .build();

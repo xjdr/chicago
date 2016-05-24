@@ -19,7 +19,7 @@ public class ChicagoClient {
   private static final Logger log = Logger.getLogger(ChicagoClient.class);
   private final static String NODE_LIST_PATH = "/chicago/node-list";
   private static final long TIMEOUT = 1000;
-  private static boolean TIMEOUT_ENABLED = false;
+  private static boolean TIMEOUT_ENABLED = true;
   private static int MAX_RETRY = 3;
 
   private final ExecutorService exe = Executors.newFixedThreadPool(20);
@@ -156,14 +156,14 @@ public class ChicagoClient {
     private boolean _write(byte[] colFam, byte[] key, byte[] value, int retries) throws ChicagoClientTimeoutException, ChicagoClientException {
     ConcurrentLinkedDeque<Boolean> responseList = new ConcurrentLinkedDeque<>();
     final long startTime = System.currentTimeMillis();
-
+    List<String> hashList = null;
     if (single_server != null) {
 //      connect(single_server, Op.WRITE, key, value, listener);
     }
 
     try {
 
-      List<String> hashList = rendezvousHash.get(key);
+      hashList = rendezvousHash.get(key);
 
       for (String node : hashList) {
         if (node == null) {
@@ -202,7 +202,7 @@ public class ChicagoClient {
     }
 
 
-    while (responseList.size() < 3) {
+    while (responseList.size() < hashList.size()) {
       if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
         Thread.currentThread().interrupt();
         throw new ChicagoClientTimeoutException();
@@ -237,10 +237,10 @@ public class ChicagoClient {
     private boolean _delete(byte[] colFam, byte[] key, int retries) throws ChicagoClientTimeoutException, ChicagoClientException {
     ConcurrentLinkedDeque<Boolean> responseList = new ConcurrentLinkedDeque<>();
     final long startTime = System.currentTimeMillis();
-
+    List<String> hashList = null;
     try {
 
-      List<String> hashList = rendezvousHash.get(key);
+      hashList = rendezvousHash.get(key);
 
       for (String node : hashList) {
         if (node == null) {
@@ -278,7 +278,7 @@ public class ChicagoClient {
       return false;
     }
 
-        while (responseList.size() < 3) {
+        while (responseList.size() < hashList.size()) {
           if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
             Thread.currentThread().interrupt();
             throw new ChicagoClientTimeoutException();
