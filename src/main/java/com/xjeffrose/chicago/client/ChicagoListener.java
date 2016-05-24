@@ -132,5 +132,11 @@ class ChicagoListener implements Listener<byte[]> {
     reqIds.add(id);
   }
 
+  @Override
+  public ConcurrentLinkedDeque<UUID> getReqIds() {
+    return reqIds;
+  }
+
+
 
 }

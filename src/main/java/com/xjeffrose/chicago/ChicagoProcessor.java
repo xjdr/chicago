@@ -52,6 +52,19 @@ public class ChicagoProcessor implements XioProcessor {
           break;
         case DELETE:
           status = dbManager.delete(finalMsg.getColFam(), finalMsg.getKey());
+          break;
+        case TS_WRITE:
+          readResponse = dbManager.tsWrite(finalMsg.getColFam(), finalMsg.getVal());
+          if (readResponse != null) {
+            status = true;
+          }
+          break;
+        case STREAM:
+          readResponse = dbManager.stream(finalMsg.getColFam(), finalMsg.getVal());
+          if (readResponse != null) {
+            status = true;
+          }
+          break;
         default:
           break;
       }

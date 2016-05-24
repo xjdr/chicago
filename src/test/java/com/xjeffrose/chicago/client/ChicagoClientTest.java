@@ -1,5 +1,6 @@
 package com.xjeffrose.chicago.client;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import com.netflix.curator.test.TestingServer;
 import com.xjeffrose.chicago.Chicago;
 import java.util.concurrent.CountDownLatch;
@@ -11,6 +12,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class ChicagoClientTest {
   static TestingServer testingServer;
@@ -21,6 +23,8 @@ public class ChicagoClientTest {
 
   static ChicagoClient chicagoClientSingle;
   static ChicagoClient chicagoClientDHT;
+  static ChicagoTSClient chicagoTSClient;
+
 
   @BeforeClass
   static public void setupFixture() throws Exception {
@@ -35,6 +39,10 @@ public class ChicagoClientTest {
     chicago4.main(new String[]{"", "src/test/resources/test4.conf"});
 //    chicagoClientSingle = new ChicagoClient(new InetSocketAddress("127.0.0.1", 12000));
     chicagoClientDHT = new ChicagoClient("10.25.160.234:2181", 3);
+//    chicagoTSClient = new ChicagoTSClient("10.25.160.234:2181", 3);
+    chicagoTSClient = new ChicagoTSClient(testingServer.getConnectString(), 3);
+
+
 //    chicagoClientDHT = new ChicagoClient("10.22.100.183:2181");
 //    chicagoClientDHT = new ChicagoClient(testingServer.getConnectString());
 //    chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
@@ -79,6 +87,32 @@ public class ChicagoClientTest {
       assertEquals(true, chicagoClientDHT.delete("colfam".getBytes(), key));
 
     }
+  }
+
+  @Test
+  public void transactStream() throws Exception {
+    byte[] offset = null;
+    for (int i = 0; i < 20; i++) {
+      String _v = "val" + i;
+      byte[] val = _v.getBytes();
+      if (i == 12) {
+        offset = chicagoTSClient.write("tskey".getBytes(), val);
+      }
+      assertNotNull(chicagoTSClient.write("tskey".getBytes(), val));
+    }
+
+    ListenableFuture<ChicagoStream> f = chicagoTSClient.stream("tskey".getBytes());
+    ChicagoStream cs = f.get(1000, TimeUnit.MILLISECONDS);
+    ListenableFuture<byte[]> resp = cs.getStream();
+
+    System.out.println(new String(resp.get(1000, TimeUnit.MILLISECONDS)));
+
+
+    ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream("tskey".getBytes(), offset);
+    ChicagoStream _cs = _f.get(1000, TimeUnit.MILLISECONDS);
+    ListenableFuture<byte[]> _resp = _cs.getStream();
+
+    System.out.println(new String(_resp.get(1000, TimeUnit.MILLISECONDS)));
   }
 
   @Test
@@ -141,8 +175,6 @@ public class ChicagoClientTest {
         }
       }
     });
-
-
 
     while(true) {
       Thread.sleep(10000);
