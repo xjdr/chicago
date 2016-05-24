@@ -46,7 +46,7 @@ public class ClientNodeWatcher {
 
   private void nodeRemoved(String path) {
     String[] _path = path.split("/");
-    rendezvousHash.add(_path[_path.length - 1]);
+    rendezvousHash.remove(_path[_path.length - 1]);
   }
 
   private class GenericListener implements TreeCacheListener {
