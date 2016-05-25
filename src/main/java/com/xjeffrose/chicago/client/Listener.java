@@ -24,4 +24,6 @@ interface Listener<T> {
   void onResponseReceived(ChicagoMessage chicagoMessage);
 
   ConcurrentLinkedDeque<UUID> getReqIds();
+
+  T getResponse(ConcurrentLinkedDeque<UUID> idList) throws ChicagoClientTimeoutException;
 }

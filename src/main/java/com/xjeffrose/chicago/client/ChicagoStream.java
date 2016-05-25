@@ -43,7 +43,7 @@ public class ChicagoStream {
           }
         }
         try {
-          byte[] resp =  (byte[]) listener.getResponse(idList.removeFirst());
+          byte[] resp =  (byte[]) listener.getResponse(idList);
           if (resp != null) {
             return resp;
           }

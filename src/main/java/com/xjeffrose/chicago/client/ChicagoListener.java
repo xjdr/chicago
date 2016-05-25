@@ -137,6 +137,50 @@ class ChicagoListener implements Listener<byte[]> {
     return reqIds;
   }
 
+  @Override
+  public byte[] getResponse(ConcurrentLinkedDeque<UUID> idList) throws ChicagoClientTimeoutException {
+    return _getResponse(idList, System.currentTimeMillis());
+  }
+
+  private byte[] _getResponse(ConcurrentLinkedDeque<UUID> idList, long startTime) throws ChicagoClientTimeoutException {
+    while (Collections.disjoint(reqIds, messageIds)) {
+      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
+        Thread.currentThread().interrupt();
+        throw new ChicagoClientTimeoutException();
+      }
+      try {
+        Thread.sleep(1);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+
+    while (Collections.disjoint(responseMap.keySet(), idList)) {
+      try {
+        if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
+          Thread.currentThread().interrupt();
+          throw new ChicagoClientTimeoutException();
+        }
+        Thread.sleep(1);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+
+
+    while (!responseMap.containsKey(idList.getFirst())) {
+      idList.removeFirst();
+    }
+
+    ChicagoMessage _resp = responseMap.get(idList.getFirst());
+
+    if (_resp.getSuccess()) {
+      return _resp.getVal();
+    } else {
+      log.error("Invalid Response returned");
+      return null;
+    }
+  }
 
 
 }
