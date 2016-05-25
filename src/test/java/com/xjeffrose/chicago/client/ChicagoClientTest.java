@@ -107,7 +107,6 @@ public class ChicagoClientTest {
 
     System.out.println(new String(resp.get(1000, TimeUnit.MILLISECONDS)));
 
-
     ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream("tskey".getBytes(), offset);
     ChicagoStream _cs = _f.get(1000, TimeUnit.MILLISECONDS);
     ListenableFuture<byte[]> _resp = _cs.getStream();

@@ -10,6 +10,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ChicagoStream {
+  private static final long TIMEOUT = 1000;
+  private static final boolean TIMEOUT_ENABLED = false;
+
   private final ConcurrentLinkedDeque<UUID> idList = new ConcurrentLinkedDeque<>();
   private Listener listener;
 
@@ -28,15 +31,26 @@ public class ChicagoStream {
       @Override
       public byte[] call() throws Exception {
         final long startTime = System.currentTimeMillis();
+        while (idList.isEmpty()) {
+          if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
+            Thread.currentThread().interrupt();
+            throw new ChicagoClientTimeoutException();
+          }
+          try {
+            Thread.sleep(1);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+        }
         try {
-          byte[] resp =  (byte[]) listener.getResponse(idList.getFirst());
+          byte[] resp =  (byte[]) listener.getResponse(idList.removeFirst());
           if (resp != null) {
             return resp;
           }
         } catch (ChicagoClientTimeoutException e) {
           e.printStackTrace();
         }
-        return null;
+        return call();
       }
     });
 
