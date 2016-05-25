@@ -30,7 +30,7 @@ public class ClientNodeWatcherTest {
     chicago3.main(new String[]{"", "src/test/resources/test3.conf"});
     chicago4 = new Chicago();
     chicago4.main(new String[]{"", "src/test/resources/test4.conf"});
-    chicagoClientDHT = new ChicagoClient(testingServer.getConnectString());
+    chicagoClientDHT = new ChicagoClient(testingServer.getConnectString(), 3);
   }
 
   @Test

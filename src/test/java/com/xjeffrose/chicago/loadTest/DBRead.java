@@ -38,7 +38,7 @@ public class DBRead {
       chicago3.main(new String[]{"", "src/test/resources/test3.conf"});
       chicago4 = new Chicago();
       chicago4.main(new String[]{"", "src/test/resources/test4.conf"});
-      chicagoClientDHT = new ChicagoClient("127.0.0.1:2182");
+      chicagoClientDHT = new ChicagoClient("127.0.0.1:2182",3);
   }
 
   @Test
@@ -63,7 +63,7 @@ public class DBRead {
   @Test
   public void maxKeyTest() throws Exception {
     ChicagoClient chicagoClientDHT = new ChicagoClient(
-            "10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
+            "10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181",3);
     StringBuilder keystr = new StringBuilder();
     StringBuilder valstr = new StringBuilder();
     for(int i =0;i<1000;i++) {
@@ -77,7 +77,7 @@ public class DBRead {
       System.out.println(_k.length());
       if(_k.length() < MAX_KEY) {
         assertEquals(true, chicagoClientDHT.write(key, val));
-        assertEquals(_v, new String(chicagoClientDHT.read(key)));
+        assertEquals(_v, new String(chicagoClientDHT.read(key).get()));
       }
     }
   }
@@ -97,7 +97,7 @@ public class DBRead {
       System.out.println(_v.length());
       if(_v.length() < MAX_VAL) {
         assertEquals(true, chicagoClientDHT.write(key, val));
-        assertEquals(_v, new String(chicagoClientDHT.read(key)));
+        assertEquals(_v, new String(chicagoClientDHT.read(key).get()));
       }
     }
     long diff = System.currentTimeMillis() - start_time;
@@ -108,7 +108,7 @@ public class DBRead {
     ChicagoClient cc = new ChicagoClient(new InetSocketAddress(hostname, 12000));
     byte[] ret=null;
     try {
-      ret = cc.read(key.getBytes());
+      ret = cc.read(key.getBytes()).get();
     }catch (Exception e){
       System.out.println(e.getCause());
     }
@@ -123,7 +123,7 @@ public class DBRead {
         byte[] key = _k.getBytes();
         String _v = "vall";
         byte[] val = _v.getBytes();
-        List<String> l = chicagoClientDHT.getNodeListforKey(key);
+        List<String> l = chicagoClientDHT.getNodeList(key);
         System.out.println(l.toString());
         assertEquals(true, chicagoClientDHT.write(key, val));
         switch(l.get(0)){
@@ -144,7 +144,7 @@ public class DBRead {
                 chicago4.stop();
                 break;
         }
-        l = chicagoClientDHT.getNodeListforKey(key);
+        l = chicagoClientDHT.getNodeList(key);
         System.out.println(l.toString());
         assertEquals(true, chicagoClientDHT.delete(key));
         long diff = System.currentTimeMillis() - start_time;

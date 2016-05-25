@@ -4,7 +4,9 @@ public enum Op {
   READ(0),
   WRITE(1),
   DELETE(2),
-  RESPONSE(3);
+  RESPONSE(3),
+  TS_WRITE(4),
+  STREAM(5);
 
   private int i;
 
@@ -27,6 +29,10 @@ public enum Op {
         return DELETE;
       case 3:
         return RESPONSE;
+      case 4:
+        return TS_WRITE;
+      case 5:
+        return STREAM;
     }
     return null;
   }

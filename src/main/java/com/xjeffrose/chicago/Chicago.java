@@ -15,11 +15,11 @@ public class Chicago {
   private final static String ELECTION_PATH = "/chicago/chicago-elect";
   private final static String NODE_LIST_PATH = "/chicago/node-list";
 
-  private static ZkClient zkClient;
-  private static DBManager dbManager;
-  private static NodeWatcher nodeWatcher;
-  private static DBRouter dbRouter;
-  private static ChiConfig config;
+//  private static ZkClient zkClient;
+//  private static DBManager dbManager;
+//  private static NodeWatcher nodeWatcher;
+//  private static DBRouter dbRouter;
+//  private static ChiConfig config;
 
 
   public static void main(String[] args) {
@@ -37,53 +37,40 @@ public class Chicago {
       _conf = ConfigFactory.parseFile(new File("test.conf"));
     }
 
-    config = new ChiConfig(_conf);
+    ChiConfig config = new ChiConfig(_conf);
 
     try {
-      CuratorFramework curator = CuratorFrameworkFactory.newClient(config.getZkHosts(),
-          2000, 10000, new ExponentialBackoffRetry(1000, 3));
-      curator.start();
-      curator.blockUntilConnected();
 
-      LeaderSelector leaderSelector = new LeaderSelector(curator, ELECTION_PATH, new ChiLeaderSelectorListener());
+      ZkClient zkClient = new ZkClient(config.getZkHosts());
+      zkClient.start();
+      zkClient.register(NODE_LIST_PATH, config);
+      zkClient.electLeader(ELECTION_PATH);
 
-      leaderSelector.autoRequeue();
-      leaderSelector.start();
-
-      zkClient = new ZkClient(curator);
-      zkClient
-          .getClient()
-          .create()
-          .creatingParentsIfNeeded()
-          .withMode(CreateMode.EPHEMERAL)
-          .forPath(NODE_LIST_PATH + "/" + config.getDBBindIP(), ConfigSerializer.serialize(config).getBytes());
-
-      config.setLeaderSelector(leaderSelector);
       config.setZkClient(zkClient);
 
-      dbManager = new DBManager(config);
-      nodeWatcher = new NodeWatcher();
-      nodeWatcher.refresh(zkClient, leaderSelector, dbManager, config);
+      DBManager dbManager = new DBManager(config);
+      NodeWatcher nodeWatcher = new NodeWatcher();
+      nodeWatcher.refresh(zkClient, dbManager, config);
 
-      dbRouter = new DBRouter(config, dbManager);
+      DBRouter dbRouter = new DBRouter(config, dbManager);
       dbRouter.run();
 
-      log.info("I am the Leader: " + leaderSelector.hasLeadership());
     } catch (Exception e) {
+      log.error("Error Starting Chicago", e);
       System.exit(-1);
     }
   }
 
   public void stop() {
-    try {
-      zkClient.getClient().delete().forPath((NODE_LIST_PATH + "/" + config.getDBBindIP()));
-      zkClient.stop();
-      dbRouter.close();
-      dbManager.destroy();
-
-    } catch (Exception e) {
-      System.exit(-1);
-    }
+//    try {
+//      zkClient.getClient().delete().forPath((NODE_LIST_PATH + "/" + config.getDBBindIP()));
+//      zkClient.stop();
+//      dbRouter.close();
+//      dbManager.destroy();
+//
+//    } catch (Exception e) {
+//      System.exit(-1);
+//    }
   }
 
 }

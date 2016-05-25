@@ -34,6 +34,7 @@ public class ConnectionPoolManager {
 
   private final Map<String, Listener> listenerMap = new ConcurrentHashMap<>();
   private final Map<String, ChannelFuture> connectionMap = new ConcurrentHashMap<>();
+  private final NioEventLoopGroup workerLoop = new NioEventLoopGroup(20);
   private final ZkClient zkClient;
 
   public ConnectionPoolManager(ZkClient zkClient) {
@@ -108,7 +109,7 @@ public class ConnectionPoolManager {
         .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024)
         .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
         .option(ChannelOption.TCP_NODELAY, true);
-    bootstrap.group(new NioEventLoopGroup(20))
+    bootstrap.group(workerLoop)
         .channel(NioSocketChannel.class)
         .handler(new ChannelInitializer<SocketChannel>() {
           @Override

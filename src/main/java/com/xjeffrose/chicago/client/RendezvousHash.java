@@ -18,13 +18,15 @@ public class RendezvousHash<N> {
 
   private final HashFunction hasher;
   private final Funnel<N> nodeFunnel;
-
+    private final int quorum;
+    
   private ConcurrentSkipListSet<N> nodeList;
 
-  public RendezvousHash(Funnel<N> nodeFunnel, Collection<N> init) {
+    public RendezvousHash(Funnel<N> nodeFunnel, Collection<N> init, int quorum) {
     this.hasher = Hashing.murmur3_128();
     this.nodeFunnel = nodeFunnel;
     this.nodeList = new ConcurrentSkipListSet<>(init);
+    this.quorum = quorum;
   }
 
   boolean remove(N node) {
@@ -34,8 +36,15 @@ public class RendezvousHash<N> {
   boolean add(N node) {
     return nodeList.add(node);
   }
-  
+
   public List<N> get(byte[] key) {
+    while (nodeList.size() < quorum) {
+      try {
+        Thread.sleep(1);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
     Map<Long, N> hashMap = new ConcurrentHashMap<>();
     List<N> _nodeList = new ArrayList<>();
 
@@ -49,10 +58,8 @@ public class RendezvousHash<N> {
 
     });
 
-    for (int i = 0; i < 3; i++) {
-      if(!hashMap.isEmpty()) {
-        _nodeList.add(hashMap.remove(hashMap.keySet().stream().max(Long::compare).orElse(null)));
-      }
+    for (int i = 0; i < quorum; i++) {
+      _nodeList.add(hashMap.remove(hashMap.keySet().stream().max(Long::compare).orElse(null)));
     }
 
     return _nodeList;

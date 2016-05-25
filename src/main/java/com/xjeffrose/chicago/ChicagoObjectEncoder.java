@@ -24,6 +24,10 @@ public class ChicagoObjectEncoder extends MessageToMessageEncoder<Object> {
 
   public byte[] encode(UUID _id, Op _op, byte[] colFam, byte[] key, byte[] val) {
 
+    if (key == null) {
+      key = new byte[0];
+    }
+
     if (val == null) {
       val = new byte[0];
     }
