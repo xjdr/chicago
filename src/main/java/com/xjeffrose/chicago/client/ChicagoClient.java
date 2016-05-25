@@ -32,7 +32,7 @@ public class ChicagoClient {
   private final ExecutorService exe = Executors.newFixedThreadPool(20);
 
   private final InetSocketAddress single_server;
-  private final RendezvousHash rendezvousHash;
+  private final RendezvousHash<String> rendezvousHash;
   private final ClientNodeWatcher clientNodeWatcher;
   private final ZkClient zkClient;
   private final ConnectionPoolManager connectionPoolMgr;
@@ -114,7 +114,7 @@ public class ChicagoClient {
                   public void run() {
 //                try {
                     UUID id = UUID.randomUUID();
-                    Listener listener = connectionPoolMgr.getListener(node); //Blocking
+                    Listener<byte[]> listener = connectionPoolMgr.getListener(node); //Blocking
                     cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.READ, colFam, key, null));
                     listener.addID(id);
                     exe.execute(new Runnable() {
@@ -208,7 +208,7 @@ public class ChicagoClient {
                   public void run() {
 //            try {
                     UUID id = UUID.randomUUID();
-                    Listener listener = connectionPoolMgr.getListener(node); // Blocking
+                    Listener<byte[]> listener = connectionPoolMgr.getListener(node); // Blocking
                     cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.WRITE, colFam, key, value));
                     listener.addID(id);
                     exe.execute(new Runnable() {
@@ -304,7 +304,7 @@ public class ChicagoClient {
                   public void run() {
 //                try {
                     UUID id = UUID.randomUUID();
-                    Listener listener = connectionPoolMgr.getListener(node);
+                    Listener<byte[]> listener = connectionPoolMgr.getListener(node);
                     cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.DELETE, colFam, key, null));
                     listener.addID(id);
                     exe.execute(new Runnable() {

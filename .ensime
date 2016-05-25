@@ -1,112 +1,26 @@
-(:root-dir
-   "/Users/jefrose/src/xjdr/chicago"
- :cache-dir
-   "/Users/jefrose/src/xjdr/chicago/.ensime_cache"
- :name
-   "chicago"
- :scala-version
-   "2.10.6"
- :java-home
-   "/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home"
- :java-flags
-   ()
- :subprojects
-   ((:name
-       "chicago"
-     :module-name
-       "chicago"
-     :runtime-deps
-       ("/Users/jefrose/.m2/repository/com/xjeffrose/xio/0.10.0-SNAPSHOT/xio-0.10.0-SNAPSHOT.jar"
-        "/Users/jefrose/.m2/repository/com/typesafe/config/1.3.0/config-1.3.0.jar"
-        "/Users/jefrose/src/xjdr/chicago/3rdParty/rocksdbjni-4.8.0-osx.jar"
-        "/Users/jefrose/.m2/repository/org/apache/curator/curator-framework/2.9.1/curator-framework-2.9.1.jar"
-        "/Users/jefrose/.m2/repository/org/apache/curator/curator-client/2.9.1/curator-client-2.9.1.jar"
-        "/Users/jefrose/.m2/repository/org/apache/curator/curator-recipes/2.9.1/curator-recipes-2.9.1.jar"
-        "/Users/jefrose/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.7.3/jackson-databind-2.7.3.jar"
-        "/Users/jefrose/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.7.3/jackson-core-2.7.3.jar"
-        "/Users/jefrose/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.7.3/jackson-annotations-2.7.3.jar"
-        "/Users/jefrose/.m2/repository/org/apache/zookeeper/zookeeper/3.4.5/zookeeper-3.4.5.jar"
-        "/Users/jefrose/.m2/repository/org/slf4j/slf4j-api/1.6.1/slf4j-api-1.6.1.jar"
-        "/Users/jefrose/.m2/repository/org/slf4j/slf4j-log4j12/1.6.1/slf4j-log4j12-1.6.1.jar"
-        "/Users/jefrose/.m2/repository/log4j/log4j/1.2.15/log4j-1.2.15.jar"
-        "/Users/jefrose/.m2/repository/javax/mail/mail/1.4/mail-1.4.jar"
-        "/Users/jefrose/.m2/repository/javax/activation/activation/1.1/activation-1.1.jar"
-        "/Users/jefrose/.m2/repository/jline/jline/0.9.94/jline-0.9.94.jar"
-        "/Users/jefrose/.m2/repository/org/jboss/netty/netty/3.2.2.Final/netty-3.2.2.Final.jar"
-        "/Users/jefrose/src/xjdr/chicago/target/classes")
-     :compile-deps
-       ("/Users/jefrose/.m2/repository/com/xjeffrose/xio/0.10.0-SNAPSHOT/xio-0.10.0-SNAPSHOT.jar"
-        "/Users/jefrose/.m2/repository/com/typesafe/config/1.3.0/config-1.3.0.jar"
-        "/Users/jefrose/src/xjdr/chicago/3rdParty/rocksdbjni-4.8.0-osx.jar"
-        "/Users/jefrose/.m2/repository/org/apache/curator/curator-framework/2.9.1/curator-framework-2.9.1.jar"
-        "/Users/jefrose/.m2/repository/org/apache/curator/curator-client/2.9.1/curator-client-2.9.1.jar"
-        "/Users/jefrose/.m2/repository/org/apache/curator/curator-recipes/2.9.1/curator-recipes-2.9.1.jar"
-        "/Users/jefrose/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.7.3/jackson-databind-2.7.3.jar"
-        "/Users/jefrose/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.7.3/jackson-core-2.7.3.jar"
-        "/Users/jefrose/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.7.3/jackson-annotations-2.7.3.jar"
-        "/Users/jefrose/.m2/repository/org/apache/zookeeper/zookeeper/3.4.5/zookeeper-3.4.5.jar"
-        "/Users/jefrose/.m2/repository/org/slf4j/slf4j-api/1.6.1/slf4j-api-1.6.1.jar"
-        "/Users/jefrose/.m2/repository/org/slf4j/slf4j-log4j12/1.6.1/slf4j-log4j12-1.6.1.jar"
-        "/Users/jefrose/.m2/repository/log4j/log4j/1.2.15/log4j-1.2.15.jar"
-        "/Users/jefrose/.m2/repository/javax/mail/mail/1.4/mail-1.4.jar"
-        "/Users/jefrose/.m2/repository/javax/activation/activation/1.1/activation-1.1.jar"
-        "/Users/jefrose/.m2/repository/jline/jline/0.9.94/jline-0.9.94.jar"
-        "/Users/jefrose/.m2/repository/org/jboss/netty/netty/3.2.2.Final/netty-3.2.2.Final.jar")
-     :test-deps
-       ("/Users/jefrose/.m2/repository/com/xjeffrose/xio/0.10.0-SNAPSHOT/xio-0.10.0-SNAPSHOT.jar"
-        "/Users/jefrose/.m2/repository/com/typesafe/config/1.3.0/config-1.3.0.jar"
-        "/Users/jefrose/src/xjdr/chicago/3rdParty/rocksdbjni-4.8.0-osx.jar"
-        "/Users/jefrose/.m2/repository/org/apache/curator/curator-framework/2.9.1/curator-framework-2.9.1.jar"
-        "/Users/jefrose/.m2/repository/org/apache/curator/curator-client/2.9.1/curator-client-2.9.1.jar"
-        "/Users/jefrose/.m2/repository/org/apache/curator/curator-recipes/2.9.1/curator-recipes-2.9.1.jar"
-        "/Users/jefrose/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.7.3/jackson-databind-2.7.3.jar"
-        "/Users/jefrose/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.7.3/jackson-core-2.7.3.jar"
-        "/Users/jefrose/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.7.3/jackson-annotations-2.7.3.jar"
-        "/Users/jefrose/.m2/repository/junit/junit/4.12/junit-4.12.jar"
-        "/Users/jefrose/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"
-        "/Users/jefrose/.m2/repository/com/netflix/curator/curator-test/1.3.3/curator-test-1.3.3.jar"
-        "/Users/jefrose/.m2/repository/com/google/guava/guava/11.0.1/guava-11.0.1.jar"
-        "/Users/jefrose/.m2/repository/com/google/code/findbugs/jsr305/1.3.9/jsr305-1.3.9.jar"
-        "/Users/jefrose/.m2/repository/org/javassist/javassist/3.15.0-GA/javassist-3.15.0-GA.jar"
-        "/Users/jefrose/.m2/repository/org/apache/commons/commons-math/2.2/commons-math-2.2.jar"
-        "/Users/jefrose/.m2/repository/org/apache/zookeeper/zookeeper/3.4.5/zookeeper-3.4.5.jar"
-        "/Users/jefrose/.m2/repository/org/slf4j/slf4j-api/1.6.1/slf4j-api-1.6.1.jar"
-        "/Users/jefrose/.m2/repository/org/slf4j/slf4j-log4j12/1.6.1/slf4j-log4j12-1.6.1.jar"
-        "/Users/jefrose/.m2/repository/log4j/log4j/1.2.15/log4j-1.2.15.jar"
-        "/Users/jefrose/.m2/repository/javax/mail/mail/1.4/mail-1.4.jar"
-        "/Users/jefrose/.m2/repository/javax/activation/activation/1.1/activation-1.1.jar"
-        "/Users/jefrose/.m2/repository/jline/jline/0.9.94/jline-0.9.94.jar"
-        "/Users/jefrose/.m2/repository/org/jboss/netty/netty/3.2.2.Final/netty-3.2.2.Final.jar")
-     :source-roots
-       ("/Users/jefrose/src/xjdr/chicago/src/main/java"
-        "/Users/jefrose/src/xjdr/chicago/src/test/java")
-     :targets
-       ("/Users/jefrose/src/xjdr/chicago/target/classes")
-     :test-targets
-       ("/Users/jefrose/src/xjdr/chicago/target/test-classes")
-     :reference-source-roots
-       ("/Users/jefrose/.m2/repository/junit/junit/4.12/junit-4.12-sources.jar"
-        "/Users/jefrose/.m2/repository/org/slf4j/slf4j-api/1.6.1/slf4j-api-1.6.1-sources.jar"
-        "/Users/jefrose/.m2/repository/org/apache/curator/curator-framework/2.9.1/curator-framework-2.9.1-sources.jar"
-        "/Users/jefrose/.m2/repository/org/javassist/javassist/3.15.0-GA/javassist-3.15.0-GA-sources.jar"
-        "/Users/jefrose/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.7.3/jackson-core-2.7.3-sources.jar"
-        "/Users/jefrose/.m2/repository/jline/jline/0.9.94/jline-0.9.94-sources.jar"
-        "/Users/jefrose/.m2/repository/com/netflix/curator/curator-test/1.3.3/curator-test-1.3.3-sources.jar"
-        "/Users/jefrose/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.7.3/jackson-annotations-2.7.3-sources.jar"
-        "/Users/jefrose/.m2/repository/javax/mail/mail/1.4/mail-1.4-sources.jar"
-        "/Users/jefrose/.m2/repository/org/apache/curator/curator-client/2.9.1/curator-client-2.9.1-sources.jar"
-        "/Users/jefrose/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.7.3/jackson-databind-2.7.3-sources.jar"
-        "/Users/jefrose/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3-sources.jar"
-        "/Users/jefrose/.m2/repository/org/slf4j/slf4j-log4j12/1.6.1/slf4j-log4j12-1.6.1-sources.jar"
-        "/Users/jefrose/.m2/repository/org/apache/commons/commons-math/2.2/commons-math-2.2-sources.jar"
-        "/Users/jefrose/.m2/repository/log4j/log4j/1.2.15/log4j-1.2.15-sources.jar"
-        "/Users/jefrose/.m2/repository/javax/activation/activation/1.1/activation-1.1-sources.jar"
-        "/Users/jefrose/.m2/repository/org/apache/curator/curator-recipes/2.9.1/curator-recipes-2.9.1-sources.jar"
-        "/Users/jefrose/.m2/repository/com/google/guava/guava/11.0.1/guava-11.0.1-sources.jar"
-        "/Users/jefrose/.m2/repository/org/jboss/netty/netty/3.2.2.Final/netty-3.2.2.Final-sources.jar"
-        "/Users/jefrose/.m2/repository/org/apache/zookeeper/zookeeper/3.4.5/zookeeper-3.4.5-sources.jar"
-        "/Users/jefrose/.m2/repository/com/typesafe/config/1.3.0/config-1.3.0-sources.jar")
-     :depends-on-modules
-       ()))
- :formatting-prefs
-   ())
+(
+ :root-dir "/Users/jefrose/src/xjdr/chicago"
+ :cache-dir "/Users/jefrose/src/xjdr/chicago/.ensime_cache"
+ :scala-compiler-jars ("/Users/jefrose/.sbt/boot/scala-2.10.6/lib/scala-compiler.jar" "/Users/jefrose/.sbt/boot/scala-2.10.6/lib/scala-library.jar" "/Users/jefrose/.sbt/boot/scala-2.10.6/lib/scala-reflect.jar" "/Users/jefrose/.ivy2/cache/org.scala-lang/scalap/jars/scalap-2.10.6.jar")
+ :name "chicago"
+ :java-home "/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home"
+ :java-flags ("-Xms512m" "-Xmx1536m" "-Xss2m" "-XX:ReservedCodeCacheSize=256m" "-XX:+TieredCompilation" "-XX:+CMSClassUnloadingEnabled" "-XX:+UseConcMarkSweepGC")
+ :java-compiler-args ("-source" "1.8" "-target" "1.8")
+ :reference-source-roots ("/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/src.zip")
+ :scala-version "2.10.6"
+ :compiler-args ("-encoding" "utf8" "-deprecation" "-language:_" "-feature" "-Xlint" "-Yinline-warnings" "-Yno-adapted-args" "-Ywarn-dead-code" "-Ywarn-numeric-widen" "-Xfuture")
+ :formatting-prefs nil
+ :disable-source-monitoring nil
+ :disable-class-monitoring nil
+ :subprojects ((
+   :name "chicago"
+   :source-roots ("/Users/jefrose/src/xjdr/chicago/src/main/java" "/Users/jefrose/src/xjdr/chicago/src/test/java")
+   :targets ("/Users/jefrose/src/xjdr/chicago/target/scala-2.10/classes")
+   :test-targets ("/Users/jefrose/src/xjdr/chicago/target/scala-2.10/test-classes")
+   :depends-on-modules nil
+   :compile-deps ("/Users/jefrose/.ivy2/cache/com.typesafe/config/bundles/config-1.3.0.jar" "/Users/jefrose/.ivy2/cache/org.apache.curator/curator-client/bundles/curator-client-2.9.1.jar" "/Users/jefrose/.ivy2/cache/org.apache.curator/curator-framework/bundles/curator-framework-2.9.1.jar" "/Users/jefrose/.ivy2/cache/org.apache.curator/curator-recipes/bundles/curator-recipes-2.9.1.jar" "/Users/jefrose/.ivy2/cache/com.google.guava/guava/bundles/guava-16.0.1.jar" "/Users/jefrose/.ivy2/cache/com.fasterxml.jackson.core/jackson-annotations/bundles/jackson-annotations-2.7.0.jar" "/Users/jefrose/.ivy2/cache/com.fasterxml.jackson.core/jackson-core/bundles/jackson-core-2.7.3.jar" "/Users/jefrose/.ivy2/cache/com.fasterxml.jackson.core/jackson-databind/bundles/jackson-databind-2.7.3.jar" "/Users/jefrose/.ivy2/cache/jline/jline/jars/jline-0.9.94.jar" "/Users/jefrose/.ivy2/cache/log4j/log4j/bundles/log4j-1.2.16.jar" "/Users/jefrose/.ivy2/cache/io.netty/netty/bundles/netty-3.7.0.Final.jar" "/Users/jefrose/src/xjdr/chicago/lib/rocksdbjni-4.8.0-osx.jar" "/Users/jefrose/.sbt/boot/scala-2.10.6/lib/scala-library.jar" "/Users/jefrose/.ivy2/cache/org.slf4j/slf4j-api/jars/slf4j-api-1.7.6.jar" "/Users/jefrose/.m2/repository/com/xjeffrose/xio/0.10.0-SNAPSHOT/xio-0.10.0-SNAPSHOT.jar" "/Users/jefrose/src/xjdr/chicago/lib/xio-0.10.0-SNAPSHOT.jar" "/Users/jefrose/.ivy2/cache/org.apache.zookeeper/zookeeper/jars/zookeeper-3.4.6.jar")
+   :runtime-deps nil
+   :test-deps ("/Users/jefrose/.ivy2/cache/org.apache.commons/commons-math/jars/commons-math-2.2.jar" "/Users/jefrose/.ivy2/cache/com.netflix.curator/curator-test/jars/curator-test-1.3.3.jar" "/Users/jefrose/.ivy2/cache/org.codehaus.groovy/groovy-all/jars/groovy-all-2.4.1.jar" "/Users/jefrose/.ivy2/cache/org.hamcrest/hamcrest-core/jars/hamcrest-core-1.3.jar" "/Users/jefrose/.ivy2/cache/org.javassist/javassist/jars/javassist-3.15.0-GA.jar" "/Users/jefrose/.ivy2/cache/junit/junit/jars/junit-4.12.jar" "/Users/jefrose/.ivy2/cache/com.novocode/junit-interface/jars/junit-interface-0.11.jar" "/Users/jefrose/.ivy2/cache/ch.qos.logback/logback-classic/jars/logback-classic-1.1.7.jar" "/Users/jefrose/.ivy2/cache/ch.qos.logback/logback-core/jars/logback-core-1.1.7.jar" "/Users/jefrose/.ivy2/cache/org.slf4j/slf4j-api/jars/slf4j-api-1.7.20.jar" "/Users/jefrose/.ivy2/cache/org.scala-sbt/test-interface/jars/test-interface-1.0.jar")
+   :doc-jars ("/Users/jefrose/src/xjdr/chicago/target/scala-2.10/chicago_2.10-0.3.0-SNAPSHOT-javadoc.jar" "/Users/jefrose/.ivy2/cache/org.apache.commons/commons-math/docs/commons-math-2.2-javadoc.jar" "/Users/jefrose/.ivy2/cache/com.typesafe/config/docs/config-1.3.0-javadoc.jar" "/Users/jefrose/.ivy2/cache/org.apache.curator/curator-client/docs/curator-client-2.9.1-javadoc.jar" "/Users/jefrose/.ivy2/cache/org.apache.curator/curator-framework/docs/curator-framework-2.9.1-javadoc.jar" "/Users/jefrose/.ivy2/cache/org.apache.curator/curator-recipes/docs/curator-recipes-2.9.1-javadoc.jar" "/Users/jefrose/.ivy2/cache/com.netflix.curator/curator-test/docs/curator-test-1.3.3-javadoc.jar" "/Users/jefrose/.ivy2/cache/org.codehaus.groovy/groovy-all/docs/groovy-all-2.4.1-javadoc.jar" "/Users/jefrose/.ivy2/cache/com.google.guava/guava/docs/guava-16.0.1-javadoc.jar" "/Users/jefrose/.ivy2/cache/org.hamcrest/hamcrest-core/docs/hamcrest-core-1.3-javadoc.jar" "/Users/jefrose/.ivy2/cache/com.fasterxml.jackson.core/jackson-annotations/docs/jackson-annotations-2.7.0-javadoc.jar" "/Users/jefrose/.ivy2/cache/com.fasterxml.jackson.core/jackson-core/docs/jackson-core-2.7.3-javadoc.jar" "/Users/jefrose/.ivy2/cache/com.fasterxml.jackson.core/jackson-databind/docs/jackson-databind-2.7.3-javadoc.jar" "/Users/jefrose/.ivy2/cache/org.javassist/javassist/docs/javassist-3.15.0-GA-javadoc.jar" "/Users/jefrose/.ivy2/cache/junit/junit/docs/junit-4.12-javadoc.jar" "/Users/jefrose/.ivy2/cache/com.novocode/junit-interface/docs/junit-interface-0.11-javadoc.jar" "/Users/jefrose/.ivy2/cache/log4j/log4j/docs/log4j-1.2.16-javadoc.jar" "/Users/jefrose/.ivy2/cache/ch.qos.logback/logback-classic/docs/logback-classic-1.1.7-javadoc.jar" "/Users/jefrose/.ivy2/cache/ch.qos.logback/logback-core/docs/logback-core-1.1.7-javadoc.jar" "/Users/jefrose/.ivy2/cache/io.netty/netty/docs/netty-3.7.0.Final-javadoc.jar" "/Users/jefrose/.ivy2/cache/org.scala-lang/scala-library/docs/scala-library-2.10.6-javadoc.jar" "/Users/jefrose/.ivy2/cache/org.slf4j/slf4j-api/docs/slf4j-api-1.7.20-javadoc.jar" "/Users/jefrose/.ivy2/cache/org.scala-sbt/test-interface/docs/test-interface-1.0-javadoc.jar" "/Users/jefrose/.m2/repository/com/xjeffrose/xio/0.10.0-SNAPSHOT/xio-0.10.0-SNAPSHOT-javadoc.jar" "/Users/jefrose/.ivy2/cache/org.apache.zookeeper/zookeeper/docs/zookeeper-3.4.6-javadoc.jar")
+   :reference-source-roots ("/Users/jefrose/.ivy2/cache/org.apache.commons/commons-math/srcs/commons-math-2.2-sources.jar" "/Users/jefrose/.ivy2/cache/com.typesafe/config/srcs/config-1.3.0-sources.jar" "/Users/jefrose/.ivy2/cache/org.apache.curator/curator-client/srcs/curator-client-2.9.1-sources.jar" "/Users/jefrose/.ivy2/cache/org.apache.curator/curator-framework/srcs/curator-framework-2.9.1-sources.jar" "/Users/jefrose/.ivy2/cache/org.apache.curator/curator-recipes/srcs/curator-recipes-2.9.1-sources.jar" "/Users/jefrose/.ivy2/cache/com.netflix.curator/curator-test/srcs/curator-test-1.3.3-sources.jar" "/Users/jefrose/.ivy2/cache/org.codehaus.groovy/groovy-all/srcs/groovy-all-2.4.1-sources.jar" "/Users/jefrose/.ivy2/cache/com.google.guava/guava/srcs/guava-16.0.1-sources.jar" "/Users/jefrose/.ivy2/cache/org.hamcrest/hamcrest-core/srcs/hamcrest-core-1.3-sources.jar" "/Users/jefrose/.ivy2/cache/com.fasterxml.jackson.core/jackson-annotations/srcs/jackson-annotations-2.7.0-sources.jar" "/Users/jefrose/.ivy2/cache/com.fasterxml.jackson.core/jackson-core/srcs/jackson-core-2.7.3-sources.jar" "/Users/jefrose/.ivy2/cache/com.fasterxml.jackson.core/jackson-databind/srcs/jackson-databind-2.7.3-sources.jar" "/Users/jefrose/.ivy2/cache/org.javassist/javassist/srcs/javassist-3.15.0-GA-sources.jar" "/Users/jefrose/.ivy2/cache/jline/jline/srcs/jline-0.9.94-sources.jar" "/Users/jefrose/.ivy2/cache/junit/junit/srcs/junit-4.12-sources.jar" "/Users/jefrose/.ivy2/cache/com.novocode/junit-interface/srcs/junit-interface-0.11-sources.jar" "/Users/jefrose/.ivy2/cache/log4j/log4j/srcs/log4j-1.2.16-sources.jar" "/Users/jefrose/.ivy2/cache/ch.qos.logback/logback-classic/srcs/logback-classic-1.1.7-sources.jar" "/Users/jefrose/.ivy2/cache/ch.qos.logback/logback-core/srcs/logback-core-1.1.7-sources.jar" "/Users/jefrose/.ivy2/cache/io.netty/netty/srcs/netty-3.7.0.Final-sources.jar" "/Users/jefrose/.ivy2/cache/org.scala-lang/scala-library/srcs/scala-library-2.10.6-sources.jar" "/Users/jefrose/.ivy2/cache/org.slf4j/slf4j-api/srcs/slf4j-api-1.7.20-sources.jar" "/Users/jefrose/.ivy2/cache/org.scala-sbt/test-interface/srcs/test-interface-1.0-sources.jar" "/Users/jefrose/.ivy2/cache/org.apache.zookeeper/zookeeper/srcs/zookeeper-3.4.6-sources.jar")))
+)

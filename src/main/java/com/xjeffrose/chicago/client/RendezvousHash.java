@@ -18,8 +18,8 @@ public class RendezvousHash<N> {
 
   private final HashFunction hasher;
   private final Funnel<N> nodeFunnel;
-    private final int quorum;
-    
+  private final int quorum;
+
   private ConcurrentSkipListSet<N> nodeList;
 
     public RendezvousHash(Funnel<N> nodeFunnel, Collection<N> init, int quorum) {
