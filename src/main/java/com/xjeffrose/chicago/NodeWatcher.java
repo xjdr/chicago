@@ -59,7 +59,7 @@ public class NodeWatcher {
   }
 
   private void redistributeKeys() {
-      RendezvousHash rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), zkClient.list(NODE_LIST_PATH), config.getQuorum());
+//      RendezvousHash rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), zkClient.list(NODE_LIST_PATH), config.getQuorum());
 //    dbManager.getKeys(new ReadOptions()).forEach(xs -> {
 //      rendezvousHash.get(xs).stream()
 //          .filter(xxs -> xxs == config.getDBBindIP())
