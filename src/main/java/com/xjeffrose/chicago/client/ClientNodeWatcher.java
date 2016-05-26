@@ -13,6 +13,7 @@ public class ClientNodeWatcher {
   private static final Logger log = Logger.getLogger(ClientNodeWatcher.class);
   private final static String NODE_LIST_PATH = "/chicago/node-list";
   private final CountDownLatch latch = new CountDownLatch(1);
+  private final GenericListener genericListener = new GenericListener(NODE_LIST_PATH);
   private TreeCacheInstance nodeList;
   private ZkClient zkClient;
   private RendezvousHash rendezvousHash;
@@ -34,6 +35,14 @@ public class ClientNodeWatcher {
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }
+  }
+
+  public void start() {
+  }
+
+  public void stop() {
+    nodeList.getCache().getListenable().removeListener(genericListener);
+    nodeList.stop();
   }
 
   private void nodeAdded(String path) {

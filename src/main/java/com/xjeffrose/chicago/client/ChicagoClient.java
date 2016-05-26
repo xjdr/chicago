@@ -60,6 +60,7 @@ public class ChicagoClient {
    *  ok x 3 nodes -> write request
    */
 
+
   public ChicagoClient(InetSocketAddress server) {
     this.single_server = server;
     this.zkClient = null;
@@ -83,6 +84,15 @@ public class ChicagoClient {
     this.connectionPoolMgr = new ConnectionPoolManager(zkClient);
   }
 
+  public void start() {
+  }
+
+  public void stop() {
+    log.info("ChicagoClient stopping");
+    clientNodeWatcher.stop();
+    connectionPoolMgr.stop();
+    zkClient.stop();
+  }
 
   protected List<String> buildNodeList() {
     return zkClient.list(NODE_LIST_PATH);
