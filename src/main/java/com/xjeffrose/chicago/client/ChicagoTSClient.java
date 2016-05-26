@@ -5,6 +5,7 @@ import com.google.common.primitives.Booleans;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.xjeffrose.chicago.Chicago;
 import com.xjeffrose.chicago.DefaultChicagoMessage;
 import com.xjeffrose.chicago.Op;
 import com.xjeffrose.chicago.ZkClient;
@@ -96,10 +97,8 @@ public class ChicagoTSClient {
 
   public ListenableFuture<ChicagoStream> stream(byte[] key, byte[] offset) throws ChicagoClientTimeoutException {
     ListeningExecutorService executor = MoreExecutors.listeningDecorator(exe);
-    ListenableFuture<ChicagoStream> responseFuture = executor.submit(new Callable<ChicagoStream>() {
-      ChicagoStream cs;
-      @Override
-      public ChicagoStream call() throws Exception {
+    return executor.submit(() -> {
+      final ChicagoStream[] cs = new ChicagoStream[1];
         final long startTime = System.currentTimeMillis();
         if (single_server != null) {
         }
@@ -116,10 +115,10 @@ public class ChicagoTSClient {
 //                try {
                     UUID id = UUID.randomUUID();
                     Listener listener = connectionPoolMgr.getListener(node); //Blocking
-                    cs = new ChicagoStream(listener);
+                    cs[0] = new ChicagoStream(listener);
                     cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.STREAM, key, null, offset));
                     listener.addID(id);
-                    cs.addID(id);
+                    cs[0].addID(id);
                   }
                 });
               }
@@ -132,7 +131,7 @@ public class ChicagoTSClient {
           return null;
         }
 
-        while (cs == null) {
+        while (cs[0] == null) {
           if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
             Thread.currentThread().interrupt();
             throw new ChicagoClientTimeoutException();
@@ -144,23 +143,10 @@ public class ChicagoTSClient {
           }
         }
 
-        return cs;
-
-//        if (responseList.stream().allMatch(b -> b)) {
-//          return true;
-//        } else {
-//          if (MAX_RETRY < retries) {
-//            return _write(key, value, retries + 1).get(TIMEOUT, TimeUnit.MILLISECONDS);
-//          } else {
-//            throw new ChicagoClientException("Could not successfully complete a replicated write. Please retry the operation");
-//          }
-//        }
+        return cs[0];
 //      }
-      }
 
     });
-
-    return responseFuture;
 
   }
 
@@ -182,9 +168,7 @@ public class ChicagoTSClient {
   private ListenableFuture<byte[]> _write(byte[] key, byte[] value, int _retries) throws ChicagoClientTimeoutException, ChicagoClientException {
     final int retries = _retries;
     ListeningExecutorService executor = MoreExecutors.listeningDecorator(exe);
-    ListenableFuture<byte[]> responseFuture = executor.submit(new Callable<byte[]>() {
-      @Override
-      public byte[] call() throws Exception {
+    return executor.submit(() -> {
 
         ConcurrentLinkedDeque<Boolean> responseList = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<UUID> idList = new ConcurrentLinkedDeque<>();
@@ -261,10 +245,10 @@ public class ChicagoTSClient {
             throw new ChicagoClientException("Could not successfully complete a replicated write. Please retry the operation");
           }
         }
-      }
+//      }
     });
 
-    return responseFuture;
+//    return responseFuture;
   }
 
 
