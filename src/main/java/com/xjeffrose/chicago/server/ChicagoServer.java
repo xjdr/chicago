@@ -75,18 +75,19 @@ public class Chicago {
 
       log.info("I am the Leader: " + leaderSelector.hasLeadership());
     } catch (Exception e) {
-      System.exit(-1);
+      log.error("Startup Error", e);
     }
   }
 
   public void stop() {
+    log.info("Stopping Chicago!");
     try {
       zkClient.stop();
       dbRouter.close();
       dbManager.destroy();
 
-    } catch (IOException e) {
-      System.exit(-1);
+    } catch (Exception e) {
+      log.error("Shutdown Error", e);
     }
 
   }
