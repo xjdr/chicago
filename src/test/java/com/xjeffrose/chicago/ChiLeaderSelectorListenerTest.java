@@ -1,31 +1,57 @@
 package com.xjeffrose.chicago;
 
+import java.util.List;
 import com.netflix.curator.test.TestingServer;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import static org.junit.Assert.*;
 
+/**
+ * Purpose: This fixture tests that leader election is working correctly.
+ */
 public class ChiLeaderSelectorListenerTest {
 
-  @Test
-  public void takeLeadership() throws Exception {
-    TestingServer testingServer = new TestingServer(2182);
+  @Rule
+  public TemporaryFolder tmp = new TemporaryFolder();
 
-    new Chicago().main(new String[]{"", "src/test/resources/test1.conf"});
-    new Chicago().main(new String[]{"", "src/test/resources/test2.conf"});
-    new Chicago().main(new String[]{"", "src/test/resources/test3.conf"});
-    new Chicago().main(new String[]{"", "src/test/resources/test4.conf"});
+  List<ChicagoServer> servers;
+  CuratorFramework zk;
+  TestingServer testingServer;
 
-    CuratorFramework zk = CuratorFrameworkFactory.newClient(testingServer.getConnectString(), new ExponentialBackoffRetry(2000, 20));
+  @Before
+  public void setup() throws Exception {
+    testingServer = new TestingServer(2182);
+    zk = CuratorFrameworkFactory.newClient(testingServer.getConnectString(), new ExponentialBackoffRetry(2000, 20));
     zk.start();
-
-    ZkClient zkClient = new ZkClient(zk);
-
-    zkClient.getChildren("/chicago/chicago-elect").forEach(xs -> {
-      System.out.println(xs);
-      System.out.println(zkClient.get("/chicago/chicago-elect/" + xs));
-    });
+    servers = TestChicago.makeServers(TestChicago.chicago_dir(tmp), 4);
+    for (ChicagoServer server : servers) {
+      server.start();
+    }
   }
 
+  @After
+  public void teardown() throws Exception {
+    for (ChicagoServer server : servers) {
+      server.stop();
+    }
+    zk.close();
+    testingServer.close();
+  }
+
+  /**
+   * Ensure that all of our nodes are participating in leader election
+   */
+  @Test
+  public void takeLeadership() throws Exception {
+    ZkClient zkClient = new ZkClient(zk);
+
+    List<String> nodes = zkClient.getChildren("/chicago/chicago-elect");
+    assertEquals(nodes.size(), servers.size());
+  }
 }
