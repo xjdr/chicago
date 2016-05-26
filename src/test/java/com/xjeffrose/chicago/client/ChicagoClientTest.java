@@ -133,10 +133,9 @@ public class ChicagoClientTest {
     for (int i = 0; i < 1; i++) {
       byte[] val = new byte[10240];
       if (i == 12) {
-        offset = chicagoTSClient.write("tskey".getBytes(), val);
+        offset = chicagoTSClient.write("LargeTskey".getBytes(), val);
       }
-//      assertNotNull(chicagoTSClient.write("tskey".getBytes(), val));
-      chicagoTSClient.write("tskey".getBytes(), val);
+      assertNotNull(chicagoTSClient.write("tskey".getBytes(), val));
     }
 
     ListenableFuture<byte[]> f = chicagoTSClient.read("tskey".getBytes());

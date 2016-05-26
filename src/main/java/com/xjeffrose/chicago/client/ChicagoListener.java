@@ -32,8 +32,12 @@ class ChicagoListener implements Listener<byte[]> {
 
   @Override
   public void onResponseReceived(ChicagoMessage chicagoMessage) {
-    messageIds.add(chicagoMessage.getId());
-    responseMap.put(chicagoMessage.getId(), chicagoMessage);
+    if (chicagoMessage.getId() == null) {
+      log.error("Returned null message: " + chicagoMessage);
+    } else {
+      messageIds.add(chicagoMessage.getId());
+      responseMap.put(chicagoMessage.getId(), chicagoMessage);
+    }
   }
 
   @Override
@@ -51,7 +55,7 @@ class ChicagoListener implements Listener<byte[]> {
   private byte[] _getResponse(UUID id, long startTime) throws ChicagoClientTimeoutException {
     while (Collections.disjoint(reqIds, messageIds)) {
       if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
-        Thread.currentThread().interrupt();
+//        Thread.currentThread().interrupt();
         throw new ChicagoClientTimeoutException();
       }
       try {
@@ -64,7 +68,7 @@ class ChicagoListener implements Listener<byte[]> {
     while (!responseMap.containsKey(id)) {
       try {
         if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
-        Thread.currentThread().interrupt();
+//        Thread.currentThread().interrupt();
           throw new ChicagoClientTimeoutException();
         }
         Thread.sleep(1);
@@ -94,7 +98,7 @@ class ChicagoListener implements Listener<byte[]> {
   private boolean _getStatus(UUID id, long startTime) throws ChicagoClientTimeoutException {
     while (Collections.disjoint(reqIds, messageIds)) {
       if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
-        Thread.currentThread().interrupt();
+//        Thread.currentThread().interrupt();
         throw new ChicagoClientTimeoutException();
       }
       try {
@@ -107,7 +111,7 @@ class ChicagoListener implements Listener<byte[]> {
     while (!responseMap.containsKey(id)) {
       try {
         if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
-        Thread.currentThread().interrupt();
+//        Thread.currentThread().interrupt();
           throw new ChicagoClientTimeoutException();
         }
         Thread.sleep(1);
@@ -149,7 +153,7 @@ class ChicagoListener implements Listener<byte[]> {
   private byte[] _getResponse(ConcurrentLinkedDeque<UUID> idList, long startTime) throws ChicagoClientTimeoutException {
     while (Collections.disjoint(reqIds, messageIds)) {
       if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
-        Thread.currentThread().interrupt();
+//        Thread.currentThread().interrupt();
         throw new ChicagoClientTimeoutException();
       }
       try {
@@ -162,7 +166,7 @@ class ChicagoListener implements Listener<byte[]> {
     while (Collections.disjoint(responseMap.keySet(), idList)) {
       try {
         if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
-          Thread.currentThread().interrupt();
+//          Thread.currentThread().interrupt();
           throw new ChicagoClientTimeoutException();
         }
         Thread.sleep(1);
@@ -195,7 +199,7 @@ class ChicagoListener implements Listener<byte[]> {
   private byte[] _getStatus(ConcurrentLinkedDeque<UUID> idList, long startTime) throws ChicagoClientTimeoutException {
     while (Collections.disjoint(reqIds, messageIds)) {
       if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
-        Thread.currentThread().interrupt();
+//        Thread.currentThread().interrupt();
         throw new ChicagoClientTimeoutException();
       }
       try {
@@ -208,7 +212,7 @@ class ChicagoListener implements Listener<byte[]> {
     while (Collections.disjoint(responseMap.keySet(), idList)) {
       try {
         if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
-          Thread.currentThread().interrupt();
+//          Thread.currentThread().interrupt();
           throw new ChicagoClientTimeoutException();
         }
         Thread.sleep(1);
@@ -241,8 +245,4 @@ class ChicagoListener implements Listener<byte[]> {
       return null;
     }
   }
-
-
-
-
 }
