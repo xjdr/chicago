@@ -90,7 +90,7 @@ public class ChicagoClientTest {
       String _v = "val" + i;
       byte[] val = _v.getBytes();
       assertEquals(true, chicagoClientDHT.write("colfam".getBytes(), key, val));
-      assertEquals(new String(val), new String(chicagoClientDHT.stream("colfam".getBytes(), key).get()));
+      assertEquals(new String(val), new String(chicagoClientDHT.read("colfam".getBytes(), key).get()));
       assertEquals(true, chicagoClientDHT.delete("colfam".getBytes(), key));
     }
   }
@@ -129,14 +129,14 @@ public class ChicagoClientTest {
       if (i == 12) {
         offset = chicagoTSClient.write("tskey".getBytes(), val);
       }
-      assertNotNull(chicagoTSClient.write("tskey".getBytes(), val));
+//      assertNotNull(chicagoTSClient.write("tskey".getBytes(), val));
+      chicagoTSClient.write("tskey".getBytes(), val);
     }
 
-    ListenableFuture<ChicagoStream> f = chicagoTSClient.stream("tskey".getBytes());
-    ChicagoStream cs = f.get(1000, TimeUnit.MILLISECONDS);
-    ListenableFuture<byte[]> resp = cs.getStream();
+    ListenableFuture<byte[]> f = chicagoTSClient.read("tskey".getBytes());
+    byte[] resp = f.get(1000, TimeUnit.MILLISECONDS);
 
-    System.out.println(new String(resp.get(1000, TimeUnit.MILLISECONDS)));
+    System.out.println(new String(resp));
 
     ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream("tskey".getBytes(), offset);
     ChicagoStream _cs = _f.get(1000, TimeUnit.MILLISECONDS);

@@ -182,5 +182,61 @@ class ChicagoListener implements Listener<byte[]> {
     }
   }
 
+  @Override
+  public byte[] getStatus(ConcurrentLinkedDeque<UUID> idList) throws ChicagoClientTimeoutException {
+    return _getStatus(idList, System.currentTimeMillis());
+  }
+
+  private byte[] _getStatus(ConcurrentLinkedDeque<UUID> idList, long startTime) throws ChicagoClientTimeoutException {
+    while (Collections.disjoint(reqIds, messageIds)) {
+      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
+        Thread.currentThread().interrupt();
+        throw new ChicagoClientTimeoutException();
+      }
+      try {
+        Thread.sleep(1);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+
+    while (Collections.disjoint(responseMap.keySet(), idList)) {
+      try {
+        if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
+          Thread.currentThread().interrupt();
+          throw new ChicagoClientTimeoutException();
+        }
+        Thread.sleep(1);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+
+    while (!responseMap.containsKey(idList.getFirst())) {
+      try {
+        Thread.sleep(1);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+
+    ChicagoMessage _resp = responseMap.remove(idList.getFirst());
+
+    if (_resp != null) {
+      idList.removeFirst();
+    } else {
+      return _getStatus(idList, startTime);
+    }
+
+    if (_resp.getKey().length == 4 ) {
+      return _resp.getVal();
+    } else {
+      log.error("Invalid Response returned");
+      return null;
+    }
+  }
+
+
+
 
 }

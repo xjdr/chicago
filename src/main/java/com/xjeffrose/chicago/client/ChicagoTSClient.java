@@ -109,9 +109,7 @@ public class ChicagoTSClient {
             } else {
               ChannelFuture cf = connectionPoolMgr.getNode(node);
               if (cf.channel().isWritable()) {
-                exe.execute(new Runnable() {
-                  @Override
-                  public void run() {
+                exe.execute(() -> {
 //                try {
                     UUID id = UUID.randomUUID();
                     Listener listener = connectionPoolMgr.getListener(node); //Blocking
@@ -119,7 +117,6 @@ public class ChicagoTSClient {
                     cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.STREAM, key, null, offset));
                     listener.addID(id);
                     cs[0].addID(id);
-                  }
                 });
               }
             }
@@ -150,6 +147,64 @@ public class ChicagoTSClient {
 
   }
 
+  public ListenableFuture<byte[]> read(byte[] key) throws ChicagoClientTimeoutException {
+    return read("chicago".getBytes(), key);
+  }
+
+  public ListenableFuture<byte[]> read(byte[] key, byte[] offset) throws ChicagoClientTimeoutException {
+    ListeningExecutorService executor = MoreExecutors.listeningDecorator(exe);
+    return executor.submit(() -> {
+      final long startTime = System.currentTimeMillis();
+      ConcurrentLinkedDeque<byte[]> responseList = new ConcurrentLinkedDeque<>();
+      if (single_server != null) {
+      }
+      try {
+        List<String> hashList = rendezvousHash.get(key);
+        for (String node : hashList) {
+          if (node == null) {
+          } else {
+            ChannelFuture cf = connectionPoolMgr.getNode(node);
+            if (cf.channel().isWritable()) {
+              exe.execute(() -> {
+                UUID id = UUID.randomUUID();
+                Listener listener = connectionPoolMgr.getListener(node); //Blocking
+                cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.STREAM, key, null, offset));
+                listener.addID(id);
+                exe.execute(() -> {
+                  try {
+                    responseList.add((byte[]) listener.getResponse(id)); //Blocking
+                  } catch (ChicagoClientTimeoutException e) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException(e);
+                  }
+                });
+              });
+            }
+          }
+        }
+
+      } catch (ChicagoClientTimeoutException e) {
+        Thread.currentThread().interrupt();
+        log.error("Client Timeout During Read Operation:", e);
+        return null;
+      }
+
+
+      while (responseList.isEmpty()) {
+        if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
+          Thread.currentThread().interrupt();
+          throw new ChicagoClientTimeoutException();
+        }
+        try {
+          Thread.sleep(1);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+      return responseList.stream().findFirst().orElse(null);
+    });
+  }
+
   public byte[] write(byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException {
     try {
       return _write(key, value, 0).get(TIMEOUT, TimeUnit.MILLISECONDS);
@@ -167,12 +222,14 @@ public class ChicagoTSClient {
 
   private ListenableFuture<byte[]> _write(byte[] key, byte[] value, int _retries) throws ChicagoClientTimeoutException, ChicagoClientException {
     final int retries = _retries;
+
+
+    final ConcurrentLinkedDeque<byte[]> responseList = new ConcurrentLinkedDeque<>();
+    final ConcurrentLinkedDeque<UUID> idList = new ConcurrentLinkedDeque<>();
+    final ConcurrentLinkedDeque<Listener> listenerList = new ConcurrentLinkedDeque<>();
+
     ListeningExecutorService executor = MoreExecutors.listeningDecorator(exe);
     return executor.submit(() -> {
-
-        ConcurrentLinkedDeque<Boolean> responseList = new ConcurrentLinkedDeque<>();
-        ConcurrentLinkedDeque<UUID> idList = new ConcurrentLinkedDeque<>();
-        ConcurrentLinkedDeque<Listener> listenerList = new ConcurrentLinkedDeque<>();
 
 
         final long startTime = System.currentTimeMillis();
@@ -191,28 +248,21 @@ public class ChicagoTSClient {
             } else {
               ChannelFuture cf = connectionPoolMgr.getNode(node);
               if (cf.channel().isWritable()) {
-                exe.execute(new Runnable() {
-                  @Override
-                  public void run() {
-//            try {
+                exe.execute(() -> {
                     UUID id = UUID.randomUUID();
                     Listener listener = connectionPoolMgr.getListener(node); // Blocking
                     cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.TS_WRITE, key, null, value));
                     listener.addID(id);
                     idList.add(id);
                     listenerList.add(listener);
-                    exe.execute(new Runnable() {
-                      @Override
-                      public void run() {
+                    exe.execute(() -> {
                         try {
-                          responseList.add(listener.getStatus(id)); //Blocking
+                          responseList.add((byte[]) listener.getStatus(idList)); //Blocking
                         } catch (ChicagoClientTimeoutException e) {
-                          Thread.currentThread().interrupt();
+//                          Thread.currentThread().interrupt();
                           throw new RuntimeException(e);
                         }
-                      }
                     });
-                  }
                 });
               }
             }
@@ -236,8 +286,9 @@ public class ChicagoTSClient {
           }
         }
 
-        if (responseList.stream().allMatch(b -> b)) {
-          return (byte[]) listenerList.removeFirst().getResponse(idList.removeFirst());
+        if (responseList.stream().allMatch(b -> b != null)) {
+//          return (byte[]) listenerList.removeFirst().getResponse(idList.getFirst());
+          return responseList.getFirst();
         } else {
           if (MAX_RETRY < retries) {
             return _write(key, value, retries + 1).get(TIMEOUT, TimeUnit.MILLISECONDS);
@@ -245,10 +296,7 @@ public class ChicagoTSClient {
             throw new ChicagoClientException("Could not successfully complete a replicated write. Please retry the operation");
           }
         }
-//      }
     });
-
-//    return responseFuture;
   }
 
 
