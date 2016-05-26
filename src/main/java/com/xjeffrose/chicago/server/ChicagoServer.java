@@ -10,19 +10,20 @@ import org.apache.curator.framework.recipes.leader.LeaderSelector;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.log4j.Logger;
 import org.apache.zookeeper.CreateMode;
+import com.xjeffrose.chicago.*;
 
 public class Chicago {
   private static final Logger log = Logger.getLogger(Chicago.class.getName());
   private final static String ELECTION_PATH = "/chicago/chicago-elect";
   private final static String NODE_LIST_PATH = "/chicago/node-list";
 
-  private static ZkClient zkClient;
-  private static DBManager dbManager;
-  private static NodeWatcher nodeWatcher;
-  private static DBRouter dbRouter;
+  private ZkClient zkClient;
+  private DBManager dbManager;
+  private NodeWatcher nodeWatcher;
+  private DBRouter dbRouter;
 
 
-  public static void main(String[] args) {
+  public void start(String[] args) {
     log.info("Starting Chicago, have a nice day");
 
     Config _conf;
