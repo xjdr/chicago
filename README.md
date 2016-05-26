@@ -1,6 +1,12 @@
 Chicago
 =======
 
+[![Circle
+CI](https://circleci.com/gh/xjdr/chicago.svg?style=svg)](https://circleci.com/gh/xjdr/chicago)
+
+[![Coverage
+Status](https://coveralls.io/repos/xjdr/chicago/badge.svg?branch=master&service=github)](https://coveralls.io/github/xjdr/chicago?branch=master)
+
 High performance distributed K/V store, built on [xio](https://github.com/xjdr/xio)
 and [rocksdb](https://github.com/facebook/rocksdb). Chicago was written for use in our
 observability stack for real(ish) time stats and alerting. Chicago was designed to always be

@@ -39,7 +39,7 @@ public class ZkClient {
           .create()
           .creatingParentsIfNeeded()
           .withMode(CreateMode.EPHEMERAL)
-          .forPath(NODE_LIST_PATH + "/" + config.getDBBindIP(), ConfigSerializer.serialize(config).getBytes());
+          .forPath(NODE_LIST_PATH + "/" + config.getDBBindEndpoint(), ConfigSerializer.serialize(config).getBytes());
     } catch (Exception e) {
       log.error("Error registering Server");
       System.exit(-1);
@@ -59,6 +59,9 @@ public class ZkClient {
     client.blockUntilConnected();
   }
 
+  public void stop() {
+    client.close();
+  }
 
   public void set(String path, String data) {
     try {
@@ -124,9 +127,4 @@ public class ZkClient {
   public String getConnectionString() {
     return connectionString;
   }
-
-  public void stop() {
-    client.close();
-  }
 }
-

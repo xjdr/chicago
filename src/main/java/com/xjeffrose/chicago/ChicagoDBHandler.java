@@ -34,6 +34,22 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
   }
 
   @Override
+  public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    log.debug("Connection Active for: " + ctx.channel().localAddress());
+    log.debug("Connection Active for: " + ctx.channel().remoteAddress());
+
+    ctx.fireChannelActive();
+  }
+
+  @Override
+  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    log.debug("Connection InActive for: " + ctx.channel().localAddress());
+    log.debug("Connection InActive for: " + ctx.channel().remoteAddress());
+
+    ctx.fireChannelInactive();
+  }
+
+  @Override
   protected void channelRead0(ChannelHandlerContext ctx, Object req) throws Exception {
     ChicagoMessage msg = null;
 

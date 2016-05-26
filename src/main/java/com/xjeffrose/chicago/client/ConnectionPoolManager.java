@@ -13,6 +13,8 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -23,6 +25,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.log4j.Logger;
 import org.apache.log4j.net.SyslogAppender;
 
@@ -30,12 +34,13 @@ public class ConnectionPoolManager {
   private static final Logger log = Logger.getLogger(ChicagoClient.class);
   private final static String NODE_LIST_PATH = "/chicago/node-list";
   private static final long TIMEOUT = 1000;
-  private static boolean TIMEOUT_ENABLED = false;
+  private static boolean TIMEOUT_ENABLED = true;
 
   private final Map<String, Listener> listenerMap = new ConcurrentHashMap<>();
   private final Map<String, ChannelFuture> connectionMap = new ConcurrentHashMap<>();
   private final NioEventLoopGroup workerLoop = new NioEventLoopGroup(20);
   private final ZkClient zkClient;
+  private final AtomicBoolean running = new AtomicBoolean(false);
 
   public ConnectionPoolManager(ZkClient zkClient) {
 
@@ -49,14 +54,36 @@ public class ConnectionPoolManager {
     connect(new InetSocketAddress(hostname, 12000), listenerMap.get(hostname));
   }
 
+  public void start() {
+    running.set(true);
+  }
+
+  public void stop() {
+    log.info("ConnectionPoolManager stopping");
+    running.set(false);
+    ChannelGroup channelGroup = new DefaultChannelGroup(workerLoop.next());
+    for(ChannelFuture cf : connectionMap.values()) {
+      channelGroup.add(cf.channel());
+    }
+    log.info("Closing channels");
+    channelGroup.close().awaitUninterruptibly();
+    log.info("Stopping workerLoop");
+    workerLoop.shutdownGracefully().awaitUninterruptibly();
+  }
+
   private List<String> buildNodeList() {
     return zkClient.list(NODE_LIST_PATH);
+  }
+
+  private InetSocketAddress address(String node) {
+    String chunks[] = node.split(":");
+    return new InetSocketAddress(chunks[0], Integer.parseInt(chunks[1]));
   }
 
   private void refreshPool() {
     buildNodeList().stream().forEach(xs -> {
       listenerMap.put(xs, new ChicagoListener());
-      connect(new InetSocketAddress(xs, 12000), listenerMap.get(xs));
+      connect(address(xs), listenerMap.get(xs));
     });
   }
 
@@ -77,7 +104,7 @@ public class ConnectionPoolManager {
       }
     }
 
-    ChannelFuture cf= connectionMap.get(node);
+    ChannelFuture cf = connectionMap.get(node);
 
     if (cf.channel().isWritable()) {
       return cf;
@@ -146,6 +173,9 @@ public class ConnectionPoolManager {
       @Override
       public void operationComplete(ChannelFuture future) {
         if (!future.isSuccess()) {
+          if (!running.get()) {
+            return;
+          }
           try {
             retryLoop.takeException((Exception) future.cause());
             log.error("==== Service connect failure (will retry)", future.cause());
@@ -156,12 +186,12 @@ public class ConnectionPoolManager {
             future.channel().close();
           }
         } else {
-          log.debug("Chicago connected: ");
+          log.debug("Chicago connected to: " + server);
           String hostname = ((InetSocketAddress) future.channel().remoteAddress()).getHostName();
           if (hostname.equals("localhost")) {
             hostname = "127.0.0.1";
           }
-          addNode(hostname, future);
+          addNode(hostname + ":" + ((InetSocketAddress) future.channel().remoteAddress()).getPort(), future);
         }
       }
     };

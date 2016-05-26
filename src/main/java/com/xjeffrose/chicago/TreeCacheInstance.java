@@ -22,6 +22,11 @@ public class TreeCacheInstance {
     cache.start();
   }
 
+  public void stop() {
+    CloseableUtils.closeQuietly(cache);
+    //CloseableUtils.closeQuietly(client);
+  }
+
   public void close() {
     CloseableUtils.closeQuietly(cache);
     CloseableUtils.closeQuietly(client);
@@ -35,4 +40,3 @@ public class TreeCacheInstance {
     return root;
   }
 }
-

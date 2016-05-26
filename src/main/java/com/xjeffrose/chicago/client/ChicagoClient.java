@@ -60,6 +60,7 @@ public class ChicagoClient {
    *  ok x 3 nodes -> write request
    */
 
+
   public ChicagoClient(InetSocketAddress server) {
     this.single_server = server;
     this.zkClient = null;
@@ -83,6 +84,16 @@ public class ChicagoClient {
     this.connectionPoolMgr = new ConnectionPoolManager(zkClient);
   }
 
+  public void start() {
+    connectionPoolMgr.start();
+  }
+
+  public void stop() {
+    log.info("ChicagoClient stopping");
+    clientNodeWatcher.stop();
+    connectionPoolMgr.stop();
+    zkClient.stop();
+  }
 
   protected List<String> buildNodeList() {
     return zkClient.list(NODE_LIST_PATH);
@@ -218,7 +229,7 @@ public class ChicagoClient {
   public boolean write(byte[] colFam, byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException {
     long ts = System.currentTimeMillis();
     try {
-      return _write(colFam, key, value, 0).get(1000, TimeUnit.MILLISECONDS);
+      return _write(colFam, key, value, 0).get(TIMEOUT, TimeUnit.MILLISECONDS);
     } catch (InterruptedException e) {
       e.printStackTrace();
     } catch (ExecutionException e) {
@@ -253,11 +264,13 @@ public class ChicagoClient {
           if (node == null) {
 
           } else {
+            log.debug(" +++++++++++++++++++++++++++++++++++++++++++++ Getting Node");
             ChannelFuture cf = connectionPoolMgr.getNode(node);
+            log.debug(" +++++++++++++++++++++++++++++++++++++++++++++ Got Node");
             if (cf.channel().isWritable()) {
               exe.execute(() -> {
                   UUID id = UUID.randomUUID();
-                  log.debug(" +++++++++++++++++++++++++++++++++++++++++++++ Getting Node");
+                  log.debug(" +++++++++++++++++++++++++++++++++++++++++++++ Getting Listener");
                   Listener listener = connectionPoolMgr.getListener(node); // Blocking
                   cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.WRITE, colFam, key, value));
                   log.debug("++++++++++++++++++++++++++++++++++++++++ Write to node: " + node + " " + new String(key));

@@ -48,11 +48,17 @@ public class ChicagoClientTest {
    // chicagoClientDHT = new ChicagoClient(testingServer.getConnectString(), 3);
     chicagoTSClient = new ChicagoTSClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181",3);
 //    chicagoClientDHT = new ChicagoClient("10.22.100.183:2181,10.25.180.234:2181,10.22.103.86:2181,10.25.180.247:2181,10.25.69.226:2181/chicago");
+
+//    chicagoClientSingle.start();
+    chicagoClientDHT.start();
+
   }
 
   @AfterClass
   static public void tearDownFixture() throws Exception {
     testingServer.stop();
+//    chicagoClientSingle.stop();
+    chicagoClientDHT.stop();
   }
 
 
@@ -127,10 +133,9 @@ public class ChicagoClientTest {
     for (int i = 0; i < 1; i++) {
       byte[] val = new byte[10240];
       if (i == 12) {
-        offset = chicagoTSClient.write("tskey".getBytes(), val);
+        offset = chicagoTSClient.write("LargeTskey".getBytes(), val);
       }
-//      assertNotNull(chicagoTSClient.write("tskey".getBytes(), val));
-      chicagoTSClient.write("tskey".getBytes(), val);
+      assertNotNull(chicagoTSClient.write("tskey".getBytes(), val));
     }
 
     ListenableFuture<byte[]> f = chicagoTSClient.read("tskey".getBytes());
