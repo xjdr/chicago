@@ -111,6 +111,31 @@ public class ChicagoClientTest {
     ChicagoStream cs = f.get(1000, TimeUnit.MILLISECONDS);
     ListenableFuture<byte[]> resp = cs.getStream();
 
+    assertNotNull(resp.get(1000, TimeUnit.MILLISECONDS));
+
+    ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream("tskey".getBytes(), offset);
+    ChicagoStream _cs = _f.get(1000, TimeUnit.MILLISECONDS);
+    ListenableFuture<byte[]> _resp = _cs.getStream();
+
+    assertNotNull(_resp.get(1000, TimeUnit.MILLISECONDS));
+  }
+
+
+  @Test
+  public void transactLargeStream() throws Exception {
+    byte[] offset = null;
+    for (int i = 0; i < 1; i++) {
+      byte[] val = new byte[10240];
+      if (i == 12) {
+        offset = chicagoTSClient.write("tskey".getBytes(), val);
+      }
+      assertNotNull(chicagoTSClient.write("tskey".getBytes(), val));
+    }
+
+    ListenableFuture<ChicagoStream> f = chicagoTSClient.stream("tskey".getBytes());
+    ChicagoStream cs = f.get(1000, TimeUnit.MILLISECONDS);
+    ListenableFuture<byte[]> resp = cs.getStream();
+
     System.out.println(new String(resp.get(1000, TimeUnit.MILLISECONDS)));
 
     ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream("tskey".getBytes(), offset);

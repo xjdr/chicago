@@ -73,7 +73,7 @@ class ChicagoListener implements Listener<byte[]> {
       }
     }
 
-    ChicagoMessage _resp = responseMap.get(id);
+    ChicagoMessage _resp = responseMap.remove(id);
 
     if (_resp.getSuccess()) {
       return _resp.getVal();
@@ -113,7 +113,7 @@ class ChicagoListener implements Listener<byte[]> {
         e.printStackTrace();
       }
     }
-    if (responseMap.get(id).getKey().length == 4) {
+    if (responseMap.remove(id).getKey().length == 4) {
       return true;
     } else {
       return false;
@@ -172,7 +172,7 @@ class ChicagoListener implements Listener<byte[]> {
       idList.removeFirst();
     }
 
-    ChicagoMessage _resp = responseMap.get(idList.getFirst());
+    ChicagoMessage _resp = responseMap.remove(idList.getFirst());
 
     if (_resp.getSuccess()) {
       return _resp.getVal();
