@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -49,7 +50,13 @@ public class ChicagoClientTest {
 //    chicagoClientDHT = new ChicagoClient("10.22.100.183:2181,10.25.180.234:2181,10.22.103.86:2181,10.25.180.247:2181,10.25.69.226:2181/chicago");
   }
 
-  @Test
+  @AfterClass
+  static public void tearDownFixture() throws Exception {
+    testingServer.stop();
+  }
+
+
+    @Test
   public void transactOnce() throws Exception {
     for (int i = 0; i < 1; i++) {
       String _k = "key" + i;
@@ -77,7 +84,7 @@ public class ChicagoClientTest {
 
   @Test
   public void transactManyCF() throws Exception {
-    for (int i = 0; i < 20000; i++) {
+    for (int i = 0; i < 2000; i++) {
       String _k = "key" + i;
       byte[] key = _k.getBytes();
       String _v = "val" + i;
@@ -91,7 +98,7 @@ public class ChicagoClientTest {
   @Test
   public void transactStream() throws Exception {
     byte[] offset = null;
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 2000; i++) {
       String _v = "val" + i;
       byte[] val = _v.getBytes();
       if (i == 12) {
@@ -104,7 +111,32 @@ public class ChicagoClientTest {
     ChicagoStream cs = f.get(1000, TimeUnit.MILLISECONDS);
     ListenableFuture<byte[]> resp = cs.getStream();
 
-    System.out.println(new String(resp.get(1000, TimeUnit.MILLISECONDS)));
+    assertNotNull(resp.get(1000, TimeUnit.MILLISECONDS));
+
+    ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream("tskey".getBytes(), offset);
+    ChicagoStream _cs = _f.get(1000, TimeUnit.MILLISECONDS);
+    ListenableFuture<byte[]> _resp = _cs.getStream();
+
+    assertNotNull(_resp.get(1000, TimeUnit.MILLISECONDS));
+  }
+
+
+  @Test
+  public void transactLargeStream() throws Exception {
+    byte[] offset = null;
+    for (int i = 0; i < 1; i++) {
+      byte[] val = new byte[10240];
+      if (i == 12) {
+        offset = chicagoTSClient.write("tskey".getBytes(), val);
+      }
+//      assertNotNull(chicagoTSClient.write("tskey".getBytes(), val));
+      chicagoTSClient.write("tskey".getBytes(), val);
+    }
+
+    ListenableFuture<byte[]> f = chicagoTSClient.read("tskey".getBytes());
+    byte[] resp = f.get(1000, TimeUnit.MILLISECONDS);
+
+    System.out.println(new String(resp));
 
     ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream("tskey".getBytes(), offset);
     ChicagoStream _cs = _f.get(1000, TimeUnit.MILLISECONDS);
@@ -116,7 +148,7 @@ public class ChicagoClientTest {
   @Test
   public void transactManyCFConcurrent() throws Exception {
     ExecutorService exe = Executors.newFixedThreadPool(4);
-    int count = 4;
+    int count = 1000;
     CountDownLatch latch = new CountDownLatch(count * 2);
 
 
@@ -132,7 +164,7 @@ public class ChicagoClientTest {
             assertEquals(true, chicagoClientDHT.write("ycolfam".getBytes(), key, val));
             assertEquals(new String(val), new String(chicagoClientDHT.read("ycolfam".getBytes(), key).get()));
             assertEquals(true, chicagoClientDHT.delete("ycolfam".getBytes(), key));
-            System.out.println("1 " + latch.getCount());
+//            System.out.println("1 " + latch.getCount());
             latch.countDown();
           }
         } catch (ChicagoClientTimeoutException e) {
@@ -159,7 +191,7 @@ public class ChicagoClientTest {
             assertEquals(true, chicagoClientDHT.write("xcolfam".getBytes(), key, val));
             assertEquals(new String(val), new String(chicagoClientDHT.read("xcolfam".getBytes(), key).get()));
             assertEquals(true, chicagoClientDHT.delete("xcolfam".getBytes(), key));
-            System.out.println("2 " + latch.getCount());
+//            System.out.println("2 " + latch.getCount());
             latch.countDown();
           }
         } catch (ChicagoClientTimeoutException e) {
@@ -174,10 +206,7 @@ public class ChicagoClientTest {
       }
     });
 
-//    while(true) {
-//      Thread.sleep(10000);
-//    }
-    latch.await(10000, TimeUnit.MILLISECONDS);
+    latch.await(20000, TimeUnit.MILLISECONDS);
   }
 
 }

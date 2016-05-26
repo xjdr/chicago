@@ -207,24 +207,28 @@ class DBManager {
   }
 
   public byte[] stream(byte[] colFam, byte[] offset) {
-    RocksIterator i = db.newIterator(columnFamilies.get(new String(colFam)), readOptions);
-    ByteBuf bb = Unpooled.buffer();
+    if (colFamilyExists(colFam)) {
+      RocksIterator i = db.newIterator(columnFamilies.get(new String(colFam)), readOptions);
+      ByteBuf bb = Unpooled.buffer();
 
-    if (offset.length == 0) {
-      i.seekToFirst();
+      if (offset.length == 0) {
+        i.seekToFirst();
+      } else {
+        i.seek(offset);
+      }
+
+      while (i.isValid()) {
+        byte[] v = i.value();
+        byte[] _v = new byte[v.length + 1];
+        System.arraycopy(v, 0, _v, 0, v.length);
+        System.arraycopy(new byte[]{'\0'}, 0, _v, v.length, 1);
+        bb.writeBytes(_v);
+        i.next();
+      }
+
+      return bb.array();
     } else {
-      i.seek(offset);
+      return null;
     }
-
-    while (i.isValid()) {
-      byte[] v = i.value();
-      byte[] _v = new byte[v.length + 1];
-      System.arraycopy(v, 0, _v, 0, v.length);
-      System.arraycopy(new byte[]{'\0'}, 0, _v, v.length, 1);
-      bb.writeBytes(_v);
-      i.next();
-    }
-
-    return bb.array();
   }
 }

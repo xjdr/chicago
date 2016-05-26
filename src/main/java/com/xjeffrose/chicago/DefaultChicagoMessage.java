@@ -64,4 +64,9 @@ public class DefaultChicagoMessage implements ChicagoMessage {
   public byte[] getColFam() {
     return colFam;
   }
+
+  @Override
+  public String toString() {
+    return "id: " + id + " op: " + _op + " key: " + new String(key) + " value: " + new String(val);
+  }
 }
