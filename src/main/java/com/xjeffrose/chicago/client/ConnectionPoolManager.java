@@ -61,14 +61,14 @@ public class ConnectionPoolManager {
   public void stop() {
     log.info("ConnectionPoolManager stopping");
     running.set(false);
-    ChannelGroup channelGroup = new DefaultChannelGroup(workerGroup.next());
+    ChannelGroup channelGroup = new DefaultChannelGroup(workerLoop.next());
     for(ChannelFuture cf : connectionMap.values()) {
       channelGroup.add(cf.channel());
     }
     log.info("Closing channels");
     channelGroup.close().awaitUninterruptibly();
-    log.info("Stopping workerGroup");
-    workerGroup.shutdownGracefully().awaitUninterruptibly();
+    log.info("Stopping workerLoop");
+    workerLoop.shutdownGracefully().awaitUninterruptibly();
   }
 
   private List<String> buildNodeList() {

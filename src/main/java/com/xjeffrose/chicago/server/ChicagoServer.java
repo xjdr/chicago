@@ -68,7 +68,7 @@ public class ChicagoServer {
 
       dbManager = new DBManager(config);
       nodeWatcher = new NodeWatcher();
-      nodeWatcher.refresh(zkClient, leaderSelector, dbManager, config);
+      nodeWatcher.refresh(zkClient, dbManager, config);
 
       dbRouter = new DBRouter(config, dbManager);
       dbRouter.run();

@@ -16,7 +16,7 @@ public class NodeWatcher {
   private static final Logger log = Logger.getLogger(NodeWatcher.class);
   private final static String NODE_LIST_PATH = "/chicago/node-list";
   private final CountDownLatch latch = new CountDownLatch(1);
-  private final GenericListener genericListener = new GenericListener(NODE_LIST_PATH);
+  private final GenericListener genericListener = new GenericListener();
   private ChicagoClient chicagoClient;
   private TreeCacheInstance nodeList;
   private ZkClient zkClient;
