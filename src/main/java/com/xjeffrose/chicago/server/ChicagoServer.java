@@ -17,50 +17,54 @@ public class Chicago {
   private final static String ELECTION_PATH = "/chicago/chicago-elect";
   private final static String NODE_LIST_PATH = "/chicago/node-list";
 
-  private ZkClient zkClient;
+  private final ChiConfig config;
+  private final CuratorFramework curator;
+  private final LeaderSelector leaderSelector;
+  private final ChiLeaderSelectorListener leaderListener = new ChiLeaderSelectorListener();
+  private final ZkClient zkClient;
   private DBManager dbManager;
   private NodeWatcher nodeWatcher;
   private DBRouter dbRouter;
 
 
-  public void start(String[] args) {
+  public ChicagoServer(ChiConfig config) {
+    this.config = config;
+    curator = CuratorFrameworkFactory.newClient(config.getZkHosts(), 2000, 10000, new ExponentialBackoffRetry(1000, 3));
+    leaderSelector = new LeaderSelector(curator, ELECTION_PATH, leaderListener);
+    zkClient = new ZkClient(curator);
+  }
+
+
+  private void configureLeaderSelector() {
+    leaderSelector.autoRequeue();
+    leaderSelector.start();
+    config.setLeaderSelector(leaderSelector);
+  }
+
+  private void configureZookeeper() {
+    try {
+      zkClient
+        .getClient()
+        .create()
+        .creatingParentsIfNeeded()
+        .withMode(CreateMode.EPHEMERAL)
+        .forPath(NODE_LIST_PATH + "/" + config.getDBBindIP(), ConfigSerializer.serialize(config).getBytes());
+
+      config.setZkClient(zkClient);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+  public void start() {
     log.info("Starting Chicago, have a nice day");
 
-    Config _conf;
-
-    if (args.length > 0) {
-      try {
-        _conf = ConfigFactory.parseFile(new File(args[1]));
-      } catch (Exception e) {
-        _conf = ConfigFactory.parseFile(new File("application.conf"));
-      }
-    } else {
-      _conf = ConfigFactory.parseFile(new File("test.conf"));
-    }
-
-    ChiConfig config = new ChiConfig(_conf);
-
     try {
-      CuratorFramework curator = CuratorFrameworkFactory.newClient(config.getZkHosts(),
-          2000, 10000, new ExponentialBackoffRetry(1000, 3));
       curator.start();
       curator.blockUntilConnected();
 
-      LeaderSelector leaderSelector = new LeaderSelector(curator, ELECTION_PATH, new ChiLeaderSelectorListener());
+      configureLeaderSelector();
 
-      leaderSelector.autoRequeue();
-      leaderSelector.start();
-
-      zkClient = new ZkClient(curator);
-      zkClient
-          .getClient()
-          .create()
-          .creatingParentsIfNeeded()
-          .withMode(CreateMode.EPHEMERAL)
-          .forPath(NODE_LIST_PATH + "/" + config.getDBBindIP(), ConfigSerializer.serialize(config).getBytes());
-
-      config.setLeaderSelector(leaderSelector);
-      config.setZkClient(zkClient);
+      configureZookeeper();
 
       dbManager = new DBManager(config);
       nodeWatcher = new NodeWatcher();
