@@ -154,7 +154,7 @@ public class DBRouter implements Closeable {
         .withProcessorFactory(new XioProcessorFactory() {
           @Override
           public XioProcessor getProcessor() {
-            return new ChicagoProcessor(dbManager);
+            return new ChicagoProcessor();
           }
         })
         .withCodecFactory(new XioCodecFactory() {
@@ -172,7 +172,7 @@ public class DBRouter implements Closeable {
         .withRoutingFilter(new XioRoutingFilterFactory() {
           @Override
           public ChannelInboundHandler getRoutingFilter() {
-            return new XioNoOpHandler();
+            return new ChicagoDBHandler(dbManager);
           }
         })
         .build();

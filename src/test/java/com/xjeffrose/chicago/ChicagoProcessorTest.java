@@ -16,7 +16,7 @@ import static org.junit.Assert.assertTrue;
 
 public class ChicagoProcessorTest {
   DBManager dbManager = new DBManager(new ChiConfig(ConfigFactory.parseFile(new File("test.conf"))));
-  ChicagoProcessor processor = new ChicagoProcessor(dbManager);
+  ChicagoProcessor processor = new ChicagoProcessor();
 
   @Test
   public void process() throws Exception {

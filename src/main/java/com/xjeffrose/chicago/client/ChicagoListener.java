@@ -11,11 +11,11 @@ import org.apache.log4j.Logger;
 class ChicagoListener implements Listener<byte[]> {
   private static final Logger log = Logger.getLogger(ChicagoListener.class);
   private static final long TIMEOUT = 1000;
-  private static final boolean TIMEOUT_ENABLED = false;
+  private static final boolean TIMEOUT_ENABLED = true;
 
-  private final ConcurrentLinkedDeque<UUID> reqIds = new ConcurrentLinkedDeque<>();
-  private final ConcurrentLinkedDeque<UUID> messageIds = new ConcurrentLinkedDeque<>();
-  private final Map<UUID, ChicagoMessage> responseMap = new ConcurrentHashMap<>();
+  private static final ConcurrentLinkedDeque<UUID> reqIds = new ConcurrentLinkedDeque<>();
+  private static final ConcurrentLinkedDeque<UUID> messageIds = new ConcurrentLinkedDeque<>();
+  private static final Map<UUID, ChicagoMessage> responseMap = new ConcurrentHashMap<>();
 
   public ChicagoListener() {
 
