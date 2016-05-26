@@ -1,3 +1,44 @@
+* Chicago DB Use Cases
+
+** Key Value Store
+
+*** Write Guarantees
+
+**** Always available writes
+
+**** Very low latency writes
+
+***** Time from issuing write request to ack from N quorum nodes is less than 10ms
+
+**** Always replicated, if you receive an ack it means the write was replicated to N quorum nodes
+
+**** Failure modes somewhat understood, recovery still lacking
+
+*** Read Guarantees
+
+**** If at least 1 of the N quorum nodes is available you will get a response
+
+**** If none of the N quorum nodes is available you will get a failure
+
+**** If you wrote the key and received a successful response, the value will be available immediately
+
+*** Replication Guarantees
+
+**** For a given quorum setting, key/values will be written to N quorum nodes.
+
+**** If a node joins/leaves the cluster, the key/values in the cluster will be redistributed across the remaining nodes. Such that each key/value will exist on N quorum nodes.
+
+**** Redistribution of Data
+     As a client this means that if there are N nodes that have my
+     key/value and one of them leaves the cluster, N-1 nodes will have
+     my key/value until such time that the key/values are
+     redistributed and once again there are N nodes with my key/value
+
+** Streaming Time Series
+
+
+
+
 * Logging
 
     1. Writes
