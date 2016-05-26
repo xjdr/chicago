@@ -82,7 +82,11 @@ public class Chicago {
   public void stop() {
     log.info("Stopping Chicago!");
     try {
-      zkClient.stop();
+      nodeWatcher.stop();
+      leaderListener.relinquish();
+      leaderSelector.close();
+      //      zkClient.stop();
+      curator.close();
       dbRouter.close();
       dbManager.destroy();
 

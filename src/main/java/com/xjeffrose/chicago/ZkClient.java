@@ -59,6 +59,9 @@ public class ZkClient {
     client.blockUntilConnected();
   }
 
+  public void stop() {
+    client.close();
+  }
 
   public void set(String path, String data) {
     try {
@@ -124,9 +127,4 @@ public class ZkClient {
   public String getConnectionString() {
     return connectionString;
   }
-
-  public void stop() {
-    client.close();
-  }
 }
-

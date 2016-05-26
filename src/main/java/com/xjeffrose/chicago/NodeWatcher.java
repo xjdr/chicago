@@ -16,6 +16,7 @@ public class NodeWatcher {
   private static final Logger log = Logger.getLogger(NodeWatcher.class);
   private final static String NODE_LIST_PATH = "/chicago/node-list";
   private final CountDownLatch latch = new CountDownLatch(1);
+  private final GenericListener genericListener = new GenericListener(NODE_LIST_PATH);
   private ChicagoClient chicagoClient;
   private TreeCacheInstance nodeList;
   private ZkClient zkClient;
@@ -25,14 +26,18 @@ public class NodeWatcher {
   public NodeWatcher() {
   }
 
+  /**
+   * TODO: Refactor this into a constructor and a start method
+   */
   public void refresh(ZkClient zkClient, DBManager dbManager, ChiConfig config) {
     nodeList = new TreeCacheInstance(zkClient, NODE_LIST_PATH);
     this.zkClient = zkClient;
     this.dbManager = dbManager;
     this.config = config;
-    nodeList.getCache().getListenable().addListener(new GenericListener());
+    nodeList.getCache().getListenable().addListener(genericListener);
     try {
-        this.chicagoClient = new ChicagoClient(zkClient.getConnectionString(), config.getQuorum());
+      this.chicagoClient = new ChicagoClient(zkClient.getConnectionString(), config.getQuorum());
+      chicagoClient.start();
       nodeList.start();
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -44,6 +49,13 @@ public class NodeWatcher {
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }
+  }
+
+  public void stop() {
+    log.info("Nodewatcher stopping");
+    chicagoClient.stop();
+    nodeList.getCache().getListenable().removeListener(genericListener);
+    nodeList.stop();
   }
 
   private void redistributeKeys() {

@@ -13,6 +13,8 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -23,6 +25,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.log4j.Logger;
 import org.apache.log4j.net.SyslogAppender;
 
@@ -36,6 +40,7 @@ public class ConnectionPoolManager {
   private final Map<String, ChannelFuture> connectionMap = new ConcurrentHashMap<>();
   private final NioEventLoopGroup workerLoop = new NioEventLoopGroup(20);
   private final ZkClient zkClient;
+  private final AtomicBoolean running = new AtomicBoolean(false);
 
   public ConnectionPoolManager(ZkClient zkClient) {
 
@@ -47,6 +52,23 @@ public class ConnectionPoolManager {
     this.zkClient = null;
     listenerMap.put(hostname, new ChicagoListener());
     connect(new InetSocketAddress(hostname, 12000), listenerMap.get(hostname));
+  }
+
+  public void start() {
+    running.set(true);
+  }
+
+  public void stop() {
+    log.info("ConnectionPoolManager stopping");
+    running.set(false);
+    ChannelGroup channelGroup = new DefaultChannelGroup(workerGroup.next());
+    for(ChannelFuture cf : connectionMap.values()) {
+      channelGroup.add(cf.channel());
+    }
+    log.info("Closing channels");
+    channelGroup.close().awaitUninterruptibly();
+    log.info("Stopping workerGroup");
+    workerGroup.shutdownGracefully().awaitUninterruptibly();
   }
 
   private List<String> buildNodeList() {
@@ -151,6 +173,9 @@ public class ConnectionPoolManager {
       @Override
       public void operationComplete(ChannelFuture future) {
         if (!future.isSuccess()) {
+          if (!running.get()) {
+            return;
+          }
           try {
             retryLoop.takeException((Exception) future.cause());
             log.error("==== Service connect failure (will retry)", future.cause());
