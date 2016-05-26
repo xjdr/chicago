@@ -12,8 +12,8 @@ import org.apache.log4j.Logger;
 import org.apache.zookeeper.CreateMode;
 import com.xjeffrose.chicago.*;
 
-public class Chicago {
-  private static final Logger log = Logger.getLogger(Chicago.class.getName());
+public class ChicagoServer {
+  private static final Logger log = Logger.getLogger(ChicagoServer.class.getName());
   private final static String ELECTION_PATH = "/chicago/chicago-elect";
   private final static String NODE_LIST_PATH = "/chicago/node-list";
 
