@@ -99,6 +99,10 @@ public class ChiConfig {
     return dbBindIP;
   }
 
+  public String getDBBindEndpoint() {
+    return dbBindIP + ":" + dbPort;
+  }
+
   public String getCert() {
     return X509_CERT;
   }

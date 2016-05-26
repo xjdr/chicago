@@ -48,7 +48,7 @@ public class Chicago {
         .create()
         .creatingParentsIfNeeded()
         .withMode(CreateMode.EPHEMERAL)
-        .forPath(NODE_LIST_PATH + "/" + config.getDBBindIP(), ConfigSerializer.serialize(config).getBytes());
+        .forPath(NODE_LIST_PATH + "/" + config.getDBBindEndpoint(), ConfigSerializer.serialize(config).getBytes());
 
       config.setZkClient(zkClient);
     } catch (Exception e) {

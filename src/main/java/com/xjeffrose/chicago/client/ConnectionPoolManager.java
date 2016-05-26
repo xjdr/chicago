@@ -53,10 +53,15 @@ public class ConnectionPoolManager {
     return zkClient.list(NODE_LIST_PATH);
   }
 
+  private InetSocketAddress address(String node) {
+    String chunks[] = node.split(":");
+    return new InetSocketAddress(chunks[0], Integer.parseInt(chunks[1]));
+  }
+
   private void refreshPool() {
     buildNodeList().stream().forEach(xs -> {
       listenerMap.put(xs, new ChicagoListener());
-      connect(new InetSocketAddress(xs, 12000), listenerMap.get(xs));
+      connect(address(xs), listenerMap.get(xs));
     });
   }
 
