@@ -28,24 +28,24 @@ public class ChicagoClientTest {
 
   @BeforeClass
   static public void setupFixture() throws Exception {
-    testingServer = new TestingServer(2182);
-    chicago1 = new Chicago();
-    chicago1.main(new String[]{"", "src/test/resources/test1.conf"});
-    chicago2 = new Chicago();
-    chicago2.main(new String[]{"", "src/test/resources/test2.conf"});
-    chicago3 = new Chicago();
-    chicago3.main(new String[]{"", "src/test/resources/test3.conf"});
-    chicago4 = new Chicago();
-    chicago4.main(new String[]{"", "src/test/resources/test4.conf"});
+//    testingServer = new TestingServer(2182);
+//    chicago1 = new Chicago();
+//    chicago1.main(new String[]{"", "src/test/resources/test1.conf"});
+//    chicago2 = new Chicago();
+//    chicago2.main(new String[]{"", "src/test/resources/test2.conf"});
+//    chicago3 = new Chicago();
+//    chicago3.main(new String[]{"", "src/test/resources/test3.conf"});
+//    chicago4 = new Chicago();
+//    chicago4.main(new String[]{"", "src/test/resources/test4.conf"});
 //    chicagoClientSingle = new ChicagoClient(new InetSocketAddress("127.0.0.1", 12000));
 //    chicagoClientDHT = new ChicagoClient("10.25.160.234:2181", 3);
 //    chicagoTSClient = new ChicagoTSClient("10.25.160.234:2181", 3);
-    chicagoTSClient = new ChicagoTSClient(testingServer.getConnectString(), 3);
+    //chicagoTSClient = new ChicagoTSClient(testingServer.getConnectString(), 3);
 
 
 //    chicagoClientDHT = new ChicagoClient("10.22.100.183:2181");
-    chicagoClientDHT = new ChicagoClient(testingServer.getConnectString(), 3);
-//    chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
+   // chicagoClientDHT = new ChicagoClient(testingServer.getConnectString(), 3);
+    chicagoTSClient = new ChicagoTSClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181",3);
 //    chicagoClientDHT = new ChicagoClient("10.22.100.183:2181,10.25.180.234:2181,10.22.103.86:2181,10.25.180.247:2181,10.25.69.226:2181/chicago");
   }
 
@@ -91,15 +91,15 @@ public class ChicagoClientTest {
   @Test
   public void transactStream() throws Exception {
     byte[] offset = null;
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < 1000; i++) {
       String _v = "val" + i;
       byte[] val = _v.getBytes();
       if (i == 12) {
-        offset = chicagoTSClient.write("tskey".getBytes(), val);
+        offset = chicagoTSClient.write("smkey".getBytes(), val);
       }
-      assertNotNull(chicagoTSClient.write("tskey".getBytes(), val));
+      assertNotNull(chicagoTSClient.write("smkey".getBytes(), val));
     }
-
+    System.out.println(new String(offset));
     ListenableFuture<ChicagoStream> f = chicagoTSClient.stream("tskey".getBytes());
     ChicagoStream cs = f.get(1000, TimeUnit.MILLISECONDS);
     ListenableFuture<byte[]> resp = cs.getStream();
