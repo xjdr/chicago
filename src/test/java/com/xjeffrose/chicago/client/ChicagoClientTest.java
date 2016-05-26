@@ -147,9 +147,37 @@ public class ChicagoClientTest {
 
   @Test
   public void transactManyCFConcurrent() throws Exception {
-    ExecutorService exe = Executors.newFixedThreadPool(4);
-    int count = 1000;
-    CountDownLatch latch = new CountDownLatch(count * 2);
+    ExecutorService exe = Executors.newFixedThreadPool(6);
+    int count = 2000;
+    CountDownLatch latch = new CountDownLatch(count * 3);
+
+
+    exe.execute(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          for (int i = 0; i < count; i++) {
+            String _k = "xkey" + i;
+            byte[] key = _k.getBytes();
+            String _v = "xval" + i;
+            byte[] val = _v.getBytes();
+            assertEquals(true, chicagoClientDHT.write("xcolfam".getBytes(), key, val));
+            assertEquals(new String(val), new String(chicagoClientDHT.read("xcolfam".getBytes(), key).get()));
+            assertEquals(true, chicagoClientDHT.delete("xcolfam".getBytes(), key));
+//            System.out.println("2 " + latch.getCount());
+            latch.countDown();
+          }
+        } catch (ChicagoClientTimeoutException e) {
+          e.printStackTrace();
+        } catch (ChicagoClientException e) {
+          e.printStackTrace();
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        } catch (ExecutionException e) {
+          e.printStackTrace();
+        }
+      }
+    });
 
 
     exe.execute(new Runnable() {
@@ -179,14 +207,15 @@ public class ChicagoClientTest {
       }
     });
 
+
     exe.execute(new Runnable() {
       @Override
       public void run() {
         try {
           for (int i = 0; i < count; i++) {
-            String _k = "xkey" + i;
+            String _k = "zkey" + i;
             byte[] key = _k.getBytes();
-            String _v = "xval" + i;
+            String _v = "zval" + i;
             byte[] val = _v.getBytes();
             assertEquals(true, chicagoClientDHT.write("xcolfam".getBytes(), key, val));
             assertEquals(new String(val), new String(chicagoClientDHT.read("xcolfam".getBytes(), key).get()));
@@ -205,6 +234,7 @@ public class ChicagoClientTest {
         }
       }
     });
+
 
     latch.await(20000, TimeUnit.MILLISECONDS);
   }

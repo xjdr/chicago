@@ -76,6 +76,8 @@ class ChicagoListener implements Listener<byte[]> {
     ChicagoMessage _resp = responseMap.remove(id);
 
     if (_resp.getSuccess()) {
+      reqIds.remove(id);
+      messageIds.remove(id);
       return _resp.getVal();
     } else {
       log.error("Invalid Response returned");
@@ -114,6 +116,8 @@ class ChicagoListener implements Listener<byte[]> {
       }
     }
     if (responseMap.remove(id).getKey().length == 4) {
+      reqIds.remove(id);
+      messageIds.remove(id);
       return true;
     } else {
       return false;
@@ -169,7 +173,8 @@ class ChicagoListener implements Listener<byte[]> {
 
 
     while (!responseMap.containsKey(idList.getFirst())) {
-      idList.removeFirst();
+      messageIds.remove(idList.getFirst());
+      reqIds.remove(idList.removeFirst());
     }
 
     ChicagoMessage _resp = responseMap.remove(idList.getFirst());
@@ -223,7 +228,8 @@ class ChicagoListener implements Listener<byte[]> {
     ChicagoMessage _resp = responseMap.remove(idList.getFirst());
 
     if (_resp != null) {
-      idList.removeFirst();
+      messageIds.remove(idList.getFirst());
+      reqIds.remove(idList.removeFirst());
     } else {
       return _getStatus(idList, startTime);
     }
