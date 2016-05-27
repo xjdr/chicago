@@ -9,6 +9,7 @@ dependencies:
     - ./sbt "show update"
   cache_directories:
     - ~/.m2
+    - ~/.sbt
 test:
   override:
     - ./sbt "show test"
