@@ -15,6 +15,8 @@ libraryDependencies += "org.codehaus.groovy" % "groovy-all" % "2.4.1" % Test
 libraryDependencies += "org.slf4j" % "log4j-over-slf4j" % "1.7.21"
 // http://mvnrepository.com/artifact/ch.qos.logback/logback-classic
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.1.7" % Test
+// http://mvnrepository.com/artifact/org.rocksdb/rocksdbjni
+libraryDependencies += "org.rocksdb" % "rocksdbjni" % "4.5.1"
 
 
 lazy val Serial = config("serial") extend(Test)
