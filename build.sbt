@@ -1,4 +1,4 @@
-libraryDependencies += "com.xjeffrose" % "xio" % "0.10.0-SNAPSHOT"
+// libraryDependencies += "com.xjeffrose" % "xio" % "0.10.0-SNAPSHOT"
 // libraryDependencies += "rocksdb" % "org.rocksdb" % "1.0"
 
 libraryDependencies += "com.typesafe" % "config" % "1.3.0"
