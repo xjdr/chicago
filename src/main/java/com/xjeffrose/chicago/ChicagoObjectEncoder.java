@@ -7,7 +7,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import java.util.List;
 import java.util.UUID;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * | id | op | ColFam | keySize | key | valSize | val |
@@ -16,7 +17,7 @@ import org.apache.log4j.Logger;
  */
 
 public class ChicagoObjectEncoder extends MessageToMessageEncoder<Object> {
-  private static final Logger log = Logger.getLogger(ChicagoObjectEncoder.class);
+  private static final Logger log = LoggerFactory.getLogger(ChicagoObjectEncoder.class);
 
 
   public ChicagoObjectEncoder() {

@@ -7,10 +7,11 @@ import java.util.concurrent.CountDownLatch;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ClientNodeWatcher {
-  private static final Logger log = Logger.getLogger(ClientNodeWatcher.class);
+  private static final Logger log = LoggerFactory.getLogger(ClientNodeWatcher.class);
   private final static String NODE_LIST_PATH = "/chicago/node-list";
   private final CountDownLatch latch = new CountDownLatch(1);
   private final GenericListener genericListener = new GenericListener(NODE_LIST_PATH);

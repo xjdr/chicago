@@ -8,8 +8,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.log4j.Logger;
-import org.apache.log4j.net.SyslogAppender;
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.ColumnFamilyOptions;
@@ -24,9 +22,11 @@ import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 import org.rocksdb.WriteOptions;
 import org.rocksdb.util.SizeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class DBManager {
-  private static final Logger log = Logger.getLogger(DBManager.class);
+  private static final Logger log = LoggerFactory.getLogger(DBManager.class);
 
   private final Options options = new Options();
   private final ReadOptions readOptions = new ReadOptions();
