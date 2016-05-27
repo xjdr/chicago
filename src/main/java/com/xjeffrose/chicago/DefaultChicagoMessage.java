@@ -4,8 +4,11 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderResult;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DefaultChicagoMessage implements ChicagoMessage {
+  private static final Logger log = LoggerFactory.getLogger(DefaultChicagoMessage.class.getName());
   private final UUID id;
   private final Op _op;
   private final byte[] colFam;

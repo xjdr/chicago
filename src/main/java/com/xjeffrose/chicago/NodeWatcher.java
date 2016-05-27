@@ -9,11 +9,12 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
 import org.apache.curator.framework.recipes.leader.LeaderSelector;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.rocksdb.ReadOptions;
 
 public class NodeWatcher {
-  private static final Logger log = Logger.getLogger(NodeWatcher.class);
+  private static final Logger log = LoggerFactory.getLogger(NodeWatcher.class);
   private final static String NODE_LIST_PATH = "/chicago/node-list";
   private final CountDownLatch latch = new CountDownLatch(1);
   private final GenericListener genericListener = new GenericListener();

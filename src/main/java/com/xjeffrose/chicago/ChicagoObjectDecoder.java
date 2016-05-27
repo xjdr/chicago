@@ -10,7 +10,8 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.DecoderResult;
 import java.util.List;
 import java.util.UUID;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /*
@@ -20,7 +21,7 @@ import org.apache.log4j.Logger;
 
 
 public class ChicagoObjectDecoder extends ByteToMessageDecoder {
-  private static final Logger log = Logger.getLogger(ChicagoObjectDecoder.class.getName());
+  private static final Logger log = LoggerFactory.getLogger(ChicagoObjectDecoder.class.getName());
 
 
   public ChicagoMessage decode(byte[] msg) {

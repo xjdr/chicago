@@ -4,10 +4,11 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import java.util.UUID;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ChicagoDBHandler extends SimpleChannelInboundHandler {
-  private static final Logger log = Logger.getLogger(ChicagoDBHandler.class);
+  private static final Logger log = LoggerFactory.getLogger(ChicagoDBHandler.class);
 
   private final DBManager dbManager;
 

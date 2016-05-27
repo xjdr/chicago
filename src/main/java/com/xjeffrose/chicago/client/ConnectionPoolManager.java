@@ -26,12 +26,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.log4j.Logger;
-import org.apache.log4j.net.SyslogAppender;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConnectionPoolManager {
-  private static final Logger log = Logger.getLogger(ChicagoClient.class);
+  private static final Logger log = LoggerFactory.getLogger(ChicagoClient.class);
   private final static String NODE_LIST_PATH = "/chicago/node-list";
   private static final long TIMEOUT = 1000;
   private static boolean TIMEOUT_ENABLED = true;

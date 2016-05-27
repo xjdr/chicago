@@ -4,10 +4,11 @@ import com.xjeffrose.chicago.ChicagoMessage;
 import com.xjeffrose.xio.core.XioIdleDisconnectException;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class ChicagoClientHandler extends SimpleChannelInboundHandler<ChicagoMessage> {
-  private static final Logger log = Logger.getLogger(ChicagoClientHandler.class);
+  private static final Logger log = LoggerFactory.getLogger(ChicagoClientHandler.class);
 
   private Listener<byte[]> listener;
 

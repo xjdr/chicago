@@ -30,10 +30,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DBRouter implements Closeable {
-  private static final Logger log = Logger.getLogger(DBRouter.class);
+  private static final Logger log = LoggerFactory.getLogger(DBRouter.class);
 
   //TODO(JR): Make this concurrent to applow for parallel streams
   private final Set<XioServerDef> serverDefSet = new HashSet<>();
@@ -202,7 +203,7 @@ public class DBRouter implements Closeable {
       config.setChannelStats(x.getXioMetrics());
       // For debug, leave commented out (or not, your choice if you like it)
       String msg = "--------------- Chicago Server Started!!! ----------------------";
-      System.out.println(msg);
+      //System.out.println(msg);
       log.info(msg);
     } catch (Exception e) {
       e.printStackTrace();
