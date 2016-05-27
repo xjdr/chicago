@@ -1,3 +1,4 @@
+/*
 package xjdrBuild
 
 import sbt._, Keys._, Defaults.sbtPluginExtra
@@ -46,3 +47,4 @@ object Build extends sbt.Build {
       test
     )
 }
+*/
