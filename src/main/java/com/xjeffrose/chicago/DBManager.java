@@ -206,6 +206,11 @@ class DBManager {
     }
   }
 
+  public byte[] stream(byte[] colFam) {
+    byte[] offset = new byte[]{};
+    return stream(colFam, offset);
+  }
+
   public byte[] stream(byte[] colFam, byte[] offset) {
     if (colFamilyExists(colFam)) {
       RocksIterator i = db.newIterator(columnFamilies.get(new String(colFam)), readOptions);

@@ -6,15 +6,20 @@ import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.rocksdb.ReadOptions;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.*;
 
 public class DBManagerTest {
-  static DBManager dbManager;
+  @Rule
+  public TemporaryFolder tmp = new TemporaryFolder();
+  DBManager dbManager;
 
-  @BeforeClass
-  static public void setupFixture() throws Exception {
-    dbManager = new DBManager(new ChiConfig(ConfigFactory.parseFile(new File("test.conf"))));
+  @Before
+  public void setupFixture() throws Exception {
+    dbManager = new DBManager(TestChicago.makeConfig(TestChicago.chicago_dir(tmp), 1));
   }
 
   @Test
@@ -26,12 +31,6 @@ public class DBManagerTest {
     assertTrue(dbManager.write(colFam, key, val));
     assertEquals(new String(val), new String(dbManager.read(colFam, key)));
     assertTrue(dbManager.delete(colFam, key));
-  }
-
-
-  @Test
-  public void getKeys() throws Exception {
-    List<byte[]> keySet = dbManager.getKeys(new ReadOptions());
   }
 
   @Test
@@ -46,9 +45,10 @@ public class DBManagerTest {
       }
     }
 
-    System.out.println(new String(dbManager.stream("key".getBytes(), null)));
 
-    System.out.println(new String(dbManager.stream("key".getBytes(), offset)));
+    assertNotNull(dbManager.stream("key".getBytes()));
+
+    assertNotNull(dbManager.stream("key".getBytes(), offset));
 
   }
 
