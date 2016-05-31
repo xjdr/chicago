@@ -1,6 +1,7 @@
 package com.xjeffrose.chicago;
 
 import java.nio.charset.Charset;
+import java.net.InetSocketAddress;
 import java.util.List;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
@@ -42,7 +43,9 @@ public class ZkClient {
           .create()
           .creatingParentsIfNeeded()
           .withMode(CreateMode.EPHEMERAL)
-          .forPath(NODE_LIST_PATH + "/" + config.getDBBindEndpoint(), ConfigSerializer.serialize(config).getBytes());
+        .forPath(NODE_LIST_PATH + "/" +
+                 new InetSocketAddress(config.getDBBindEndpoint(), config.getDBPort()).getAddress().getHostAddress(),
+                 ConfigSerializer.serialize(config).getBytes());
     } catch (Exception e) {
       log.error("Error registering Server", e);
       throw new RuntimeException(e);
