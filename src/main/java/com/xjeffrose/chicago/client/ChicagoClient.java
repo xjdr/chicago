@@ -37,7 +37,8 @@ public class ChicagoClient {
   private final ZkClient zkClient;
   private final ConnectionPoolManager connectionPoolMgr;
   private final int quorum;
-    /*
+
+  /*
    * Happy Path:
    * Delete -> send message to all (3) available nodes wait for all (3) responses to be true.
    * Write -> send message to all (3) available nodes wait for all (3) responses to be true.
@@ -60,7 +61,6 @@ public class ChicagoClient {
    *  ack x 3 nodes
    *  ok x 3 nodes -> write request
    */
-
 
   public ChicagoClient(InetSocketAddress server) {
     this.single_server = server;
