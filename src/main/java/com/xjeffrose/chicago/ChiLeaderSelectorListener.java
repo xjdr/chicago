@@ -6,8 +6,11 @@ import org.apache.curator.framework.state.ConnectionState;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ChiLeaderSelectorListener implements LeaderSelectorListener {
+  private static final Logger log = LoggerFactory.getLogger(ChiLeaderSelectorListener.class.getName());
   private Lock lock = new ReentrantLock();
   private Condition dropLeadership = lock.newCondition();
 

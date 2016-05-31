@@ -22,10 +22,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ChicagoTSClient {
-  private static final Logger log = Logger.getLogger(ChicagoTSClient.class);
+  private static final Logger log = LoggerFactory.getLogger(ChicagoTSClient.class);
   private final static String NODE_LIST_PATH = "/chicago/node-list";
   private static final long TIMEOUT = 10000000;
   private static boolean TIMEOUT_ENABLED = false;

@@ -7,10 +7,11 @@ import com.xjeffrose.xio.processor.XioProcessor;
 import com.xjeffrose.xio.processor.XioSimpleProcessor;
 import com.xjeffrose.xio.server.RequestContext;
 import io.netty.channel.ChannelHandlerContext;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ChicagoProcessor implements XioSimpleProcessor {
-  private static final Logger log = Logger.getLogger(ChicagoProcessor.class);
+  private static final Logger log = LoggerFactory.getLogger(ChicagoProcessor.class);
 
   @Override
   public void disconnect(ChannelHandlerContext channelHandlerContext) {

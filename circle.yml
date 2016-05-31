@@ -2,13 +2,18 @@ machine:
   java:
     version: oraclejdk8
   pre:
+    - sudo apt-get update
     - sudo apt-get install openssl libssl-dev
+    - sudo mkdir /var/chicago
 dependencies:
+  override:
+    - ./sbt "show update"
   cache_directories:
     - ~/.m2
+    - ~/.sbt
 test:
   override:
-    - mvn test
+    - ./sbt "show test"
   post:
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
     - find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;

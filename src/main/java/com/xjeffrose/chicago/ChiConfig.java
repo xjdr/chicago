@@ -8,8 +8,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
 import org.apache.curator.framework.recipes.leader.LeaderSelector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ChiConfig {
+  private static final Logger log = LoggerFactory.getLogger(ChiConfig.class.getName());
   private final int dbPort;
   private final String zkHosts;
   private String dbBindIP;

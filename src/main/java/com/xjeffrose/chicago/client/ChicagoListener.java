@@ -6,10 +6,11 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class ChicagoListener implements Listener<byte[]> {
-  private static final Logger log = Logger.getLogger(ChicagoListener.class);
+  private static final Logger log = LoggerFactory.getLogger(ChicagoListener.class);
   private static final long TIMEOUT = 1000;
   private static final boolean TIMEOUT_ENABLED = true;
 

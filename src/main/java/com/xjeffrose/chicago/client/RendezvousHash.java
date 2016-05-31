@@ -13,13 +13,16 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RendezvousHash<N> {
+  private static final Logger log = LoggerFactory.getLogger(RendezvousHash.class.getName());
 
   private final HashFunction hasher;
   private final Funnel<N> nodeFunnel;
     private final int quorum;
-    
+
   private ConcurrentSkipListSet<N> nodeList;
 
     public RendezvousHash(Funnel<N> nodeFunnel, Collection<N> init, int quorum) {

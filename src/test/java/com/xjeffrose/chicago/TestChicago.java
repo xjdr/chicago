@@ -21,6 +21,7 @@ public class TestChicago {
     mapping.put("zk_hosts", "localhost:2182");
     mapping.put("db_path", db_filename.getPath());
     mapping.put("workers", 20);
+    mapping.put("quorum", 3);
     mapping.put("boss_count", 4);
     mapping.put("admin_bind_ip", "127.0.0.1");
     mapping.put("admin_port", 9990 + server_num);
