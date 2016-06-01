@@ -44,7 +44,6 @@ public class ConnectionPoolManager {
   public ConnectionPoolManager(ZkClient zkClient) {
 
     this.zkClient = zkClient;
-    refreshPool();
   }
 
   public ConnectionPoolManager(String hostname) {
@@ -55,6 +54,7 @@ public class ConnectionPoolManager {
 
   public void start() {
     running.set(true);
+    refreshPool();
   }
 
   public void stop() {
