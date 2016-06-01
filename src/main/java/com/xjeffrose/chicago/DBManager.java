@@ -34,6 +34,7 @@ class DBManager {
   private final Map<String, ColumnFamilyHandle> columnFamilies = new HashMap<>();
 
   private RocksDB db;
+  //private RocksDB db;
 
   DBManager(ChiConfig config) {
     RocksDB.loadLibrary();
@@ -44,7 +45,7 @@ class DBManager {
 
     try {
       File f = new File(config.getDBPath());
-      if (f.exists()) {
+      if (f.exists() && !config.isGraceFullStart()) {
         deleteDir(f);
       }
       this.db = RocksDB.open(options, config.getDBPath());

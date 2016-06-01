@@ -35,6 +35,7 @@ public class ChiConfig {
   private LeaderSelector leaderSelector;
   private ZkClient zkClient;
   private int quorum;
+  private boolean graceFullStart;
 
   public ChiConfig(Config conf) {
 
@@ -59,6 +60,11 @@ public class ChiConfig {
     this.dbPort = conf.getInt("db_port");
     this.quorum = conf.getInt("quorum");
     this.zkHosts = conf.getString("zk_hosts");
+    this.graceFullStart = false;
+
+    if (System.getProperty("graceful") != null) {
+      this.graceFullStart = Boolean.parseBoolean(System.getProperty("graceful"));
+    }
 
   }
 
@@ -141,5 +147,10 @@ public class ChiConfig {
  public int getQuorum() {
    return quorum;
  }
+
+  public boolean isGraceFullStart() {
+    return graceFullStart;
+  }
+
 
 }
