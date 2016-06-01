@@ -82,7 +82,7 @@ public class ChicagoTSClient {
     this.quorum = quorum;
 
     this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), buildNodeList(), quorum);
-    this.clientNodeWatcher = new ClientNodeWatcher(zkClient, rendezvousHash);
+    this.clientNodeWatcher = new ClientNodeWatcher(zkClient, rendezvousHash, null);
     this.connectionPoolMgr = new ConnectionPoolManager(zkClient);
   }
 
@@ -97,9 +97,13 @@ public class ChicagoTSClient {
   }
 
   public void stop() {
+    try {
     zkClient.stop();
     connectionPoolMgr.stop();
     clientNodeWatcher.stop();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
 

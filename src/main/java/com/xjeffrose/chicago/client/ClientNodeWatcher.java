@@ -82,7 +82,9 @@ public class ClientNodeWatcher {
             nodeAdded(event.getData().getPath());
           }
           if (!NODE_LIST_PATH.equals(event.getData().getPath())) {
-            listener.nodeAdded();
+            if (listener != null) {
+              listener.nodeAdded();
+            }
           }
           break;
         case NODE_REMOVED:
@@ -90,7 +92,9 @@ public class ClientNodeWatcher {
             nodeRemoved(event.getData().getPath());
           }
           if (!NODE_LIST_PATH.equals(event.getData().getPath())) {
-            listener.nodeRemoved();
+            if (listener != null) {
+              listener.nodeRemoved();
+            }
           }
           break;
         default: {

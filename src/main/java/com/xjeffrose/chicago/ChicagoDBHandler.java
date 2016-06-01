@@ -1,5 +1,7 @@
 package com.xjeffrose.chicago;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -11,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 public class ChicagoDBHandler extends SimpleChannelInboundHandler {
   private static final Logger log = LoggerFactory.getLogger(ChicagoDBHandler.class);
+  private static final int MAX_BUFFER_SIZE = 16000;
 
   private final DBManager dbManager;
 
@@ -98,7 +101,23 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
           if (readResponse != null) {
             status = true;
           }
+
+          if (readResponse.length > MAX_BUFFER_SIZE) {
+            ByteBuf bb = Unpooled.buffer();
+
+            bb.writeBytes(readResponse);
+            ByteBuf bbs = bb.slice(0, MAX_BUFFER_SIZE);
+
+            ctx.writeAndFlush(new DefaultChicagoMessage(finalMsg.getId(), Op.fromInt(3), finalMsg.getColFam(), Boolean.toString(status).getBytes(), bbs.array()));
+
+            if ((bb.readableBytes() - MAX_BUFFER_SIZE) > MAX_BUFFER_SIZE) {
+
+
+            }
+          }
+
           break;
+
         default:
           break;
       }

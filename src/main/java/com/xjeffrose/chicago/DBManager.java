@@ -45,7 +45,10 @@ public class DBManager {
     try {
       File f = new File(config.getDBPath());
       if (f.exists()) {
-        deleteDir(f);
+        removeDB(f);
+      } else {
+        f.mkdir();
+        f.deleteOnExit();
       }
       this.db = RocksDB.open(options, config.getDBPath());
     } catch (RocksDBException e) {
@@ -54,11 +57,11 @@ public class DBManager {
     }
   }
 
-  void deleteDir(File file) {
+  void removeDB(File file) {
     File[] contents = file.listFiles();
     if (contents != null) {
       for (File f : contents) {
-        deleteDir(f);
+        removeDB(f);
       }
     }
     file.delete();
