@@ -96,30 +96,28 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
             status = true;
           }
           break;
-        case STREAM:
-          readResponse = dbManager.stream(finalMsg.getColFam(), finalMsg.getVal());
-          if (readResponse != null) {
-            status = true;
-          }
+      case STREAM:
+        readResponse = dbManager.stream(finalMsg.getColFam(), finalMsg.getVal());
+        if (readResponse != null) {
+          status = true;
+        }
 
-          if (readResponse.length > MAX_BUFFER_SIZE) {
-            ByteBuf bb = Unpooled.buffer();
+        if (readResponse.length > MAX_BUFFER_SIZE) {
+          ByteBuf bb = Unpooled.buffer();
+          bb.writeBytes(readResponse);
 
-            bb.writeBytes(readResponse);
-            ByteBuf bbs = bb.slice(0, MAX_BUFFER_SIZE);
-
+          for (int i = 0; i < Math.ceil(bb.readableBytes() / MAX_BUFFER_SIZE) ; i++) {
+            ByteBuf bbs = bb.slice(MAX_BUFFER_SIZE * i, MAX_BUFFER_SIZE);
             ctx.writeAndFlush(new DefaultChicagoMessage(finalMsg.getId(), Op.fromInt(3), finalMsg.getColFam(), Boolean.toString(status).getBytes(), bbs.array()));
-
-            if ((bb.readableBytes() - MAX_BUFFER_SIZE) > MAX_BUFFER_SIZE) {
-
-
-            }
           }
 
-          break;
+          readResponse = new byte[]{};
+        }
 
-        default:
-          break;
+        break;
+
+      default:
+        break;
       }
 
       ChannelFutureListener writeComplete = new ChannelFutureListener() {
