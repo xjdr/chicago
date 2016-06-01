@@ -25,7 +25,7 @@ import org.rocksdb.util.SizeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class DBManager {
+public class DBManager {
   private static final Logger log = LoggerFactory.getLogger(DBManager.class);
 
   private final Options options = new Options();
@@ -36,7 +36,7 @@ class DBManager {
   private RocksDB db;
   //private RocksDB db;
 
-  DBManager(ChiConfig config) {
+  public DBManager(ChiConfig config) {
     RocksDB.loadLibrary();
 
     configOptions();
@@ -46,7 +46,10 @@ class DBManager {
     try {
       File f = new File(config.getDBPath());
       if (f.exists() && !config.isGraceFullStart()) {
-        deleteDir(f);
+        removeDB(f);
+      } else {
+        f.mkdir();
+        f.deleteOnExit();
       }
       this.db = RocksDB.open(options, config.getDBPath());
     } catch (RocksDBException e) {
@@ -55,11 +58,11 @@ class DBManager {
     }
   }
 
-  void deleteDir(File file) {
+  void removeDB(File file) {
     File[] contents = file.listFiles();
     if (contents != null) {
       for (File f : contents) {
-        deleteDir(f);
+        removeDB(f);
       }
     }
     file.delete();
@@ -186,7 +189,7 @@ class DBManager {
     return keySet;
   }
 
-  void destroy() {
+  public void destroy() {
     db.close();
   }
 

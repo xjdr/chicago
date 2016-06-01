@@ -1,0 +1,10 @@
+* TODO
+
+
+** TODO Buffer Returns from TS Stream to 16k                            :Now:
+** TODO API to return node from key (maybe?)                      :Strategic:
+** TODO Make a rest endpoint that exposes a chicago client        :Strategic:
+** TODO Can you perform reasonable LBing with a dumb client?      :Strategic:
+** TODO Graceful Shutdown and recovery                            :Strategic:
+** TODO Add options for DB (persist) and cache (in mem)           :Strategic:
+** TODO In cache mode, db should be mounted to tmpfs              :Strategic:

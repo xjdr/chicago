@@ -1,6 +1,7 @@
 package com.xjeffrose.chicago;
 
 import java.nio.charset.Charset;
+import java.net.InetSocketAddress;
 import java.util.List;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
@@ -14,6 +15,8 @@ import org.slf4j.LoggerFactory;
 public class ZkClient {
   private static final Logger log = LoggerFactory.getLogger(ZkClient.class.getName());
 
+  private LeaderSelector leaderSelector;
+  private final ChiLeaderSelectorListener leaderListener = new ChiLeaderSelectorListener();
   private CuratorFramework client;
   private String connectionString;
 
@@ -40,15 +43,17 @@ public class ZkClient {
           .create()
           .creatingParentsIfNeeded()
           .withMode(CreateMode.EPHEMERAL)
-          .forPath(NODE_LIST_PATH + "/" + config.getDBBindEndpoint(), ConfigSerializer.serialize(config).getBytes());
+        .forPath(NODE_LIST_PATH + "/" +
+                 new InetSocketAddress(config.getDBBindEndpoint(), config.getDBPort()).getAddress().getHostAddress(),
+                 ConfigSerializer.serialize(config).getBytes());
     } catch (Exception e) {
-      log.error("Error registering Server");
-      System.exit(-1);
+      log.error("Error registering Server", e);
+      throw new RuntimeException(e);
     }
   }
 
   public void electLeader(String ELECTION_PATH) {
-    LeaderSelector leaderSelector = new LeaderSelector(client, ELECTION_PATH, new ChiLeaderSelectorListener());
+    leaderSelector = new LeaderSelector(client, ELECTION_PATH, leaderListener);
 
     leaderSelector.autoRequeue();
     leaderSelector.start();
@@ -60,7 +65,11 @@ public class ZkClient {
     client.blockUntilConnected();
   }
 
-  public void stop() {
+  public void stop() throws Exception {
+    leaderListener.relinquish();
+    if (leaderSelector != null) {
+      leaderSelector.close();
+    }
     client.close();
   }
 

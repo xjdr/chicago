@@ -1,5 +1,6 @@
 package com.xjeffrose.chicago;
 
+import com.xjeffrose.chicago.server.ChicagoServer;
 import java.util.List;
 import com.netflix.curator.test.TestingServer;
 import org.apache.curator.framework.CuratorFramework;

@@ -1,4 +1,4 @@
-package com.xjeffrose.chicago;
+package com.xjeffrose.chicago.server;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -18,76 +18,32 @@ public class ChicagoServer {
   private final static String ELECTION_PATH = "/chicago/chicago-elect";
   private final static String NODE_LIST_PATH = "/chicago/node-list";
 
-  private final ChiConfig config;
-  private final CuratorFramework curator;
-  private final LeaderSelector leaderSelector;
-  private final ChiLeaderSelectorListener leaderListener = new ChiLeaderSelectorListener();
+  public final ChiConfig config;
   private final ZkClient zkClient;
   private DBManager dbManager;
   private NodeWatcher nodeWatcher;
   private DBRouter dbRouter;
-
+  public final DBLog dbLog = new DBLog();
 
   public ChicagoServer(ChiConfig config) {
     this.config = config;
-    curator = CuratorFrameworkFactory.newClient(config.getZkHosts(), 2000, 10000, new ExponentialBackoffRetry(1000, 3));
-    leaderSelector = new LeaderSelector(curator, ELECTION_PATH, leaderListener);
-    zkClient = new ZkClient(curator);
+    zkClient = new ZkClient(config.getZkHosts());
+    dbManager = new DBManager(config);
+    nodeWatcher = new NodeWatcher();
+    dbRouter = new DBRouter(config, dbManager, dbLog);
   }
-
-
-  private void configureLeaderSelector() {
-    leaderSelector.autoRequeue();
-    leaderSelector.start();
-    config.setLeaderSelector(leaderSelector);
+  public void start() throws Exception {
+    zkClient.start();
+    zkClient.register(NODE_LIST_PATH, config);
+    zkClient.electLeader(ELECTION_PATH);
+    nodeWatcher.refresh(zkClient, dbManager, config);
+    dbRouter.run();
   }
-
-  private void configureZookeeper() {
-    try {
-      zkClient
-        .getClient()
-        .create()
-        .creatingParentsIfNeeded()
-        .withMode(CreateMode.EPHEMERAL)
-        .forPath(NODE_LIST_PATH + "/" + config.getDBBindEndpoint(), ConfigSerializer.serialize(config).getBytes());
-
-      config.setZkClient(zkClient);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-  public void start() {
-    log.info("Starting Chicago, have a nice day");
-
-    try {
-      curator.start();
-      curator.blockUntilConnected();
-
-      configureLeaderSelector();
-
-      configureZookeeper();
-
-      dbManager = new DBManager(config);
-      nodeWatcher = new NodeWatcher();
-      nodeWatcher.refresh(zkClient, dbManager, config);
-
-      dbRouter = new DBRouter(config, dbManager);
-      dbRouter.run();
-
-      log.info("I am the Leader: " + leaderSelector.hasLeadership());
-    } catch (Exception e) {
-      log.error("Startup Error", e);
-    }
-  }
-
   public void stop() {
     log.info("Stopping Chicago!");
     try {
       nodeWatcher.stop();
-      leaderListener.relinquish();
-      leaderSelector.close();
-      //      zkClient.stop();
-      curator.close();
+      zkClient.stop();
       dbRouter.close();
       dbManager.destroy();
 
@@ -96,5 +52,4 @@ public class ChicagoServer {
     }
 
   }
-
 }

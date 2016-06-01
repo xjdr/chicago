@@ -13,7 +13,10 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -23,21 +26,52 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ChicagoClient {
+  public class WriteState {
+    public int attempt;
+    public ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
+
+    WriteState() {
+      attempt = 1;
+    }
+
+    public void nodeState(String node, String state) {
+      map.put(node, state);
+    }
+
+    public String toString() {
+      return map.toString();
+    }
+  }
+  public WriteState writeState;
   private static final Logger log = LoggerFactory.getLogger(ChicagoClient.class);
   private final static String NODE_LIST_PATH = "/chicago/node-list";
   private static final long TIMEOUT = 1000;
-  private static boolean TIMEOUT_ENABLED = true;
+  private static boolean TIMEOUT_ENABLED = false;
   private static int MAX_RETRY = 3;
+  private final AtomicInteger nodesAvailable = new AtomicInteger(0);
 
   private final ExecutorService exe = Executors.newFixedThreadPool(20);
 
   private final InetSocketAddress single_server;
   private final RendezvousHash rendezvousHash;
   private final ClientNodeWatcher clientNodeWatcher;
+  private CountDownLatch latch;
+  private final ClientNodeWatcher.Listener listener = new ClientNodeWatcher.Listener() {
+      public void nodeAdded() {
+        int avail = nodesAvailable.incrementAndGet();
+        if (latch != null) {
+          latch.countDown();
+        }
+      }
+      public void nodeRemoved() {
+        nodesAvailable.decrementAndGet();
+      }
+  };
   private final ZkClient zkClient;
   private final ConnectionPoolManager connectionPoolMgr;
   private final int quorum;
-    /*
+
+  /*
    * Happy Path:
    * Delete -> send message to all (3) available nodes wait for all (3) responses to be true.
    * Write -> send message to all (3) available nodes wait for all (3) responses to be true.
@@ -61,7 +95,7 @@ public class ChicagoClient {
    *  ok x 3 nodes -> write request
    */
 
-
+  /*
   public ChicagoClient(InetSocketAddress server) {
     this.single_server = server;
     this.zkClient = null;
@@ -72,6 +106,7 @@ public class ChicagoClient {
     this.clientNodeWatcher = null;
     connectionPoolMgr = new ConnectionPoolManager(server.getHostName());
   }
+  */
 
   public ChicagoClient(String zkConnectionString, int quorum) throws InterruptedException {
 
@@ -81,15 +116,26 @@ public class ChicagoClient {
     zkClient.start();
 
     this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), buildNodeList(), quorum);
-    this.clientNodeWatcher = new ClientNodeWatcher(zkClient, rendezvousHash);
+    clientNodeWatcher = new ClientNodeWatcher(zkClient, rendezvousHash, listener);
     this.connectionPoolMgr = new ConnectionPoolManager(zkClient);
   }
 
   public void start() {
     connectionPoolMgr.start();
+    clientNodeWatcher.start();
   }
 
-  public void stop() {
+  public void startAndWaitForNodes(int count) {
+    try {
+      latch = new CountDownLatch(count);
+      start();
+      latch.await();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public void stop() throws Exception {
     log.info("ChicagoClient stopping");
     clientNodeWatcher.stop();
     connectionPoolMgr.stop();
@@ -230,7 +276,11 @@ public class ChicagoClient {
   public boolean write(byte[] colFam, byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException {
     long ts = System.currentTimeMillis();
     try {
-      return _write(colFam, key, value, 0).get(TIMEOUT, TimeUnit.MILLISECONDS);
+      if (TIMEOUT_ENABLED) {
+        return _write(colFam, key, value, 0).get(TIMEOUT, TimeUnit.MILLISECONDS);
+      } else {
+        return _write(colFam, key, value, 0).get();
+      }
     } catch (InterruptedException e) {
       e.printStackTrace();
     } catch (ExecutionException e) {
@@ -238,6 +288,7 @@ public class ChicagoClient {
     } catch (TimeoutException e) {
       long now = System.currentTimeMillis();
       log.error("TIMEOUT! " + (now - ts));
+      log.error("Write State: " + writeState);
       throw new ChicagoClientTimeoutException(e);
     }
 
@@ -248,6 +299,7 @@ public class ChicagoClient {
   private ListenableFuture<Boolean> _write(byte[] colFam, byte[] key, byte[] value, int _retries) throws ChicagoClientTimeoutException, ChicagoClientException {
     final int retries = _retries;
     ListeningExecutorService executor = MoreExecutors.listeningDecorator(exe);
+    writeState = new WriteState();
     return executor.submit(() -> {
 
       ConcurrentLinkedDeque<Boolean> responseList = new ConcurrentLinkedDeque<>();
@@ -269,24 +321,32 @@ public class ChicagoClient {
             ChannelFuture cf = connectionPoolMgr.getNode(node);
             log.debug(" +++++++++++++++++++++++++++++++++++++++++++++ Got Node");
             if (cf.channel().isWritable()) {
+              writeState.nodeState(node, "dispatch");
               exe.execute(() -> {
                   UUID id = UUID.randomUUID();
                   log.debug(" +++++++++++++++++++++++++++++++++++++++++++++ Getting Listener");
                   Listener listener = connectionPoolMgr.getListener(node); // Blocking
+                  writeState.nodeState(node, "write");
                   cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.WRITE, colFam, key, value));
+                  writeState.nodeState(node, "finished writing");
                   log.debug("++++++++++++++++++++++++++++++++++++++++ Write to node: " + node + " " + new String(key));
                   listener.addID(id);
                   exe.execute(() -> {
                       try {
                         log.debug(" ++++++++++++++++++++++++++++++++++++++ Getting Response for: " + new String(key) + " " + id);
+                        writeState.nodeState(node, "waiting for read");
                         responseList.add(listener.getStatus(id)); //Blocking
+                        writeState.nodeState(node, "finished reading");
                         log.debug(" ======================================= Got Response for: " + new String(key) + " " + id);
                       } catch (ChicagoClientTimeoutException e) {
 //                          Thread.currentThread().interrupt();
+                        writeState.nodeState(node, "read timeout");
                         throw new RuntimeException(e);
                       }
                   });
               });
+            } else {
+              log.error("Channel was not writable");
             }
           }
         }
@@ -300,6 +360,7 @@ public class ChicagoClient {
 
       while (responseList.size() < quorum) {
         if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
+          log.error("Quorum timeout");
 //            Thread.currentThread().interrupt();
           throw new ChicagoClientTimeoutException();
         }
@@ -315,6 +376,7 @@ public class ChicagoClient {
         return true;
       } else {
         if (MAX_RETRY < retries) {
+          log.error("write failed, retrying(" + retries + ")");
           return _write(colFam, key, value, retries + 1).get(TIMEOUT, TimeUnit.MILLISECONDS);
         } else {
           _delete(colFam, key, 0);

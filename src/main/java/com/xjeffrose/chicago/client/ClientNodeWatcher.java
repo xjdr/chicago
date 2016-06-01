@@ -11,6 +11,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ClientNodeWatcher {
+  public interface Listener {
+    void nodeAdded();
+    void nodeRemoved();
+  }
   private static final Logger log = LoggerFactory.getLogger(ClientNodeWatcher.class);
   private final static String NODE_LIST_PATH = "/chicago/node-list";
   private final CountDownLatch latch = new CountDownLatch(1);
@@ -18,12 +22,17 @@ public class ClientNodeWatcher {
   private TreeCacheInstance nodeList;
   private ZkClient zkClient;
   private RendezvousHash rendezvousHash;
+  private final Listener listener;
 
-  public ClientNodeWatcher(ZkClient zkClient, RendezvousHash rendezvousHash) {
+  public ClientNodeWatcher(ZkClient zkClient, RendezvousHash rendezvousHash, Listener listener) {
     nodeList = new TreeCacheInstance(zkClient, NODE_LIST_PATH);
     this.zkClient = zkClient;
     this.rendezvousHash = rendezvousHash;
+    this.listener = listener;
     nodeList.getCache().getListenable().addListener(new GenericListener(NODE_LIST_PATH));
+  }
+
+  public void start() {
     try {
       nodeList.start();
     } catch (Exception e) {
@@ -36,9 +45,6 @@ public class ClientNodeWatcher {
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }
-  }
-
-  public void start() {
   }
 
   public void stop() {
@@ -54,7 +60,6 @@ public class ClientNodeWatcher {
   private void nodeRemoved(String path) {
     String[] _path = path.split("/");
     rendezvousHash.remove(_path[_path.length - 1]);
-
   }
 
   private class GenericListener implements TreeCacheListener {
@@ -76,10 +81,20 @@ public class ClientNodeWatcher {
           if (initialized) {
             nodeAdded(event.getData().getPath());
           }
+          if (!NODE_LIST_PATH.equals(event.getData().getPath())) {
+            if (listener != null) {
+              listener.nodeAdded();
+            }
+          }
           break;
         case NODE_REMOVED:
           if (initialized) {
             nodeRemoved(event.getData().getPath());
+          }
+          if (!NODE_LIST_PATH.equals(event.getData().getPath())) {
+            if (listener != null) {
+              listener.nodeRemoved();
+            }
           }
           break;
         default: {

@@ -1,14 +1,19 @@
 package com.xjeffrose.chicago;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelFuture;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ChicagoDBHandler extends SimpleChannelInboundHandler {
   private static final Logger log = LoggerFactory.getLogger(ChicagoDBHandler.class);
+  private static final int MAX_BUFFER_SIZE = 16000;
 
   private final DBManager dbManager;
 
@@ -16,10 +21,12 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
   private byte[] readResponse = null;
   private boolean status = false;
   private ChicagoMessage finalMsg = null;
+  private final DBLog dbLog;
 
 
-  public ChicagoDBHandler(DBManager dbManager) {
+  public ChicagoDBHandler(DBManager dbManager, DBLog dbLog) {
     this.dbManager = dbManager;
+    this.dbLog = dbLog;
   }
 
   private ChicagoMessage createErrorMessage() {
@@ -60,24 +67,28 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
 
     finalMsg = msg;
 
-      if (finalMsg == null) {
-        needsToWrite = true;
-      }
+    if (finalMsg == null) {
+      needsToWrite = true;
+    }
 
       switch (finalMsg.getOp()) {
         case READ:
           readResponse = dbManager.read(finalMsg.getColFam(), finalMsg.getKey());
+          dbLog.addRead(finalMsg.getColFam(), finalMsg.getKey());
+
           if (readResponse != null) {
             status = true;
           }
           break;
         case WRITE:
           status = dbManager.write(finalMsg.getColFam(), finalMsg.getKey(), finalMsg.getVal());
+          dbLog.addWrite(finalMsg.getColFam(), finalMsg.getKey(), finalMsg.getVal());
           log.debug("  ========================================================== Server wrote :" +
               status + " For UUID" + finalMsg.getId() + " and key " + new String(finalMsg.getKey()));
           break;
         case DELETE:
           status = dbManager.delete(finalMsg.getColFam(), finalMsg.getKey());
+          dbLog.addDelete(finalMsg.getColFam(), finalMsg.getKey());
           break;
         case TS_WRITE:
           readResponse = dbManager.tsWrite(finalMsg.getColFam(), finalMsg.getVal());
@@ -90,13 +101,38 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
           if (readResponse != null) {
             status = true;
           }
+
+          if (readResponse.length > MAX_BUFFER_SIZE) {
+            ByteBuf bb = Unpooled.buffer();
+
+            bb.writeBytes(readResponse);
+            ByteBuf bbs = bb.slice(0, MAX_BUFFER_SIZE);
+
+            ctx.writeAndFlush(new DefaultChicagoMessage(finalMsg.getId(), Op.fromInt(3), finalMsg.getColFam(), Boolean.toString(status).getBytes(), bbs.array()));
+
+            if ((bb.readableBytes() - MAX_BUFFER_SIZE) > MAX_BUFFER_SIZE) {
+
+
+            }
+          }
+
           break;
+
         default:
           break;
       }
 
-    needsToWrite = true;
-    ctx.writeAndFlush(new DefaultChicagoMessage(finalMsg.getId(), Op.fromInt(3), finalMsg.getColFam(), Boolean.toString(status).getBytes(), readResponse));
+      ChannelFutureListener writeComplete = new ChannelFutureListener() {
+          @Override
+          public void operationComplete(ChannelFuture future) {
+            if (!future.isSuccess()) {
+              log.error("Server error writing :" +
+              status + " For UUID" + finalMsg.getId() + " and key " + new String(finalMsg.getKey()));
+            }
+          }
+        };
+      needsToWrite = true;
+      ctx.writeAndFlush(new DefaultChicagoMessage(finalMsg.getId(), Op.fromInt(3), finalMsg.getColFam(), Boolean.toString(status).getBytes(), readResponse)).addListener(writeComplete);
   }
 
 //  @Override
