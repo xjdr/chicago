@@ -15,8 +15,10 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,6 +39,19 @@ public class ChicagoTSClient {
   private final InetSocketAddress single_server;
   private final RendezvousHash rendezvousHash;
   private final ClientNodeWatcher clientNodeWatcher;
+  private final AtomicInteger nodesAvailable = new AtomicInteger(0);
+  private CountDownLatch latch;
+  private final ClientNodeWatcher.Listener listener = new ClientNodeWatcher.Listener() {
+      public void nodeAdded() {
+        int avail = nodesAvailable.incrementAndGet();
+        if (latch != null) {
+          latch.countDown();
+        }
+      }
+      public void nodeRemoved() {
+        nodesAvailable.decrementAndGet();
+      }
+  };
   private final ZkClient zkClient;
   private final ConnectionPoolManager connectionPoolMgr;
   private final int quorum;
@@ -81,8 +96,9 @@ public class ChicagoTSClient {
     this.zkClient = new ZkClient(zkConnectionString);
     this.quorum = quorum;
 
-    this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), buildNodeList(), quorum);
-    this.clientNodeWatcher = new ClientNodeWatcher(zkClient, rendezvousHash, null);
+    ArrayList<String> nodeList = new ArrayList<>();
+    this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
+    this.clientNodeWatcher = new ClientNodeWatcher(zkClient, rendezvousHash, listener);
     this.connectionPoolMgr = new ConnectionPoolManager(zkClient);
   }
 
@@ -91,6 +107,19 @@ public class ChicagoTSClient {
       zkClient.start();
       connectionPoolMgr.start();
       clientNodeWatcher.start();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public void startAndWaitForNodes(int count) {
+    try {
+      latch = new CountDownLatch(count);
+      start();
+      latch.await();
+      for (String node: buildNodeList()) {
+        rendezvousHash.add(node);
+      }
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -227,7 +256,11 @@ public class ChicagoTSClient {
 
   public byte[] write(byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException {
     try {
-      return _write(key, value, 0).get(TIMEOUT, TimeUnit.MILLISECONDS);
+      if (TIMEOUT_ENABLED) {
+        return _write(key, value, 0).get(TIMEOUT, TimeUnit.MILLISECONDS);
+      } else {
+        return _write(key, value, 0).get();
+      }
     } catch (InterruptedException e) {
       e.printStackTrace();
     } catch (ExecutionException e) {
@@ -250,7 +283,6 @@ public class ChicagoTSClient {
 
     ListeningExecutorService executor = MoreExecutors.listeningDecorator(exe);
     return executor.submit(() -> {
-
 
         final long startTime = System.currentTimeMillis();
 

@@ -35,7 +35,7 @@ public class ChicagoTSClientTest {
     }
 
     chicagoTSClient = new ChicagoTSClient(testingServer.getConnectString(), 3);
-    chicagoTSClient.start();
+    chicagoTSClient.startAndWaitForNodes(4);
   }
 
   @After
