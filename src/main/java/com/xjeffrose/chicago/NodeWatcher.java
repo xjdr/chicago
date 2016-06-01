@@ -8,7 +8,6 @@ import java.util.concurrent.CountDownLatch;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
-import org.apache.curator.framework.recipes.leader.LeaderSelector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.rocksdb.ReadOptions;
@@ -52,7 +51,7 @@ public class NodeWatcher {
     }
   }
 
-  public void stop() {
+  public void stop() throws Exception {
     log.info("Nodewatcher stopping");
     chicagoClient.stop();
     nodeList.getCache().getListenable().removeListener(genericListener);

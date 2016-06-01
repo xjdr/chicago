@@ -1,5 +1,6 @@
 package com.xjeffrose.chicago;
 
+import com.xjeffrose.chicago.server.ChicagoServer;
 import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
