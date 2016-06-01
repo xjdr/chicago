@@ -23,6 +23,7 @@ public class ChicagoServer {
   private DBManager dbManager;
   private NodeWatcher nodeWatcher;
   private DBRouter dbRouter;
+  public final DBLog dbLog = new DBLog();
 
   public ChicagoServer(ChiConfig config) {
     this.config = config;

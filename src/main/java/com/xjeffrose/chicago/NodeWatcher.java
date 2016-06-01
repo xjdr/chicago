@@ -51,7 +51,7 @@ public class NodeWatcher {
     }
   }
 
-  public void stop() {
+  public void stop() throws Exception {
     log.info("Nodewatcher stopping");
     chicagoClient.stop();
     nodeList.getCache().getListenable().removeListener(genericListener);

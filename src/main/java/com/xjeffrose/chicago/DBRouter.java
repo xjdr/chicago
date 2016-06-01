@@ -41,10 +41,12 @@ public class DBRouter implements Closeable {
   private final ChiConfig config;
   private final DBManager dbManager;
   private XioBootstrap x;
+  private final DBLog dbLog;
 
-  public DBRouter(ChiConfig config, DBManager dbManager) {
+  public DBRouter(ChiConfig config, DBManager dbManager, DBLog dbLog) {
     this.config = config;
     this.dbManager = dbManager;
+    this.dbLog = dbLog;
     config.setDbRouter(this);
   }
 
@@ -173,7 +175,7 @@ public class DBRouter implements Closeable {
         .withRoutingFilter(new XioRoutingFilterFactory() {
           @Override
           public ChannelInboundHandler getRoutingFilter() {
-            return new ChicagoDBHandler(dbManager);
+            return new ChicagoDBHandler(dbManager, dbLog);
           }
         })
         .build();

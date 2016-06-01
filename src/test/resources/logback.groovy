@@ -13,5 +13,7 @@ appender("CONSOLE", ConsoleAppender) {
 }
 
 logger("com.xjeffrose.xio.server.XioServerTransport", ERROR, ["CONSOLE"])
+logger("org.apache.zookeeper.ClientCnxn", ERROR, ["CONSOLE"])
+logger("org.apache.zookeeper.ClientCnxnSocketNIO", ERROR, ["CONSOLE"])
 
 root(ERROR, ["CONSOLE"])

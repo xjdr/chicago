@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 public class ZkClient {
   private static final Logger log = LoggerFactory.getLogger(ZkClient.class.getName());
 
+  private LeaderSelector leaderSelector;
+  private final ChiLeaderSelectorListener leaderListener = new ChiLeaderSelectorListener();
   private CuratorFramework client;
   private String connectionString;
 
@@ -42,13 +44,13 @@ public class ZkClient {
           .withMode(CreateMode.EPHEMERAL)
           .forPath(NODE_LIST_PATH + "/" + config.getDBBindEndpoint(), ConfigSerializer.serialize(config).getBytes());
     } catch (Exception e) {
-      log.error("Error registering Server");
-      System.exit(-1);
+      log.error("Error registering Server", e);
+      throw new RuntimeException(e);
     }
   }
 
   public void electLeader(String ELECTION_PATH) {
-    LeaderSelector leaderSelector = new LeaderSelector(client, ELECTION_PATH, new ChiLeaderSelectorListener());
+    leaderSelector = new LeaderSelector(client, ELECTION_PATH, leaderListener);
 
     leaderSelector.autoRequeue();
     leaderSelector.start();
@@ -60,7 +62,11 @@ public class ZkClient {
     client.blockUntilConnected();
   }
 
-  public void stop() {
+  public void stop() throws Exception {
+    leaderListener.relinquish();
+    if (leaderSelector != null) {
+      leaderSelector.close();
+    }
     client.close();
   }
 

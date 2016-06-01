@@ -1,5 +1,7 @@
 package com.xjeffrose.chicago.client;
 
+import com.xjeffrose.chicago.TestChicago;
+import com.xjeffrose.chicago.server.ChicagoServer;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.netflix.curator.test.TestingServer;
 import com.xjeffrose.chicago.Chicago;
@@ -8,61 +10,45 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import java.util.List;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import static org.junit.Assert.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class ChicagoClientTest {
-  static TestingServer testingServer;
-  static Chicago chicago1;
-  static Chicago chicago2;
-  static Chicago chicago3;
-  static Chicago chicago4;
+  TestingServer testingServer;
+  @Rule
+  public TemporaryFolder tmp = new TemporaryFolder();
+  List<ChicagoServer> servers;
+  ChicagoClient chicagoClientDHT;
+  ChicagoTSClient chicagoTSClient;
 
-  static ChicagoClient chicagoClientSingle;
-  static ChicagoClient chicagoClientDHT;
-  static ChicagoTSClient chicagoTSClient;
-
-
-  @BeforeClass
-  static public void setupFixture() throws Exception {
+  @Before
+  public void setup() throws Exception {
     testingServer = new TestingServer(2182);
-    chicago1 = new Chicago();
-    chicago1.main(new String[]{"", "src/test/resources/test1.conf"});
-    chicago2 = new Chicago();
-    chicago2.main(new String[]{"", "src/test/resources/test2.conf"});
-    chicago3 = new Chicago();
-    chicago3.main(new String[]{"", "src/test/resources/test3.conf"});
-    chicago4 = new Chicago();
-    chicago4.main(new String[]{"", "src/test/resources/test4.conf"});
-//    chicagoClientSingle = new ChicagoClient(new InetSocketAddress("127.0.0.1", 12000));
-//    chicagoClientDHT = new ChicagoClient("10.25.160.234:2181", 3);
-//    chicagoTSClient = new ChicagoTSClient("10.25.160.234:2181", 3);
-    chicagoTSClient = new ChicagoTSClient(testingServer.getConnectString(), 3);
+    servers = TestChicago.makeServers(TestChicago.chicago_dir(tmp), 4);
+    for (ChicagoServer server : servers) {
+      server.start();
+    }
 
-
-//    chicagoClientDHT = new ChicagoClient("10.22.100.183:2181");
     chicagoClientDHT = new ChicagoClient(testingServer.getConnectString(), 3);
-//    chicagoClientDHT = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181");
-//    chicagoClientDHT = new ChicagoClient("10.22.100.183:2181,10.25.180.234:2181,10.22.103.86:2181,10.25.180.247:2181,10.25.69.226:2181/chicago");
-
-//    chicagoClientSingle.start();
-    chicagoClientDHT.start();
-
+    chicagoClientDHT.startAndWaitForNodes(4);
   }
 
-  @AfterClass
-  static public void tearDownFixture() throws Exception {
-    testingServer.stop();
-//    chicagoClientSingle.stop();
+  @After
+  public void teardown() throws Exception {
+    for (ChicagoServer server : servers) {
+      server.stop();
+    }
     chicagoClientDHT.stop();
+    testingServer.stop();
   }
 
-
-    @Test
+  @Test
   public void transactOnce() throws Exception {
     for (int i = 0; i < 1; i++) {
       String _k = "key" + i;
@@ -73,6 +59,11 @@ public class ChicagoClientTest {
       assertEquals(new String(val), new String(chicagoClientDHT.read(key).get()));
       assertEquals(true, chicagoClientDHT.delete(key));
     }
+    int transactionSum = 0;
+    for (ChicagoServer server : servers) {
+      transactionSum += server.dbLog.entries.size();
+    }
+    assertEquals(1*3*3, transactionSum);
   }
 
   @Test
@@ -86,6 +77,11 @@ public class ChicagoClientTest {
       assertEquals(new String(val), new String(chicagoClientDHT.read(key).get()));
       assertEquals(true, chicagoClientDHT.delete(key));
     }
+    int transactionSum = 0;
+    for (ChicagoServer server : servers) {
+      transactionSum += server.dbLog.entries.size();
+    }
+    assertEquals(2000*3*3, transactionSum);
   }
 
   @Test
@@ -99,55 +95,6 @@ public class ChicagoClientTest {
       assertEquals(new String(val), new String(chicagoClientDHT.read("colfam".getBytes(), key).get()));
       assertEquals(true, chicagoClientDHT.delete("colfam".getBytes(), key));
     }
-  }
-
-  @Test
-  public void transactStream() throws Exception {
-    byte[] offset = null;
-    for (int i = 0; i < 2000; i++) {
-      String _v = "val" + i;
-      byte[] val = _v.getBytes();
-      if (i == 12) {
-        offset = chicagoTSClient.write("tskey".getBytes(), val);
-      }
-      assertNotNull(chicagoTSClient.write("tskey".getBytes(), val));
-    }
-
-    ListenableFuture<ChicagoStream> f = chicagoTSClient.stream("tskey".getBytes());
-    ChicagoStream cs = f.get(1000, TimeUnit.MILLISECONDS);
-    ListenableFuture<byte[]> resp = cs.getStream();
-
-    assertNotNull(resp.get(1000, TimeUnit.MILLISECONDS));
-
-    ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream("tskey".getBytes(), offset);
-    ChicagoStream _cs = _f.get(1000, TimeUnit.MILLISECONDS);
-    ListenableFuture<byte[]> _resp = _cs.getStream();
-
-    assertNotNull(_resp.get(1000, TimeUnit.MILLISECONDS));
-  }
-
-
-  @Test
-  public void transactLargeStream() throws Exception {
-    byte[] offset = null;
-    for (int i = 0; i < 1; i++) {
-      byte[] val = new byte[10240];
-      if (i == 12) {
-        offset = chicagoTSClient.write("LargeTskey".getBytes(), val);
-      }
-      assertNotNull(chicagoTSClient.write("tskey".getBytes(), val));
-    }
-
-    ListenableFuture<byte[]> f = chicagoTSClient.read("tskey".getBytes());
-    byte[] resp = f.get(1000, TimeUnit.MILLISECONDS);
-
-    System.out.println(new String(resp));
-
-    ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream("tskey".getBytes(), offset);
-    ChicagoStream _cs = _f.get(1000, TimeUnit.MILLISECONDS);
-    ListenableFuture<byte[]> _resp = _cs.getStream();
-
-    System.out.println(new String(_resp.get(1000, TimeUnit.MILLISECONDS)));
   }
 
   @Test
@@ -243,5 +190,4 @@ public class ChicagoClientTest {
 
     latch.await(20000, TimeUnit.MILLISECONDS);
   }
-
 }

@@ -80,11 +80,26 @@ public class ChicagoTSClient {
     this.single_server = null;
     this.zkClient = new ZkClient(zkConnectionString);
     this.quorum = quorum;
-    zkClient.start();
 
     this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), buildNodeList(), quorum);
     this.clientNodeWatcher = new ClientNodeWatcher(zkClient, rendezvousHash);
     this.connectionPoolMgr = new ConnectionPoolManager(zkClient);
+  }
+
+  public void start() {
+    try {
+      zkClient.start();
+      connectionPoolMgr.start();
+      clientNodeWatcher.start();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public void stop() {
+    zkClient.stop();
+    connectionPoolMgr.stop();
+    clientNodeWatcher.stop();
   }
 
 
