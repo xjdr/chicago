@@ -102,7 +102,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
           status = true;
         }
 
-        if (readResponse.length > MAX_BUFFER_SIZE) {
+        if (readResponse != null && readResponse.length > MAX_BUFFER_SIZE) {
           ByteBuf bb = Unpooled.buffer();
           bb.writeBytes(readResponse);
 
