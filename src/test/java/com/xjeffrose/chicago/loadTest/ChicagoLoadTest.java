@@ -18,7 +18,7 @@ public class ChicagoLoadTest {
     //chicagoClientDHT = new ChicagoClient("10.22.100.183:2181/chicago");
   }
 
-  @Test
+  //@Test
   public void writeMany() throws Exception {
     for (int i = 0; i < 100; i++) {
       String _k = "key" + i;
@@ -29,7 +29,7 @@ public class ChicagoLoadTest {
     }
   }
 
-  @Test
+  //@Test
   public void readMany() throws Exception {
     for (int i = 0; i < 100; i++) {
       String _k = "key" + i;
@@ -40,7 +40,7 @@ public class ChicagoLoadTest {
     }
   }
 
-    @Test
+  //@Test
     public void deleteMany() throws Exception {
       for (int i = 0; i < 100; i++) {
         String _k = "sm" + i;
