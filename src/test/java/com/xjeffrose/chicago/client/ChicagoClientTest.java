@@ -25,7 +25,6 @@ public class ChicagoClientTest {
   public TemporaryFolder tmp = new TemporaryFolder();
   List<ChicagoServer> servers;
   ChicagoClient chicagoClientDHT;
-  ChicagoTSClient chicagoTSClient;
 
   @Before
   public void setup() throws Exception {
