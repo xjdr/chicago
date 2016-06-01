@@ -73,7 +73,7 @@ public class ChicagoTSClientTest {
   }
 
 
-  //@Test
+  @Test
   public void transactLargeStream() throws Exception {
     byte[] offset = null;
     for (int i = 0; i < 1; i++) {
@@ -85,14 +85,14 @@ public class ChicagoTSClientTest {
     }
 
     ListenableFuture<byte[]> f = chicagoTSClient.read("tskey".getBytes());
-    byte[] resp = f.get(1000, TimeUnit.MILLISECONDS);
+    byte[] resp = f.get();
 
     System.out.println(new String(resp));
 
     ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream("tskey".getBytes(), offset);
-    ChicagoStream _cs = _f.get(1000, TimeUnit.MILLISECONDS);
+    ChicagoStream _cs = _f.get();
     ListenableFuture<byte[]> _resp = _cs.getStream();
 
-    System.out.println(new String(_resp.get(1000, TimeUnit.MILLISECONDS)));
+    System.out.println(new String(_resp.get()));
   }
 }
