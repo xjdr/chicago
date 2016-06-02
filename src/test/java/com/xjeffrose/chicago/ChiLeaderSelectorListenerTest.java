@@ -2,7 +2,7 @@ package com.xjeffrose.chicago;
 
 import com.xjeffrose.chicago.server.ChicagoServer;
 import java.util.List;
-import com.netflix.curator.test.TestingServer;
+import org.apache.curator.test.TestingServer;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
@@ -27,10 +27,10 @@ public class ChiLeaderSelectorListenerTest {
 
   @Before
   public void setup() throws Exception {
-    testingServer = new TestingServer(2182);
+    testingServer = new TestingServer(true);
     zk = CuratorFrameworkFactory.newClient(testingServer.getConnectString(), new ExponentialBackoffRetry(2000, 20));
     zk.start();
-    servers = TestChicago.makeServers(TestChicago.chicago_dir(tmp), 4);
+    servers = TestChicago.makeServers(TestChicago.chicago_dir(tmp), 4, testingServer.getConnectString());
     for (ChicagoServer server : servers) {
       server.start();
     }

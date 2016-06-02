@@ -15,11 +15,11 @@ import org.junit.rules.TemporaryFolder;
  */
 public class TestChicago {
 
-  public static ChiConfig makeConfig(File tmp_dir, int server_num) {
+  public static ChiConfig makeConfig(File tmp_dir, int server_num, String zk_hosts) {
     File db_filename = new File(tmp_dir, "test" + server_num + ".db");
 
     Map<String, Object> mapping = new HashMap<>();
-    mapping.put("zk_hosts", "localhost:2182");
+    mapping.put("zk_hosts", zk_hosts);
     mapping.put("db_path", db_filename.getPath());
     mapping.put("workers", 20);
     mapping.put("quorum", 3);
@@ -49,7 +49,15 @@ public class TestChicago {
   public static List<ChicagoServer> makeServers(File tmp, int count) {
     List<ChicagoServer> servers = new ArrayList<ChicagoServer>();
     for (int i = 1; i <= count; i++) {
-      servers.add(new ChicagoServer(makeConfig(tmp, i)));
+      servers.add(new ChicagoServer(makeConfig(tmp, i, "localhost:2182")));
+    }
+    return servers;
+  }
+
+  public static List<ChicagoServer> makeServers(File tmp, int count, String zk_hosts) {
+    List<ChicagoServer> servers = new ArrayList<ChicagoServer>();
+    for (int i = 1; i <= count; i++) {
+      servers.add(new ChicagoServer(makeConfig(tmp, i, zk_hosts)));
     }
     return servers;
   }
