@@ -1,37 +1,52 @@
 package com.xjeffrose.chicago.client;
 
+import com.xjeffrose.chicago.TestChicago;
+import com.xjeffrose.chicago.server.ChicagoServer;
 import com.google.common.collect.ImmutableList;
 import com.netflix.curator.test.TestingServer;
 import com.xjeffrose.chicago.Chicago;
 import java.util.Collections;
 import java.util.List;
 import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.*;
 
 public class ClientNodeWatcherTest {
 
-  static TestingServer testingServer;
-  static Chicago chicago1;
-  static Chicago chicago2;
-  static Chicago chicago3;
-  static Chicago chicago4;
-  static ChicagoClient chicagoClientDHT;
+  TestingServer testingServer;
+  @Rule
+  public TemporaryFolder tmp = new TemporaryFolder();
+  List<ChicagoServer> servers;
+  ChicagoClient chicagoClientDHT;
 
-  @BeforeClass
-  static public void setupFixture() throws Exception {
+  @Before
+  public void setup() throws Exception {
     testingServer = new TestingServer(2182);
-    chicago1 = new Chicago();
-    chicago1.main(new String[]{"", "src/test/resources/test1.conf"});
-    chicago2 = new Chicago();
-    chicago2.main(new String[]{"", "src/test/resources/test2.conf"});
-    chicago3 = new Chicago();
-    chicago3.main(new String[]{"", "src/test/resources/test3.conf"});
-    chicago4 = new Chicago();
-    chicago4.main(new String[]{"", "src/test/resources/test4.conf"});
+    servers = TestChicago.makeServers(TestChicago.chicago_dir(tmp), 5);
+    servers.get(0).start();
+    servers.get(1).start();
+    servers.get(2).start();
+    servers.get(3).start();
+
     chicagoClientDHT = new ChicagoClient(testingServer.getConnectString(), 3);
+    chicagoClientDHT.startAndWaitForNodes(4);
   }
+
+  @After
+  public void teardown() throws Exception {
+    servers.get(1).stop();
+    servers.get(2).stop();
+    servers.get(3).stop();
+    servers.get(4).stop();
+    chicagoClientDHT.stop();
+    testingServer.stop();
+  }
+
 
   @Test
   public void removeSingleNode() throws Exception {
@@ -42,7 +57,7 @@ public class ClientNodeWatcherTest {
 
     List<String> before = ImmutableList.copyOf(chicagoClientDHT.getNodeList("foo".getBytes()));
 
-    chicago1.stop();
+    servers.get(0).stop();
 
     Thread.sleep(3000);
 
@@ -52,11 +67,10 @@ public class ClientNodeWatcherTest {
 
 //    assertTrue(Collections.disjoint(before, after));
 
-    chicago1.main(new String[]{"", "src/test/resources/test1.conf"});
+    servers.get(4).start();
 
-    assertEquals(before, chicagoClientDHT.getNodeList("foo".getBytes()));
+    Thread.sleep(3000);
 
+    assertEquals(3, chicagoClientDHT.getNodeList("foo".getBytes()).size());
   }
-
-
 }

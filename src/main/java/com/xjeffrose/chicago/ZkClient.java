@@ -39,13 +39,14 @@ public class ZkClient {
 
   public void register(String NODE_LIST_PATH, ChiConfig config) {
     try {
+      InetSocketAddress address = new InetSocketAddress(config.getDBBindIP(), config.getDBPort());
       client
-          .create()
-          .creatingParentsIfNeeded()
-          .withMode(CreateMode.EPHEMERAL)
-        .forPath(NODE_LIST_PATH + "/" +
-                 new InetSocketAddress(config.getDBBindEndpoint(), config.getDBPort()).getAddress().getHostAddress(),
-                 ConfigSerializer.serialize(config).getBytes());
+        .create()
+        .creatingParentsIfNeeded()
+        .withMode(CreateMode.EPHEMERAL)
+        .forPath(
+          NODE_LIST_PATH + "/" + address.getAddress().getHostAddress() + ":" + address.getPort(),
+          ConfigSerializer.serialize(config).getBytes());
     } catch (Exception e) {
       log.error("Error registering Server", e);
       throw new RuntimeException(e);

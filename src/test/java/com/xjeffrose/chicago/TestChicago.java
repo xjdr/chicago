@@ -31,7 +31,7 @@ public class TestChicago {
     mapping.put("db_bind_ip", "127.0.0.1");
     mapping.put("db_port", 12000 + server_num);
     mapping.put("X509_CERT", "certs/cert.pem");
-    mapping.put("PRIVATE_KEY", "certs/privatekey.pem");
+    mapping.put("PRIVATE_KEY", "certs/privateKey.pem");
 
     return new ChiConfig(ConfigFactory.parseMap(mapping));
   }

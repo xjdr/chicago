@@ -26,3 +26,9 @@ parallelExecution in Serial := false
 parallelExecution := false
 
 fork := false
+
+testOptions += Tests.Argument(TestFrameworks.JUnit, "-v")
+
+testOptions in Test += Tests.Setup( () => println("Setup") )
+
+testOptions in Test += Tests.Cleanup( () => println("Cleanup") )
