@@ -32,13 +32,13 @@ public class DBManager {
   private final ReadOptions readOptions = new ReadOptions();
   private final WriteOptions writeOptions = new WriteOptions();
   private final Map<String, ColumnFamilyHandle> columnFamilies = new HashMap<>();
+  private final ChiConfig config;
 
   private RocksDB db;
-  //private RocksDB db;
 
   public DBManager(ChiConfig config) {
+    this.config = config;
     RocksDB.loadLibrary();
-
     configOptions();
     configReadOptions();
     configWriteOptions();
@@ -52,6 +52,7 @@ public class DBManager {
         f.deleteOnExit();
       }
       this.db = RocksDB.open(options, config.getDBPath());
+      //this.olddb = RocksDB.open(options, config.getDBPath()+"/1");
     } catch (RocksDBException e) {
       log.error("Could not load DB: " + config.getDBPath() + " " + e.getMessage());
       System.exit(-1);
@@ -79,8 +80,12 @@ public class DBManager {
         .setMaxWriteBufferNumber(3)
         .setMaxBackgroundCompactions(10)
         //.setCompressionType(CompressionType.SNAPPY_COMPRESSION)
-        .setCompactionStyle(CompactionStyle.UNIVERSAL)
         .setEnv(env);
+    if(!config.isDatabaseMode()){
+      options.setCompactionStyle(CompactionStyle.FIFO)
+             .setMaxTableFilesSizeFIFO(config.getCompactionSize());
+    }
+
 
     options.setMemTableConfig(
         new HashLinkedListMemTableConfig()
@@ -116,6 +121,12 @@ public class DBManager {
 
   private boolean createColumnFamily(byte[] name) {
     ColumnFamilyOptions columnFamilyOptions = new ColumnFamilyOptions();
+    if(!config.isDatabaseMode()){
+      columnFamilyOptions.setCompactionStyle(CompactionStyle.FIFO)
+        .setMaxTableFilesSizeFIFO(config.getCompactionSize())
+        .setDisableAutoCompactions(false);
+    }
+
     ColumnFamilyDescriptor columnFamilyDescriptor = new ColumnFamilyDescriptor(name, columnFamilyOptions);
 
     try {

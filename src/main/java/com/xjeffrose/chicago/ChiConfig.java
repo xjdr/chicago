@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
+import org.rocksdb.util.SizeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +34,8 @@ public class ChiConfig {
   private String dbPath;
   private int quorum;
   private boolean graceFullStart;
+  private long compactionSize;
+  private boolean databaseMode;
 
   public ChiConfig(Config conf) {
 
@@ -58,6 +61,8 @@ public class ChiConfig {
     this.quorum = conf.getInt("quorum");
     this.zkHosts = conf.getString("zk_hosts");
     this.graceFullStart = false;
+    this.compactionSize = (conf.getLong("compaction_size") * SizeUnit.KB);
+    this.databaseMode = conf.getBoolean("database_mode");
 
     if (System.getProperty("graceful") != null) {
       this.graceFullStart = Boolean.parseBoolean(System.getProperty("graceful"));
@@ -131,6 +136,15 @@ public class ChiConfig {
 
   public boolean isGraceFullStart() {
     return graceFullStart;
+  }
+
+
+  public long getCompactionSize() {
+    return compactionSize;
+  }
+
+  public boolean isDatabaseMode() {
+    return databaseMode;
   }
 
 }
