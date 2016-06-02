@@ -49,10 +49,8 @@ public class DBManager {
         removeDB(f);
       } else {
         f.mkdir();
-        f.deleteOnExit();
       }
       this.db = RocksDB.open(options, config.getDBPath());
-      //this.olddb = RocksDB.open(options, config.getDBPath()+"/1");
     } catch (RocksDBException e) {
       log.error("Could not load DB: " + config.getDBPath() + " " + e.getMessage());
       System.exit(-1);
@@ -79,7 +77,7 @@ public class DBManager {
         .setWriteBufferSize(8 * SizeUnit.KB)
         .setMaxWriteBufferNumber(3)
         .setMaxBackgroundCompactions(10)
-        //.setCompressionType(CompressionType.SNAPPY_COMPRESSION)
+        .setCompressionType(CompressionType.SNAPPY_COMPRESSION)
         .setEnv(env);
     if(!config.isDatabaseMode()){
       options.setCompactionStyle(CompactionStyle.FIFO)
