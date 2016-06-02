@@ -81,7 +81,7 @@ public class ChicagoObjectDecoder extends ByteToMessageDecoder {
     try {
       _msg = new DefaultChicagoMessage(UUID.fromString(new String(id)), Op.fromInt(Ints.fromByteArray(op)), colFam, key, val);
     } catch (IllegalArgumentException e) {
-      log.error("Failure during Decode: ", e);
+      //      log.error("Failure during Decode: ", e);
       _msg = new DefaultChicagoMessage(null, Op.fromInt(Ints.fromByteArray(op)), colFam, key, val);
     }
 

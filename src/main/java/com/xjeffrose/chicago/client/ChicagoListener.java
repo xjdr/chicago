@@ -142,6 +142,11 @@ class ChicagoListener implements Listener<byte[]> {
   }
 
   @Override
+  public void removeID(UUID id) {
+    reqIds.remove(id);
+  }
+
+  @Override
   public ConcurrentLinkedDeque<UUID> getReqIds() {
     return reqIds;
   }
@@ -179,7 +184,7 @@ class ChicagoListener implements Listener<byte[]> {
 
     while (!responseMap.containsKey(idList.getFirst())) {
       messageIds.remove(idList.getFirst());
-      reqIds.remove(idList.removeFirst());
+      //      reqIds.remove(idList.removeFirst());
     }
 
     ChicagoMessage _resp = responseMap.remove(idList.getFirst());

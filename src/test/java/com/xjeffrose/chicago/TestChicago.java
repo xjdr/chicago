@@ -32,7 +32,9 @@ public class TestChicago {
     mapping.put("db_port", 12000 + server_num);
     mapping.put("X509_CERT", "certs/cert.pem");
     mapping.put("PRIVATE_KEY", "certs/privateKey.pem");
-
+    mapping.put("compaction_size", 60);
+    mapping.put("database_mode", false);
+  
     return new ChiConfig(ConfigFactory.parseMap(mapping));
   }
 

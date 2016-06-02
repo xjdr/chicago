@@ -11,14 +11,13 @@ import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ChicagoStream {
+public class ChicagoStream implements AutoCloseable {
   private static final Logger log = LoggerFactory.getLogger(ChicagoStream.class.getName());
   private static final long TIMEOUT = 1000;
   private static final boolean TIMEOUT_ENABLED = false;
 
   private final ConcurrentLinkedDeque<UUID> idList = new ConcurrentLinkedDeque<>();
   private Listener listener;
-
 
   public ChicagoStream(Listener listener) {
 
@@ -27,7 +26,6 @@ public class ChicagoStream {
 
   public ListenableFuture<byte[]> getStream() {
     final ExecutorService exe = Executors.newFixedThreadPool(4);
-
 
   ListeningExecutorService executor = MoreExecutors.listeningDecorator(exe);
     ListenableFuture<byte[]> responseFuture = executor.submit(new Callable<byte[]>() {
@@ -62,5 +60,12 @@ public class ChicagoStream {
 
   public void addID(UUID id) {
     idList.add(id);
+  }
+
+  @Override
+  public void close() throws Exception {
+    idList.stream().forEach(xs -> {
+	listener.removeID(xs);
+    });
   }
 }

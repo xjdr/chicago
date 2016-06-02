@@ -21,6 +21,8 @@ interface Listener<T> {
 
   void addID(UUID id);
 
+  void removeID(UUID id);
+
   void onResponseReceived(ChicagoMessage chicagoMessage);
 
   ConcurrentLinkedDeque<UUID> getReqIds();
