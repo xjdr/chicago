@@ -25,7 +25,7 @@ import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ChicagoClient {
+public class ChicagoClient extends BaseChicagoClient {
   public class WriteState {
     public int attempt;
     public ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
@@ -44,32 +44,6 @@ public class ChicagoClient {
   }
   public WriteState writeState;
   private static final Logger log = LoggerFactory.getLogger(ChicagoClient.class);
-  private final static String NODE_LIST_PATH = "/chicago/node-list";
-  private static final long TIMEOUT = 1000;
-  private static boolean TIMEOUT_ENABLED = false;
-  private static int MAX_RETRY = 3;
-  private final AtomicInteger nodesAvailable = new AtomicInteger(0);
-
-  private final ExecutorService exe = Executors.newFixedThreadPool(20);
-
-  private final InetSocketAddress single_server;
-  private final RendezvousHash rendezvousHash;
-  private final ClientNodeWatcher clientNodeWatcher;
-  private CountDownLatch latch;
-  private final ClientNodeWatcher.Listener listener = new ClientNodeWatcher.Listener() {
-      public void nodeAdded() {
-        int avail = nodesAvailable.incrementAndGet();
-        if (latch != null) {
-          latch.countDown();
-        }
-      }
-      public void nodeRemoved() {
-        nodesAvailable.decrementAndGet();
-      }
-  };
-  private final ZkClient zkClient;
-  private final ConnectionPoolManager connectionPoolMgr;
-  private final int quorum;
 
   /*
    * Happy Path:
@@ -95,57 +69,9 @@ public class ChicagoClient {
    *  ok x 3 nodes -> write request
    */
 
-  /*
-  public ChicagoClient(InetSocketAddress server) {
-    this.single_server = server;
-    this.zkClient = null;
-    this.quorum = 1;
-    ArrayList<String> nodeList = new ArrayList<>();
-    nodeList.add(server.getHostName());
-    this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
-    this.clientNodeWatcher = null;
-    connectionPoolMgr = new ConnectionPoolManager(server.getHostName());
-  }
-  */
-
   public ChicagoClient(String zkConnectionString, int quorum) throws InterruptedException {
-
-    this.single_server = null;
-    this.zkClient = new ZkClient(zkConnectionString);
-    this.quorum = quorum;
-    zkClient.start();
-
-    this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), buildNodeList(), quorum);
-    clientNodeWatcher = new ClientNodeWatcher(zkClient, rendezvousHash, listener);
-    this.connectionPoolMgr = new ConnectionPoolManager(zkClient);
+    super(zkConnectionString, quorum);
   }
-
-  public void start() {
-    connectionPoolMgr.start();
-    clientNodeWatcher.start();
-  }
-
-  public void startAndWaitForNodes(int count) {
-    try {
-      latch = new CountDownLatch(count);
-      start();
-      latch.await();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public void stop() throws Exception {
-    log.info("ChicagoClient stopping");
-    clientNodeWatcher.stop();
-    connectionPoolMgr.stop();
-    zkClient.stop();
-  }
-
-  protected List<String> buildNodeList() {
-    return zkClient.list(NODE_LIST_PATH);
-  }
-
 
   public ListenableFuture<byte[]> stream(byte[] key) throws ChicagoClientTimeoutException {
     return stream("chicago".getBytes(), key);
@@ -467,9 +393,5 @@ public class ChicagoClient {
         }
       }
     });
-  }
-
-  public List<String> getNodeList(byte[] key) {
-    return rendezvousHash.get(key);
   }
 }
