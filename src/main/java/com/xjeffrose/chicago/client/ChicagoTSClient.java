@@ -237,7 +237,11 @@ public class ChicagoTSClient extends BaseChicagoClient {
           return responseList.getFirst();
         } else {
           if (MAX_RETRY < retries) {
-            return _write(key, value, retries + 1).get(TIMEOUT, TimeUnit.MILLISECONDS);
+            if (TIMEOUT_ENABLED) {
+              return _write(key, value, retries + 1).get(TIMEOUT, TimeUnit.MILLISECONDS);
+            } else {
+              return _write(key, value, retries + 1).get();
+            }
           } else {
             throw new ChicagoClientException("Could not successfully complete a replicated write. Please retry the operation");
           }

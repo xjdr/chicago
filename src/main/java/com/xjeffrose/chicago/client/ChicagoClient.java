@@ -132,7 +132,11 @@ public class ChicagoClient extends BaseChicagoClient {
       }
 
       //TODO(JR): need to fix maybe?
-      return read(colFam, key).get(TIMEOUT, TimeUnit.MILLISECONDS);
+      if (TIMEOUT_ENABLED) {
+        return read(colFam, key).get(TIMEOUT, TimeUnit.MILLISECONDS);
+      } else {
+        return read(colFam, key).get();
+      }
 
     });
   }
@@ -303,7 +307,11 @@ public class ChicagoClient extends BaseChicagoClient {
       } else {
         if (MAX_RETRY < retries) {
           log.error("write failed, retrying(" + retries + ")");
-          return _write(colFam, key, value, retries + 1).get(TIMEOUT, TimeUnit.MILLISECONDS);
+          if (TIMEOUT_ENABLED) {
+            return _write(colFam, key, value, retries + 1).get(TIMEOUT, TimeUnit.MILLISECONDS);
+          } else {
+            return _write(colFam, key, value, retries + 1).get();
+          }
         } else {
           _delete(colFam, key, 0);
           throw new ChicagoClientException("Could not successfully complete a replicated write. Please retry the operation");
@@ -318,7 +326,11 @@ public class ChicagoClient extends BaseChicagoClient {
 
   public boolean delete(byte[] colFam, byte[] key) throws ChicagoClientTimeoutException, ChicagoClientException {
     try {
-      return _delete(colFam, key, 0).get(TIMEOUT, TimeUnit.MILLISECONDS);
+      if (TIMEOUT_ENABLED) {
+        return _delete(colFam, key, 0).get(TIMEOUT, TimeUnit.MILLISECONDS);
+      } else {
+        return _delete(colFam, key, 0).get();
+      }
     } catch (InterruptedException e) {
       e.printStackTrace();
     } catch (ExecutionException e) {
@@ -387,7 +399,11 @@ public class ChicagoClient extends BaseChicagoClient {
         return true;
       } else {
         if (MAX_RETRY < retries) {
-          return _delete(colFam, key, retries + 1).get(TIMEOUT, TimeUnit.MILLISECONDS);
+          if (TIMEOUT_ENABLED) {
+            return _delete(colFam, key, retries + 1).get(TIMEOUT, TimeUnit.MILLISECONDS);
+          } else {
+            return _delete(colFam, key, retries + 1).get();
+          }
         } else {
           throw new ChicagoClientException("Could not successfully complete a replicated write. Please retry the operation");
         }
