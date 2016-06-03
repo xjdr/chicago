@@ -6,6 +6,7 @@ libraryDependencies += "org.apache.curator" % "curator-framework" % "2.9.1" excl
 libraryDependencies += "org.apache.curator" % "curator-recipes" % "2.9.1" exclude("log4j", "log4j")
 libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.7.3"
 libraryDependencies += "com.fasterxml.jackson.core" % "jackson-annotations" % "2.7.3"
+libraryDependencies += "io.netty" % "netty-tcnative-boringssl-static" % "1.1.33.Fork17"
 // Testing
 libraryDependencies += "junit" % "junit" % "4.12" % Test
 libraryDependencies += "org.apache.curator" % "curator-test" % "2.9.1" % Test
