@@ -25,11 +25,11 @@ public class TestChicago {
     mapping.put("quorum", 3);
     mapping.put("boss_count", 4);
     mapping.put("admin_bind_ip", "127.0.0.1");
-    mapping.put("admin_port", 9990 + server_num);
+    mapping.put("admin_port", 0);
     mapping.put("stats_bind_ip", "127.0.0.1");
-    mapping.put("stats_port", 9000 + server_num);
+    mapping.put("stats_port", 0);
     mapping.put("db_bind_ip", "127.0.0.1");
-    mapping.put("db_port", 12000 + server_num);
+    mapping.put("db_port", 0);
     mapping.put("X509_CERT", "certs/cert.pem");
     mapping.put("PRIVATE_KEY", "certs/privateKey.pem");
     mapping.put("compaction_size", 60);
@@ -44,14 +44,6 @@ public class TestChicago {
     } catch (java.io.IOException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  public static List<ChicagoServer> makeServers(File tmp, int count) {
-    List<ChicagoServer> servers = new ArrayList<ChicagoServer>();
-    for (int i = 1; i <= count; i++) {
-      servers.add(new ChicagoServer(makeConfig(tmp, i, "localhost:2182")));
-    }
-    return servers;
   }
 
   public static List<ChicagoServer> makeServers(File tmp, int count, String zk_hosts) {

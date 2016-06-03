@@ -52,7 +52,7 @@ public class DBRouter implements Closeable {
 
   private void configureAdminServer() {
     XioServerDef adminServer = new XioServerDefBuilder()
-        .name("Chicago Server")
+        .name("Chicago Admin Server")
         .listen(new InetSocketAddress(config.getAdminBindIP(), config.getAdminPort()))
         .withSecurityFactory(new XioSecurityFactory() {
           @Override
@@ -96,7 +96,7 @@ public class DBRouter implements Closeable {
 
   private void configureStatsServer() {
     XioServerDef statsServer = new XioServerDefBuilder()
-        .name("Chicago Server")
+        .name("Chicago Stats Server")
         .listen(new InetSocketAddress(config.getStatsBindIP(), config.getStatsPort()))
         .withSecurityFactory(new XioSecurityFactory() {
           @Override
@@ -140,7 +140,7 @@ public class DBRouter implements Closeable {
 
   private void configureDBServer() {
     XioServerDef dbServer = new XioServerDefBuilder()
-        .name("Chicago Server")
+        .name("Chicago DB Server")
         .listen(new InetSocketAddress(config.getDBBindIP(), config.getDBPort()))
 //        .withSecurityFactory(new XioNoOpSecurityFactory())
         .withSecurityFactory(new XioSecurityFactory() {
@@ -231,4 +231,15 @@ public class DBRouter implements Closeable {
     }
   }
 
+  public InetSocketAddress getDBBoundInetAddress() {
+    for (Map.Entry<XioServerDef, Integer> entry : x.getBoundPorts().entrySet()) {
+      if (entry.getKey().getName().equals("Chicago DB Server")) {
+        return new InetSocketAddress(
+                                     entry.getKey().getHostAddress().getAddress(),
+                                     entry.getValue()
+                                     );
+      }
+    }
+    return null;
+  }
 }
