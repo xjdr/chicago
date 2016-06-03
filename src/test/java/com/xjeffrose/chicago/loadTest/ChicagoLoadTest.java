@@ -1,6 +1,5 @@
 package com.xjeffrose.chicago.loadTest;
 
-import com.netflix.curator.test.TestingServer;
 import com.xjeffrose.chicago.Chicago;
 import com.xjeffrose.chicago.client.ChicagoClient;
 import java.net.InetSocketAddress;
