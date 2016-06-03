@@ -31,7 +31,11 @@ public class ChicagoObjectDecoder extends ByteToMessageDecoder {
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
     // Populate the output List
-    out.add(_decode(msg));
+    ChicagoMessage cm = _decode(msg);
+    if(cm == null){
+      return;
+    }
+    out.add(cm);
   }
 
   private ChicagoMessage _decode(ByteBuf msg) {
@@ -56,7 +60,10 @@ public class ChicagoObjectDecoder extends ByteToMessageDecoder {
     msg.readBytes(colFamSize, 0, colFamSize.length);
     final int colFamLength = Ints.fromByteArray(colFamSize);
     final byte[] colFam = new byte[colFamLength];
-
+    if(colFamLength > (msg.writerIndex() - msg.readerIndex())){
+      msg.resetReaderIndex();
+      return null;
+    }
     // Get the Col Fam
     msg.readBytes(colFam, 0, colFam.length);
 
@@ -71,8 +78,12 @@ public class ChicagoObjectDecoder extends ByteToMessageDecoder {
     // Get the Value Length
     msg.readBytes(valSize, 0, valSize.length);
     final int valLength = Ints.fromByteArray(valSize);
+    if(valLength > (msg.writerIndex() - msg.readerIndex())){
+      msg.resetReaderIndex();
+      return null;
+    }
     final byte[] val = new byte[valLength];
-
+    log.debug("val size = "+ valLength);
     // Get the Value
     msg.readBytes(val, 0, valLength);
 
