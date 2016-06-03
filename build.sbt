@@ -23,9 +23,9 @@ lazy val Serial = config("serial") extend(Test)
 
 parallelExecution in Serial := false
 
-parallelExecution := false
+parallelExecution := true
 
-fork := false
+fork := true
 
 testOptions += Tests.Argument(TestFrameworks.JUnit, "-v")
 

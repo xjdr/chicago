@@ -20,9 +20,9 @@ public class ChicagoServer {
 
   public final ChiConfig config;
   private final ZkClient zkClient;
-  private DBManager dbManager;
-  private NodeWatcher nodeWatcher;
-  private DBRouter dbRouter;
+  private final DBManager dbManager;
+  private final NodeWatcher nodeWatcher;
+  private final DBRouter dbRouter;
   public final DBLog dbLog = new DBLog();
 
   public ChicagoServer(ChiConfig config) {
@@ -33,11 +33,11 @@ public class ChicagoServer {
     dbRouter = new DBRouter(config, dbManager, dbLog);
   }
   public void start() throws Exception {
+    dbRouter.run();
     zkClient.start();
-    zkClient.register(NODE_LIST_PATH, config);
+    zkClient.register(NODE_LIST_PATH, config, dbRouter.getDBBoundInetAddress());
     zkClient.electLeader(ELECTION_PATH);
     nodeWatcher.refresh(zkClient, dbManager, config);
-    dbRouter.run();
   }
   public void stop() {
     log.info("Stopping Chicago!");
