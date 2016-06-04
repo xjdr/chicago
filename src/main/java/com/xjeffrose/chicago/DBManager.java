@@ -33,6 +33,7 @@ public class DBManager {
   private final WriteOptions writeOptions = new WriteOptions();
   private final Map<String, ColumnFamilyHandle> columnFamilies = new HashMap<>();
   private final ChiConfig config;
+  private final String delimeter = "@@@";
 
   private RocksDB db;
 
@@ -47,7 +48,7 @@ public class DBManager {
       File f = new File(config.getDBPath());
       if (f.exists() && !config.isGraceFullStart()) {
         removeDB(f);
-      } else {
+      } else if (!f.exists()) {
         f.mkdir();
       }
       this.db = RocksDB.open(options, config.getDBPath());
@@ -77,7 +78,7 @@ public class DBManager {
         .setWriteBufferSize(8 * SizeUnit.KB)
         .setMaxWriteBufferNumber(3)
         .setMaxBackgroundCompactions(10)
-        .setCompressionType(CompressionType.SNAPPY_COMPRESSION)
+        //.setCompressionType(CompressionType.SNAPPY_COMPRESSION)
         .setEnv(env);
     if(!config.isDatabaseMode()){
       options.setCompactionStyle(CompactionStyle.FIFO)
@@ -243,6 +244,11 @@ public class DBManager {
         bb.writeBytes(_v);
         i.next();
       }
+
+      i.seekToLast();
+
+      bb.writeBytes(delimeter.getBytes());
+      bb.writeBytes(i.key());
 
       return bb.array();
     } else {
