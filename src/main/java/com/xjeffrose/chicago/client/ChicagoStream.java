@@ -18,7 +18,7 @@ public class ChicagoStream implements AutoCloseable {
 
   private final ConcurrentLinkedDeque<UUID> idList = new ConcurrentLinkedDeque<>();
   private Listener listener;
-  private final ExecutorService exe = Executors.newFixedThreadPool(1);
+  private final ExecutorService exe = Executors.newFixedThreadPool(4);
 
   public ChicagoStream(Listener listener) {
 
