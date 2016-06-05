@@ -18,6 +18,7 @@ public class ChicagoStream implements AutoCloseable {
 
   private final ConcurrentLinkedDeque<UUID> idList = new ConcurrentLinkedDeque<>();
   private Listener listener;
+  private final ExecutorService exe = Executors.newFixedThreadPool(4);
 
   public ChicagoStream(Listener listener) {
 
@@ -25,7 +26,6 @@ public class ChicagoStream implements AutoCloseable {
   }
 
   public ListenableFuture<byte[]> getStream() {
-    final ExecutorService exe = Executors.newFixedThreadPool(4);
 
   ListeningExecutorService executor = MoreExecutors.listeningDecorator(exe);
     ListenableFuture<byte[]> responseFuture = executor.submit(new Callable<byte[]>() {
@@ -64,6 +64,7 @@ public class ChicagoStream implements AutoCloseable {
 
   @Override
   public void close() throws Exception {
+    exe.shutdown();
     idList.stream().forEach(xs -> {
 	listener.removeID(xs);
     });
