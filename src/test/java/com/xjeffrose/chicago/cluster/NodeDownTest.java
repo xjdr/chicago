@@ -1,13 +1,15 @@
 package com.xjeffrose.chicago.cluster;
 
-import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Range;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.netflix.curator.test.TestingServer;
 import com.xjeffrose.chicago.TestChicago;
 import com.xjeffrose.chicago.client.ChicagoClient;
+import com.xjeffrose.chicago.client.ChicagoClientTimeoutException;
 import com.xjeffrose.chicago.client.ChicagoStream;
 import com.xjeffrose.chicago.client.ChicagoTSClient;
 import com.xjeffrose.chicago.server.ChicagoServer;
+import io.netty.util.internal.StringUtil;
+import org.apache.curator.test.TestingServer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -17,7 +19,13 @@ import org.junit.rules.TemporaryFolder;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -33,13 +41,13 @@ public class NodeDownTest {
   @Before
   public void setup() throws Exception {
     testingServer = new TestingServer(2182);
-    servers = TestChicago.makeServers(TestChicago.chicago_dir(tmp), 4);
+    servers = TestChicago.makeNamedServers(TestChicago.chicago_dir(tmp), 4, testingServer.getConnectString());
     for (String server : servers.keySet()) {
       servers.get(server).start();
     }
 
     chicagoTSClient = new ChicagoTSClient(testingServer.getConnectString(), 3);
-    chicagoTSClient.startAndWaitForNodes(4);
+    chicagoTSClient.startAndWaitForNodes(3);
   }
 
   @After
@@ -52,22 +60,72 @@ public class NodeDownTest {
   }
 
   @Test
-  public void transactStream() throws Exception {
+  public void nodeDownTest() throws Exception {
     byte[] offset = null;
     String key = "tskey";
 
-    System.out.println(chicagoTSClient.getNodeList(key.getBytes()).toString());
+    System.out.println("Clients : " + chicagoTSClient.getNodeList(key.getBytes()).toString());
 
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < 30; i++) {
       String _v = "val" + i;
       byte[] val = _v.getBytes();
-      if (i == 12) {
+      if (i == 19) {
         offset = chicagoTSClient.write(key.getBytes(), val);
+      }else {
+        assertNotNull(chicagoTSClient.write(key.getBytes(), val));
       }
-      assertNotNull(chicagoTSClient.write(key.getBytes(), val));
-      System.out.println(i);
+
     }
 
+    System.out.println("On normal state : ");
+    printStrem(key, null);
+
+    //Restart chicago1 intermittently
+    ExecutorService executor = Executors.newFixedThreadPool(1);
+     Future restartTask = executor.submit(() -> {
+       for(int i=0;i<30;i++) {
+         int random = (int) (Math.random() * 4 + 1);
+         String server = "chicago1";
+         stopServer(server);
+         try {
+           Thread.sleep(200);
+           startServer(server);
+           Thread.sleep(200);
+         } catch (Exception e) {
+           e.printStackTrace();
+         }
+       }
+    });
+
+    for(int i=0;i<30;i++) {
+      printStrem(key, offset);
+      Thread.sleep(200);
+    }
+    restartTask.get();
+
+  }
+
+  public void stopServer(String server){
+    //BringDown one server
+    System.out.println("Stopping server : "+servers.get(server).getDBAddress());
+    servers.get(server).stop();
+  }
+
+  public void startServer(String server) throws Exception {
+    //BringDown one server
+    System.out.println("Starting server : "+servers.get(server).getDBAddress());
+    servers.get(server).start();
+  }
+
+  public void printStrem(String key, byte[] offset) throws ChicagoClientTimeoutException, ExecutionException, InterruptedException {
+    System.out.println("Clients : " + chicagoTSClient.getNodeList(key.getBytes()).toString());
+    ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream("tskey".getBytes(), offset);
+    ChicagoStream cs = _f.get();
+    ListenableFuture<byte[]> _resp = cs.getStream();
+
+    String result = new String(_resp.get());
+    assertEquals(true, !StringUtil.isNullOrEmpty(result));
+    System.out.println(result);
   }
 
 }

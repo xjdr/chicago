@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.framework.recipes.leader.LeaderSelector;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.slf4j.Logger;
@@ -19,7 +20,7 @@ public class ChicagoServer {
   private final static String NODE_LIST_PATH = "/chicago/node-list";
 
   public final ChiConfig config;
-  private final ZkClient zkClient;
+  private ZkClient zkClient;
   private final DBManager dbManager;
   private final NodeWatcher nodeWatcher;
   private final DBRouter dbRouter;
@@ -34,7 +35,10 @@ public class ChicagoServer {
   }
   public void start() throws Exception {
     dbRouter.run();
-    zkClient.start();
+    if(!zkClient.getClient().getState().equals(CuratorFrameworkState.STARTED)) {
+      zkClient = new ZkClient(config.getZkHosts());
+      zkClient.start();
+    }
     zkClient.register(NODE_LIST_PATH, config, dbRouter.getDBBoundInetAddress());
     zkClient.electLeader(ELECTION_PATH);
     nodeWatcher.refresh(zkClient, dbManager, config);
@@ -50,6 +54,9 @@ public class ChicagoServer {
     } catch (Exception e) {
       log.error("Shutdown Error", e);
     }
+  }
 
+  public String getDBAddress(){
+    return dbRouter.getDBBoundInetAddress().getAddress().getHostAddress()+ ":" + dbRouter.getDBBoundInetAddress().getPort();
   }
 }
