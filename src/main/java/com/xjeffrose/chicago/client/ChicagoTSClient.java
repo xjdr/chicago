@@ -27,117 +27,11 @@ import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ChicagoTSClient {
+public class ChicagoTSClient extends BaseChicagoClient {
   private static final Logger log = LoggerFactory.getLogger(ChicagoTSClient.class);
-  private final static String NODE_LIST_PATH = "/chicago/node-list";
-  private static final long TIMEOUT = 10000000;
-  private static boolean TIMEOUT_ENABLED = false;
-  private static int MAX_RETRY = 3;
-
-  private final ExecutorService exe = Executors.newFixedThreadPool(20);
-
-  private final InetSocketAddress single_server;
-  private final RendezvousHash rendezvousHash;
-  private final ClientNodeWatcher clientNodeWatcher;
-  private final AtomicInteger nodesAvailable = new AtomicInteger(0);
-  private CountDownLatch latch;
-  private final ClientNodeWatcher.Listener listener = new ClientNodeWatcher.Listener() {
-      public void nodeAdded() {
-        int avail = nodesAvailable.incrementAndGet();
-        if (latch != null) {
-          latch.countDown();
-        }
-      }
-      public void nodeRemoved() {
-        nodesAvailable.decrementAndGet();
-      }
-  };
-  private final ZkClient zkClient;
-  private final ConnectionPoolManager connectionPoolMgr;
-  private final int quorum;
-    /*
-   * Happy Path:
-   * Delete -> send message to all (3) available nodes wait for all (3) responses to be true.
-   * Write -> send message to all (3) available nodes wait for all (3) responses to be true.
-   * Read -> send message to all (3) available nodes, wait for 1 node to reply, all other (2) replies are dropped.
-   *
-   * Fail Path:
-   * Delete -> not all responses are true
-   * Write -> not all responses are true
-   * Read -> no nodes respond
-   *
-   * Reading from a node that hasn't been able to receive writes
-   * Write fails, some nodes think that they have good data until they're told that they don't
-   * interleaved writes from two different clients for the same key
-   *
-   *
-   *
-   *
-   * two phase commit with multiple nodes
-   *  write (key, value)
-   *  ack x 3 nodes
-   *  ok x 3 nodes -> write request
-   */
-
-  public ChicagoTSClient(InetSocketAddress server) {
-    this.single_server = server;
-    this.zkClient = null;
-    this.quorum = 1;
-    ArrayList<String> nodeList = new ArrayList<>();
-    nodeList.add(server.getHostName());
-    this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
-    this.clientNodeWatcher = null;
-    connectionPoolMgr = new ConnectionPoolManager(server.getHostName());
-  }
 
   public ChicagoTSClient(String zkConnectionString, int quorum) throws InterruptedException {
-
-    this.single_server = null;
-    this.zkClient = new ZkClient(zkConnectionString);
-    this.quorum = quorum;
-
-    ArrayList<String> nodeList = new ArrayList<>();
-    this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
-    this.clientNodeWatcher = new ClientNodeWatcher(zkClient, rendezvousHash, listener);
-    this.connectionPoolMgr = new ConnectionPoolManager(zkClient);
-  }
-
-  public void start() {
-    try {
-      zkClient.start();
-      connectionPoolMgr.start();
-      clientNodeWatcher.start();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public void startAndWaitForNodes(int count) {
-    try {
-      latch = new CountDownLatch(count);
-      start();
-      latch.await();
-      for (String node: buildNodeList()) {
-        rendezvousHash.add(node);
-      }
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public void stop() {
-    try {
-    zkClient.stop();
-    connectionPoolMgr.stop();
-    clientNodeWatcher.stop();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-
-  protected List<String> buildNodeList() {
-    return zkClient.list(NODE_LIST_PATH);
+    super(zkConnectionString, quorum);
   }
 
   public ListenableFuture<ChicagoStream> stream(byte[] key) throws ChicagoClientTimeoutException {
@@ -343,16 +237,15 @@ public class ChicagoTSClient {
           return responseList.getFirst();
         } else {
           if (MAX_RETRY < retries) {
-            return _write(key, value, retries + 1).get(TIMEOUT, TimeUnit.MILLISECONDS);
+            if (TIMEOUT_ENABLED) {
+              return _write(key, value, retries + 1).get(TIMEOUT, TimeUnit.MILLISECONDS);
+            } else {
+              return _write(key, value, retries + 1).get();
+            }
           } else {
             throw new ChicagoClientException("Could not successfully complete a replicated write. Please retry the operation");
           }
         }
     });
-  }
-
-
-  public List<String> getNodeList(byte[] key) {
-    return rendezvousHash.get(key);
   }
 }

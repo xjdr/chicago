@@ -3,7 +3,7 @@ package com.xjeffrose.chicago.client;
 import com.xjeffrose.chicago.TestChicago;
 import com.xjeffrose.chicago.server.ChicagoServer;
 import com.google.common.collect.ImmutableList;
-import com.netflix.curator.test.TestingServer;
+import org.apache.curator.test.TestingServer;
 import com.xjeffrose.chicago.Chicago;
 import java.util.Collections;
 import java.util.List;
@@ -26,8 +26,8 @@ public class ClientNodeWatcherTest {
 
   @Before
   public void setup() throws Exception {
-    testingServer = new TestingServer(2182);
-    servers = TestChicago.makeServers(TestChicago.chicago_dir(tmp), 5);
+    testingServer = new TestingServer(true);
+    servers = TestChicago.makeServers(TestChicago.chicago_dir(tmp), 5, testingServer.getConnectString());
     servers.get(0).start();
     servers.get(1).start();
     servers.get(2).start();

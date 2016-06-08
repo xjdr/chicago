@@ -6,9 +6,10 @@ libraryDependencies += "org.apache.curator" % "curator-framework" % "2.9.1" excl
 libraryDependencies += "org.apache.curator" % "curator-recipes" % "2.9.1" exclude("log4j", "log4j")
 libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.7.3"
 libraryDependencies += "com.fasterxml.jackson.core" % "jackson-annotations" % "2.7.3"
+libraryDependencies += "io.netty" % "netty-tcnative-boringssl-static" % "1.1.33.Fork17"
 // Testing
 libraryDependencies += "junit" % "junit" % "4.12" % Test
-libraryDependencies += "com.netflix.curator" % "curator-test" % "1.3.3" % Test
+libraryDependencies += "org.apache.curator" % "curator-test" % "2.9.1" % Test
 libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % Test
 libraryDependencies += "org.codehaus.groovy" % "groovy-all" % "2.4.1" % Test
 // http://mvnrepository.com/artifact/org.slf4j/log4j-over-slf4j
@@ -23,9 +24,9 @@ lazy val Serial = config("serial") extend(Test)
 
 parallelExecution in Serial := false
 
-parallelExecution := false
+parallelExecution := true
 
-fork := false
+fork := true
 
 testOptions += Tests.Argument(TestFrameworks.JUnit, "-v")
 

@@ -37,15 +37,14 @@ public class ZkClient {
     client = CuratorFrameworkFactory.newClient(connectionString, retryPolicy);
   }
 
-  public void register(String NODE_LIST_PATH, ChiConfig config) {
+  public void register(String NODE_LIST_PATH, ChiConfig config, InetSocketAddress address) {
     try {
-      InetSocketAddress address = new InetSocketAddress(config.getDBBindIP(), config.getDBPort());
       client
         .create()
         .creatingParentsIfNeeded()
         .withMode(CreateMode.EPHEMERAL)
         .forPath(
-          NODE_LIST_PATH + "/" + address.getAddress().getHostAddress() + ":" + address.getPort(),
+                 NODE_LIST_PATH + "/" + address.getAddress().getHostAddress() + ":" + address.getPort(),
           ConfigSerializer.serialize(config).getBytes());
     } catch (Exception e) {
       log.error("Error registering Server", e);

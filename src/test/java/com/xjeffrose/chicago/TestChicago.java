@@ -15,21 +15,21 @@ import org.junit.rules.TemporaryFolder;
  */
 public class TestChicago {
 
-  public static ChiConfig makeConfig(File tmp_dir, int server_num) {
+  public static ChiConfig makeConfig(File tmp_dir, int server_num, String zk_hosts) {
     File db_filename = new File(tmp_dir, "test" + server_num + ".db");
 
     Map<String, Object> mapping = new HashMap<>();
-    mapping.put("zk_hosts", "localhost:2182");
+    mapping.put("zk_hosts", zk_hosts);
     mapping.put("db_path", db_filename.getPath());
     mapping.put("workers", 20);
     mapping.put("quorum", 3);
     mapping.put("boss_count", 4);
     mapping.put("admin_bind_ip", "127.0.0.1");
-    mapping.put("admin_port", 9990 + server_num);
+    mapping.put("admin_port", 0);
     mapping.put("stats_bind_ip", "127.0.0.1");
-    mapping.put("stats_port", 9000 + server_num);
+    mapping.put("stats_port", 0);
     mapping.put("db_bind_ip", "127.0.0.1");
-    mapping.put("db_port", 12000 + server_num);
+    mapping.put("db_port", 0);
     mapping.put("X509_CERT", "certs/cert.pem");
     mapping.put("PRIVATE_KEY", "certs/privateKey.pem");
     mapping.put("compaction_size", 60);
@@ -46,10 +46,10 @@ public class TestChicago {
     }
   }
 
-  public static List<ChicagoServer> makeServers(File tmp, int count) {
+  public static List<ChicagoServer> makeServers(File tmp, int count, String zk_hosts) {
     List<ChicagoServer> servers = new ArrayList<ChicagoServer>();
     for (int i = 1; i <= count; i++) {
-      servers.add(new ChicagoServer(makeConfig(tmp, i)));
+      servers.add(new ChicagoServer(makeConfig(tmp, i, zk_hosts)));
     }
     return servers;
   }
