@@ -2,9 +2,8 @@ package com.xjeffrose.chicago.client;
 
 import com.xjeffrose.chicago.TestChicago;
 import com.xjeffrose.chicago.server.ChicagoServer;
-import com.google.common.util.concurrent.ListenableFuture;
 import org.apache.curator.test.TestingServer;
-import com.xjeffrose.chicago.Chicago;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;

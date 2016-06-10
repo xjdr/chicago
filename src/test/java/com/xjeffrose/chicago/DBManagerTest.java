@@ -1,11 +1,6 @@
 package com.xjeffrose.chicago;
 
-import com.typesafe.config.ConfigFactory;
-import java.io.File;
-import java.util.List;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.rocksdb.ReadOptions;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;

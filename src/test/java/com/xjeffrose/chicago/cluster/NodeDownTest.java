@@ -1,9 +1,7 @@
 package com.xjeffrose.chicago.cluster;
 
-import com.google.common.collect.Range;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.xjeffrose.chicago.TestChicago;
-import com.xjeffrose.chicago.client.ChicagoClient;
 import com.xjeffrose.chicago.client.ChicagoClientTimeoutException;
 import com.xjeffrose.chicago.client.ChicagoStream;
 import com.xjeffrose.chicago.client.ChicagoTSClient;
@@ -16,14 +14,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -81,27 +73,27 @@ public class NodeDownTest {
     printStrem(key, null);
 
     //Restart chicago1 intermittently
-    ExecutorService executor = Executors.newFixedThreadPool(1);
-     Future restartTask = executor.submit(() -> {
-       for(int i=0;i<30;i++) {
-         int random = (int) (Math.random() * 4 + 1);
-         String server = "chicago1";
-         stopServer(server);
-         try {
-           Thread.sleep(200);
-           startServer(server);
-           Thread.sleep(200);
-         } catch (Exception e) {
-           e.printStackTrace();
-         }
-       }
-    });
+//    ExecutorService executor = Executors.newFixedThreadPool(1);
+//     Future restartTask = executor.submit(() -> {
+//       for(int i=0;i<30;i++) {
+//         int random = (int) (Math.random() * 4 + 1);
+//         String server = "chicago1";
+//         stopServer(server);
+//         try {
+//           Thread.sleep(200);
+//           startServer(server);
+//           Thread.sleep(200);
+//         } catch (Exception e) {
+//           e.printStackTrace();
+//         }
+//       }
+//    });
 
     for(int i=0;i<30;i++) {
       printStrem(key, offset);
       Thread.sleep(200);
     }
-    restartTask.get();
+    //restartTask.get();
 
   }
 

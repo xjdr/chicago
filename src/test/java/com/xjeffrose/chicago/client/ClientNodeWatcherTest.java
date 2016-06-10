@@ -4,10 +4,9 @@ import com.xjeffrose.chicago.TestChicago;
 import com.xjeffrose.chicago.server.ChicagoServer;
 import com.google.common.collect.ImmutableList;
 import org.apache.curator.test.TestingServer;
-import com.xjeffrose.chicago.Chicago;
-import java.util.Collections;
+
 import java.util.List;
-import org.junit.BeforeClass;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;

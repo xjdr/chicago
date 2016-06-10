@@ -212,6 +212,7 @@ public class DBManager {
     }
     try {
       byte[] ts = Long.toString(System.nanoTime()).getBytes();
+      log.info("Putting key/value : "+new String(ts)+"/"+new String(value));
       db.put(columnFamilies.get(new String(colFam)), writeOptions, ts, value);
       return ts;
     } catch (RocksDBException e) {
