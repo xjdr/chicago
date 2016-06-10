@@ -16,7 +16,7 @@ import org.junit.rules.TemporaryFolder;
 public class TestChicago {
 
   public static ChiConfig makeConfig(File tmp_dir, int server_num, String zk_hosts, boolean ports) {
-    File db_filename = new File(tmp_dir, "src/main/test" + server_num + ".db");
+    File db_filename = new File(tmp_dir, "test" + server_num + ".db");
 
     Map<String, Object> mapping = new HashMap<>();
     mapping.put("zk_hosts", zk_hosts);

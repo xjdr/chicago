@@ -3,7 +3,9 @@ package com.xjeffrose.chicago;
 import com.xjeffrose.chicago.server.ChicagoServer;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+
 import java.io.File;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
