@@ -218,7 +218,7 @@ public class DBManager {
     }
     try {
       byte[] ts = Ints.toByteArray(counter.get(new String(colFam)).getAndIncrement());
-      log.info("Putting key/value : "+new String(ts)+"/"+new String(value));
+      log.info("Putting key/value : "+ Ints.fromByteArray(ts)+"/"+new String(value));
       db.put(columnFamilies.get(new String(colFam)), writeOptions, ts, value);
       return ts;
     } catch (RocksDBException e) {
@@ -233,7 +233,6 @@ public class DBManager {
   }
 
   public byte[] stream(byte[] colFam, byte[] offset) {
-    log.info("Get stream for"+ new String(colFam));
     if (colFamilyExists(colFam)) {
       RocksIterator i = db.newIterator(columnFamilies.get(new String(colFam)), readOptions);
       ByteBuf bb = Unpooled.buffer();
