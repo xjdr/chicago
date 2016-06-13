@@ -1,5 +1,6 @@
 package com.xjeffrose.chicago;
 
+import com.google.common.primitives.Ints;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import java.io.File;
@@ -8,6 +9,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.ColumnFamilyOptions;
@@ -34,6 +37,8 @@ public class DBManager {
   private final Map<String, ColumnFamilyHandle> columnFamilies = new HashMap<>();
   private final ChiConfig config;
   private final String delimeter = "@@@";
+  private final HashMap<String,AtomicInteger> counter = new HashMap<>();
+
 
   private RocksDB db;
 
@@ -121,7 +126,7 @@ public class DBManager {
   private boolean createColumnFamily(byte[] name) {
     ColumnFamilyOptions columnFamilyOptions = new ColumnFamilyOptions();
     if(!config.isDatabaseMode()){
-      columnFamilyOptions.setCompactionStyle(CompactionStyle.FIFO)
+      columnFamilyOptions.setCompactionStyle(CompactionStyle.UNIVERSAL)
         .setMaxTableFilesSizeFIFO(config.getCompactionSize())
         .setDisableAutoCompactions(false);
     }
@@ -130,6 +135,7 @@ public class DBManager {
 
     try {
       columnFamilies.put(new String(name), db.createColumnFamily(columnFamilyDescriptor));
+      counter.put(new String(name), new AtomicInteger(0));
       return true;
     } catch (RocksDBException e) {
       log.error("Could not create Column Family: " + new String(name), e);
@@ -211,7 +217,7 @@ public class DBManager {
       createColumnFamily(colFam);
     }
     try {
-      byte[] ts = Long.toString(System.nanoTime()).getBytes();
+      byte[] ts = Ints.toByteArray(counter.get(new String(colFam)).getAndIncrement());
       log.info("Putting key/value : "+new String(ts)+"/"+new String(value));
       db.put(columnFamilies.get(new String(colFam)), writeOptions, ts, value);
       return ts;
@@ -227,6 +233,7 @@ public class DBManager {
   }
 
   public byte[] stream(byte[] colFam, byte[] offset) {
+    log.info("Get stream for"+ new String(colFam));
     if (colFamilyExists(colFam)) {
       RocksIterator i = db.newIterator(columnFamilies.get(new String(colFam)), readOptions);
       ByteBuf bb = Unpooled.buffer();

@@ -42,14 +42,13 @@ public class ConnectionPoolManager {
   private final AtomicBoolean running = new AtomicBoolean(false);
 
   public ConnectionPoolManager(ZkClient zkClient) {
-
     this.zkClient = zkClient;
   }
 
   public ConnectionPoolManager(String hostname) {
     this.zkClient = null;
     listenerMap.put(hostname, new ChicagoListener());
-    connect(new InetSocketAddress(hostname, 12000), listenerMap.get(hostname));
+    connect(new InetSocketAddress(hostname.split(":")[0], Integer.parseInt(hostname.split(":")[1])), listenerMap.get(hostname));
   }
 
   public void start() {

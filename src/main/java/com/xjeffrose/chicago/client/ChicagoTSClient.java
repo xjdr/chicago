@@ -34,6 +34,10 @@ public class ChicagoTSClient extends BaseChicagoClient {
     super(zkConnectionString, quorum);
   }
 
+  public ChicagoTSClient(String address) throws InterruptedException{
+    super(address);
+  }
+
   public ListenableFuture<ChicagoStream> stream(byte[] key) throws ChicagoClientTimeoutException {
     return stream(key, null);
   }
@@ -43,8 +47,6 @@ public class ChicagoTSClient extends BaseChicagoClient {
     return executor.submit(() -> {
       final ChicagoStream[] cs = new ChicagoStream[1];
         final long startTime = System.currentTimeMillis();
-        if (single_server != null) {
-        }
         try {
           List<String> hashList = rendezvousHash.get(key);
           for (String node : hashList) {
@@ -99,8 +101,6 @@ public class ChicagoTSClient extends BaseChicagoClient {
     return executor.submit(() -> {
       final long startTime = System.currentTimeMillis();
       ConcurrentLinkedDeque<byte[]> responseList = new ConcurrentLinkedDeque<>();
-      if (single_server != null) {
-      }
       try {
         List<String> hashList = rendezvousHash.get(key);
         for (String node : hashList) {
@@ -179,11 +179,6 @@ public class ChicagoTSClient extends BaseChicagoClient {
     return executor.submit(() -> {
 
         final long startTime = System.currentTimeMillis();
-
-        if (single_server != null) {
-//      connect(single_server, Op.WRITE, key, value, listener);
-        }
-
         try {
 
           List<String> hashList = rendezvousHash.get(key);

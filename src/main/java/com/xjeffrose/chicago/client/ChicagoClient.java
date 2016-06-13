@@ -74,8 +74,6 @@ public class ChicagoClient extends BaseChicagoClient {
       ConcurrentLinkedDeque<Listener> listenerList = new ConcurrentLinkedDeque<>();
       ConcurrentLinkedDeque<UUID> idList = new ConcurrentLinkedDeque<>();
       final long startTime = System.currentTimeMillis();
-      if (single_server != null) {
-      }
       try {
         List<String> hashList = rendezvousHash.get(key);
         for (String node : hashList) {
@@ -141,8 +139,6 @@ public class ChicagoClient extends BaseChicagoClient {
     return executor.submit(() -> {
       final long startTime = System.currentTimeMillis();
       ConcurrentLinkedDeque<byte[]> responseList = new ConcurrentLinkedDeque<>();
-      if (single_server != null) {
-      }
       try {
         List<String> hashList = rendezvousHash.get(key);
         for (String node : hashList) {
@@ -225,11 +221,6 @@ public class ChicagoClient extends BaseChicagoClient {
 
       ConcurrentLinkedDeque<Boolean> responseList = new ConcurrentLinkedDeque<>();
       final long startTime = System.currentTimeMillis();
-
-      if (single_server != null) {
-//      connect(single_server, Op.WRITE, key, value, listener);
-      }
-
       try {
 
         List<String> hashList = rendezvousHash.get(key);
