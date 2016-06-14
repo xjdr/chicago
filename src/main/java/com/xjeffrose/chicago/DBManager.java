@@ -37,7 +37,7 @@ public class DBManager {
   private final Map<String, ColumnFamilyHandle> columnFamilies = new HashMap<>();
   private final ChiConfig config;
   private final String delimeter = "@@@";
-  private final HashMap<byte[],AtomicInteger> counter = new HashMap<>();
+  private final HashMap<String,AtomicInteger> counter = new HashMap<>();
 
 
   private RocksDB db;
@@ -135,7 +135,7 @@ public class DBManager {
 
     try {
       columnFamilies.put(new String(name), db.createColumnFamily(columnFamilyDescriptor));
-      counter.put(name, new AtomicInteger(0));
+      counter.put(new String(name), new AtomicInteger(0));
       return true;
     } catch (RocksDBException e) {
       log.error("Could not create Column Family: " + new String(name), e);
@@ -217,7 +217,7 @@ public class DBManager {
       createColumnFamily(colFam);
     }
     try {
-      byte[] ts = Ints.toByteArray(counter.get(colFam).getAndIncrement());
+      byte[] ts = Ints.toByteArray(counter.get(new String(colFam)).getAndIncrement());
       log.info("Putting key/value : "+ Ints.fromByteArray(ts)+"/"+new String(value));
       db.put(columnFamilies.get(new String(colFam)), writeOptions, ts, value);
       return ts;
