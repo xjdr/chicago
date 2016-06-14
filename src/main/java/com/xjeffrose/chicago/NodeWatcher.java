@@ -1,8 +1,8 @@
 package com.xjeffrose.chicago;
 
 import com.google.common.hash.Funnels;
-import com.xjeffrose.chicago.client.ChicagoClient;
-import com.xjeffrose.chicago.client.RendezvousHash;
+import com.xjeffrose.chicago.client.*;
+
 import java.nio.charset.Charset;
 import java.util.concurrent.CountDownLatch;
 import org.apache.curator.framework.CuratorFramework;
@@ -59,19 +59,44 @@ public class NodeWatcher {
   }
 
   private void redistributeKeys() {
+      log.info("Starting replication...");
+      RendezvousHash rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), zkClient.list(NODE_LIST_PATH), config.getQuorum());
+      dbManager.getColFams().forEach(cf -> {
+        rendezvousHash.get(cf.getBytes()).stream()
+          .filter(s -> !s.equals(config.getDBBindIP()+":"+config.getDBPort()))
+          .forEach(s -> {
+            try {
+              ChicagoTSClient c = new ChicagoTSClient((String)s);
+              dbManager.getKeys(cf.getBytes()).forEach(k -> {
+                try {
+                  c._write(cf.getBytes(),k,dbManager.read(cf.getBytes(),k));
+                } catch (ChicagoClientTimeoutException e) {
+                  e.printStackTrace();
+                } catch (ChicagoClientException e) {
+                  e.printStackTrace();
+                }
+              });
+            } catch (InterruptedException e) {
+              e.printStackTrace();
+            }
+          });
+        });
+
 //      RendezvousHash rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), zkClient.list(NODE_LIST_PATH), config.getQuorum());
-//    dbManager.getKeys(new ReadOptions()).forEach(xs -> {
-//      rendezvousHash.get(xs).stream()
-//          .filter(xxs -> xxs == config.getDBBindIP())
-//          .forEach(xxs -> chicagoClient.write(xs, dbManager.read(finalMsg.getColFam(), xs)));
-//    });
+//      dbManager.getKeys(new ReadOptions()).forEach(xs -> {
+//        rendezvousHash.get(xs).stream()
+//            .filter(xxs -> xxs == config.getDBBindIP())
+//            .forEach(xxs -> chicagoClient.write(xs, dbManager.read(finalMsg.getColFam(), xs)));
+//      });
   }
 
-  private void nodeAdded() {
+  private void nodeAdded(String path) {
+    String[] _path = path.split("/");
     redistributeKeys();
   }
 
-  private void nodeRemoved() {
+  private void nodeRemoved(String path) {
+    String[] _path = path.split("/");
     redistributeKeys();
   }
 
@@ -93,12 +118,12 @@ public class NodeWatcher {
           break;
         case NODE_ADDED:
           if (initialized) {
-            nodeAdded();
+            nodeAdded(event.getData().getPath());
           }
           break;
         case NODE_REMOVED:
           if (initialized) {
-            nodeRemoved();
+            nodeRemoved(event.getData().getPath());
           }
           break;
         default: {

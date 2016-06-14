@@ -166,10 +166,17 @@ public class ChicagoTSClient extends BaseChicagoClient {
     return null;
   }
 
+  public  ListenableFuture<byte[]> _write(byte[] key, byte[] value, int _retries) throws ChicagoClientTimeoutException, ChicagoClientException {
+    return _write(null,key, value, 0);
+  }
 
-  private ListenableFuture<byte[]> _write(byte[] key, byte[] value, int _retries) throws ChicagoClientTimeoutException, ChicagoClientException {
+  public ListenableFuture<byte[]> _write(byte[] colFam, byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException {
+    return _write(colFam ,key, value, 0);
+  }
+
+
+  private ListenableFuture<byte[]> _write(byte[] colFam, byte[] key, byte[] value, int _retries) throws ChicagoClientTimeoutException, ChicagoClientException {
     final int retries = _retries;
-
 
     final ConcurrentLinkedDeque<byte[]> responseList = new ConcurrentLinkedDeque<>();
     final ConcurrentLinkedDeque<UUID> idList = new ConcurrentLinkedDeque<>();
@@ -192,7 +199,11 @@ public class ChicagoTSClient extends BaseChicagoClient {
                 exe.execute(() -> {
                     UUID id = UUID.randomUUID();
                     Listener listener = connectionPoolMgr.getListener(node); // Blocking
-                    cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.TS_WRITE, key, null, value));
+                    if(colFam != null){
+                      cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.TS_WRITE, colFam, key, value));
+                    }else {
+                      cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.TS_WRITE, key, null, value));
+                    }
                     listener.addID(id);
                     idList.add(id);
                     listenerList.add(listener);

@@ -54,10 +54,12 @@ public class ZkClient {
 
   public void electLeader(String ELECTION_PATH) {
     leaderSelector = new LeaderSelector(client, ELECTION_PATH, leaderListener);
-
     leaderSelector.autoRequeue();
     leaderSelector.start();
+  }
 
+  public boolean isLeader(){
+    return leaderSelector.hasLeadership();
   }
 
   public void start() throws InterruptedException {
