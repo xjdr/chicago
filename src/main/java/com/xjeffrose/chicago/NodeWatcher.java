@@ -62,22 +62,24 @@ public class NodeWatcher {
       log.info("Starting replication...");
       RendezvousHash rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), zkClient.list(NODE_LIST_PATH), config.getQuorum());
       dbManager.getColFams().forEach(cf -> {
-        rendezvousHash.get(cf.getBytes()).stream()
-          .filter(s -> !s.equals(config.getDBBindIP()+":"+config.getDBPort()))
+        rendezvousHash.get(cf.getBytes())
           .forEach(s -> {
-            try {
-              ChicagoTSClient c = new ChicagoTSClient((String)s);
-              dbManager.getKeys(cf.getBytes()).forEach(k -> {
-                try {
-                  c._write(cf.getBytes(),k,dbManager.read(cf.getBytes(),k));
-                } catch (ChicagoClientTimeoutException e) {
-                  e.printStackTrace();
-                } catch (ChicagoClientException e) {
-                  e.printStackTrace();
-                }
-              });
-            } catch (InterruptedException e) {
-              e.printStackTrace();
+            if(!s.equals(config.getDBBindIP()+":"+config.getDBPort())) {
+              try {
+                log.info("Replicatng colFam " + cf + " to " + s);
+                ChicagoTSClient c = new ChicagoTSClient((String) s);
+                dbManager.getKeys(cf.getBytes()).forEach(k -> {
+                  try {
+                    c._write(cf.getBytes(), k, dbManager.read(cf.getBytes(), k));
+                  } catch (ChicagoClientTimeoutException e) {
+                    e.printStackTrace();
+                  } catch (ChicagoClientException e) {
+                    e.printStackTrace();
+                  }
+                });
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+              }
             }
           });
         });
