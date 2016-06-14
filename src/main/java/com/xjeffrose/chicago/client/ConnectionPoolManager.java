@@ -186,7 +186,7 @@ public class ConnectionPoolManager {
           }
         } else {
           log.info("Chicago connected to: " + server);
-          String hostname = ((InetSocketAddress) future.channel().remoteAddress()).getHostName();
+          String hostname = server.getAddress().getHostAddress();
           if (hostname.equals("localhost")) {
             hostname = "127.0.0.1";
           }
