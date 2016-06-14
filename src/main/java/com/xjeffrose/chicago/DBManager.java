@@ -156,6 +156,7 @@ public class DBManager {
       }
     }
     try {
+      log.info("Putting key/value : "+ new String(key)+"/"+new String(value));
       db.put(columnFamilies.get(new String(colFam)), writeOptions, key, value);
       return true;
     } catch (RocksDBException e) {
