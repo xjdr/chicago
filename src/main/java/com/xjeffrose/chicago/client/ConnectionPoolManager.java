@@ -86,7 +86,7 @@ public class ConnectionPoolManager {
   }
 
   public ChannelFuture getNode(String node) throws ChicagoClientTimeoutException {
-    log.info("Trying to get node:"+node);
+    log.debug("Trying to get node:"+node);
     return _getNode(node, System.currentTimeMillis());
   }
 
@@ -185,12 +185,12 @@ public class ConnectionPoolManager {
             future.channel().close();
           }
         } else {
-          log.info("Chicago connected to: " + server);
+          log.debug("Chicago connected to: " + server);
           String hostname = server.getAddress().getHostAddress();
           if (hostname.equals("localhost")) {
             hostname = "127.0.0.1";
           }
-          log.info("Adding hostname: " + hostname + ":" + ((InetSocketAddress) future.channel().remoteAddress()).getPort());
+          log.debug("Adding hostname: " + hostname + ":" + ((InetSocketAddress) future.channel().remoteAddress()).getPort());
           addNode(hostname + ":" + ((InetSocketAddress) future.channel().remoteAddress()).getPort(), future);
         }
       }

@@ -156,8 +156,11 @@ public class DBManager {
       }
     }
     try {
-      log.info("Putting key/value : "+ new String(key)+"/"+new String(value));
-      db.put(columnFamilies.get(new String(colFam)), writeOptions, key, value);
+      if(!db.keyMayExist(readOptions,columnFamilies.get(new String(colFam)),key, new StringBuffer())){
+        counter.get(new String(colFam)).set(Ints.fromByteArray(key));
+        log.info("Putting key/value : " + Ints.fromByteArray(key) + "/" + new String(value));
+        db.put(columnFamilies.get(new String(colFam)), writeOptions, key, value);
+      }
       return true;
     } catch (RocksDBException e) {
       log.error("Error writing record: " + new String(key), e);
