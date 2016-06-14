@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.rocksdb.ColumnFamilyDescriptor;
@@ -34,7 +35,7 @@ public class DBManager {
   private final Options options = new Options();
   private final ReadOptions readOptions = new ReadOptions();
   private final WriteOptions writeOptions = new WriteOptions();
-  private final Map<String, ColumnFamilyHandle> columnFamilies = new HashMap<>();
+  private final Map<String, ColumnFamilyHandle> columnFamilies = new ConcurrentHashMap<>();
   private final ChiConfig config;
   private final String delimeter = "@@@";
   private final HashMap<String,AtomicInteger> counter = new HashMap<>();
@@ -123,7 +124,10 @@ public class DBManager {
     }
   }
 
-  private synchronized boolean createColumnFamily(byte[] name) {
+  private boolean createColumnFamily(byte[] name) {
+    if (colFamilyExists(name)){
+      return true;
+    }
     ColumnFamilyOptions columnFamilyOptions = new ColumnFamilyOptions();
     if(!config.isDatabaseMode()){
       columnFamilyOptions.setCompactionStyle(CompactionStyle.UNIVERSAL)
@@ -144,14 +148,14 @@ public class DBManager {
   }
 
   boolean write(byte[] colFam, byte[] key, byte[] value) {
-    synchronized (columnFamilies) {
-      if (key == null) {
-        log.error("Tried to write a null key");
-        return false;
-      } else if (value == null) {
-        log.error("Tried to write a null value");
-        return false;
-      } else if (!colFamilyExists(colFam)) {
+    if (key == null) {
+      log.error("Tried to write a null key");
+      return false;
+    } else if (value == null) {
+      log.error("Tried to write a null value");
+      return false;
+    } else if (!colFamilyExists(colFam)) {
+      synchronized (columnFamilies) {
         createColumnFamily(colFam);
       }
     }
