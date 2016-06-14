@@ -269,7 +269,7 @@ public class DBManager {
 
 
   public List<byte[]> getKeys(byte[] colFam){
-    RocksIterator i = db.newIterator(columnFamilies.get(colFam));
+    RocksIterator i = db.newIterator(columnFamilies.get(new String(colFam)), readOptions);
     List<byte[]> keySet = new ArrayList();
     i.seekToFirst();
 
