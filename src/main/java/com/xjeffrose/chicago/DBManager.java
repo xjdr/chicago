@@ -123,7 +123,7 @@ public class DBManager {
     }
   }
 
-  private boolean createColumnFamily(byte[] name) {
+  private synchronized boolean createColumnFamily(byte[] name) {
     ColumnFamilyOptions columnFamilyOptions = new ColumnFamilyOptions();
     if(!config.isDatabaseMode()){
       columnFamilyOptions.setCompactionStyle(CompactionStyle.UNIVERSAL)
@@ -144,14 +144,16 @@ public class DBManager {
   }
 
   boolean write(byte[] colFam, byte[] key, byte[] value) {
-    if (key == null) {
-      log.error("Tried to write a null key");
-      return false;
-    } else if (value == null) {
-      log.error("Tried to write a null value");
-      return false;
-    } else if (!colFamilyExists(colFam)) {
-      createColumnFamily(colFam);
+    synchronized (columnFamilies) {
+      if (key == null) {
+        log.error("Tried to write a null key");
+        return false;
+      } else if (value == null) {
+        log.error("Tried to write a null value");
+        return false;
+      } else if (!colFamilyExists(colFam)) {
+        createColumnFamily(colFam);
+      }
     }
     try {
       db.put(columnFamilies.get(new String(colFam)), writeOptions, key, value);
