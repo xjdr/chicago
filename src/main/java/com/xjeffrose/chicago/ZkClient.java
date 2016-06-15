@@ -39,12 +39,17 @@ public class ZkClient {
 
   public void register(String NODE_LIST_PATH, ChiConfig config, InetSocketAddress address) {
     try {
+      String path = NODE_LIST_PATH + "/" + address.getAddress().getHostAddress() + ":" + address.getPort();
+      if(client.checkExists().forPath(path) != null) {
+        client
+          .delete()
+          .forPath(path);
+      }
       client
         .create()
         .creatingParentsIfNeeded()
         .withMode(CreateMode.EPHEMERAL)
-        .forPath(
-                 NODE_LIST_PATH + "/" + address.getAddress().getHostAddress() + ":" + address.getPort(),
+        .forPath(path,
           ConfigSerializer.serialize(config).getBytes());
     } catch (Exception e) {
       log.error("Error registering Server", e);
