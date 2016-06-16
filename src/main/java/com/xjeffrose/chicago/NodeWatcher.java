@@ -83,7 +83,7 @@ public class NodeWatcher {
             if(!s.equals(config.getDBBindEndpoint())) {
               try {
                 log.info("Replicatng colFam " + cf + " to " + s);
-                zkClient.createIfNotExist(REPLICATION_LOCK_PATH+"/"+cf+"/"+s,config.getDBBindEndpoint());
+                zkClient.createIfNotExist(REPLICATION_LOCK_PATH + "/" + cf + "/" + s,config.getDBBindEndpoint());
                 ChicagoTSClient c = new ChicagoTSClient((String) s);
 
                 dbManager.getKeys(cf.getBytes()).forEach(k -> {
@@ -95,7 +95,7 @@ public class NodeWatcher {
                     e.printStackTrace();
                   }
                 });
-                zkClient.delete(REPLICATION_LOCK_PATH+"/"+cf+"/"+s);
+                zkClient.delete(REPLICATION_LOCK_PATH + "/" + cf + "/" + s);
               } catch (InterruptedException e) {
                 e.printStackTrace();
               }

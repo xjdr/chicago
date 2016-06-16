@@ -142,6 +142,8 @@ public class ZkClient {
         client.create().creatingParentContainersIfNeeded().forPath(path,data.getBytes());
       }
     }catch(Exception e){
+      e.printStackTrace();
+      log.info(e.getLocalizedMessage());
       //throw new exception.
     }
     return true;
@@ -153,6 +155,8 @@ public class ZkClient {
         client.delete().forPath(path);
       }
     }catch(Exception e){
+      e.printStackTrace();
+      log.info(e.getLocalizedMessage());
       //throw new exception.
     }
     return true;
