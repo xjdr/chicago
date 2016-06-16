@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 public class ChicagoTSClient extends BaseChicagoClient {
   private static final Logger log = LoggerFactory.getLogger(ChicagoTSClient.class);
+  private final static String REPLICATION_LOCK_PATH ="/chicago/replication-lock";
 
   public ChicagoTSClient(String zkConnectionString, int quorum) throws InterruptedException {
     super(zkConnectionString, quorum);
@@ -49,6 +50,8 @@ public class ChicagoTSClient extends BaseChicagoClient {
         final long startTime = System.currentTimeMillis();
         try {
           List<String> hashList = rendezvousHash.get(key);
+          List<String> replicationList = zkClient.list(REPLICATION_LOCK_PATH+"/"+new String(key));
+          hashList.removeAll(replicationList);
           for (String node : hashList) {
             if (node == null) {
             } else {
@@ -103,6 +106,8 @@ public class ChicagoTSClient extends BaseChicagoClient {
       ConcurrentLinkedDeque<byte[]> responseList = new ConcurrentLinkedDeque<>();
       try {
         List<String> hashList = rendezvousHash.get(key);
+        List<String> replicationList = zkClient.list(REPLICATION_LOCK_PATH+"/"+new String(key));
+        hashList.removeAll(replicationList);
         for (String node : hashList) {
           if (node == null) {
           } else {
@@ -184,12 +189,14 @@ public class ChicagoTSClient extends BaseChicagoClient {
 
     ListeningExecutorService executor = MoreExecutors.listeningDecorator(exe);
     return executor.submit(() -> {
-
+        int dquorum = quorum;
         final long startTime = System.currentTimeMillis();
         try {
 
           List<String> hashList = rendezvousHash.get(key);
-
+          List<String> replicationList = zkClient.list(REPLICATION_LOCK_PATH+"/"+new String(key));
+          hashList.removeAll(replicationList);
+          dquorum = hashList.size();
           for (String node : hashList) {
             if (node == null) {
 
@@ -226,7 +233,7 @@ public class ChicagoTSClient extends BaseChicagoClient {
         }
 
 
-        while (responseList.size() < quorum) {
+        while (responseList.size() < dquorum) {
           if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
             Thread.currentThread().interrupt();
             throw new ChicagoClientTimeoutException();

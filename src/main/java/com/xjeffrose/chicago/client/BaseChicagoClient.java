@@ -55,7 +55,7 @@ public class BaseChicagoClient {
   };
   protected final ZkClient zkClient;
   protected final ConnectionPoolManager connectionPoolMgr;
-  protected final int quorum;
+  protected int quorum;
 
   public BaseChicagoClient(String address){
     this.single_server = true;
