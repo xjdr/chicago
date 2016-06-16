@@ -136,6 +136,29 @@ public class ZkClient {
     return null;
   }
 
+  public boolean createIfNotExist(String path, String data){
+    try {
+      if (client.checkExists().forPath(path) != null) {
+        client.create().creatingParentContainersIfNeeded().forPath(path,data.getBytes());
+      }
+    }catch(Exception e){
+      //throw new exception.
+    }
+    return true;
+  }
+
+  public boolean delete(String path){
+    try {
+      if (client.checkExists().forPath(path) != null) {
+        client.delete().forPath(path);
+      }
+    }catch(Exception e){
+      //throw new exception.
+    }
+    return true;
+  }
+
+
   /* package access only */
   public CuratorFramework getClient() {
     return client;
