@@ -31,7 +31,7 @@ public class ChicagoServer {
     this.config = config;
     zkClient = new ZkClient(config.getZkHosts());
     dbManager = new DBManager(config);
-    nodeWatcher = new NodeWatcher();
+    nodeWatcher = new NodeWatcher(NODE_LIST_PATH,NODE_LOCK_PATH);
     dbRouter = new DBRouter(config, dbManager, dbLog);
   }
   public void start() throws Exception {
