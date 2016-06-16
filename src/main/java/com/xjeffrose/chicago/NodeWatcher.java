@@ -78,7 +78,6 @@ public class NodeWatcher {
         List<String> newS = rendezvousHash.get(cf.getBytes());
         List<String> oldS = rendezvousHashnOld.get(cf.getBytes());
         newS.removeAll(oldS);
-        log.info(newS.toString());
         newS.forEach(s -> {
             if(!s.equals(config.getDBBindEndpoint())) {
               try {
@@ -87,6 +86,7 @@ public class NodeWatcher {
                 ChicagoTSClient c = new ChicagoTSClient((String) s);
 
                 dbManager.getKeys(cf.getBytes()).forEach(k -> {
+                  log.info("Replicatng key " + k + " to " + s);
                   try {
                     c._write(cf.getBytes(), k, dbManager.read(cf.getBytes(), k));
                   } catch (ChicagoClientTimeoutException e) {

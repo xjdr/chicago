@@ -50,8 +50,10 @@ public class ChicagoTSClient extends BaseChicagoClient {
         final long startTime = System.currentTimeMillis();
         try {
           List<String> hashList = rendezvousHash.get(key);
-          List<String> replicationList = zkClient.list(REPLICATION_LOCK_PATH+"/"+new String(key));
-          hashList.removeAll(replicationList);
+          if(!single_server) {
+            List<String> replicationList = zkClient.list(REPLICATION_LOCK_PATH + "/" + new String(key));
+            hashList.removeAll(replicationList);
+          }
           for (String node : hashList) {
             if (node == null) {
             } else {
@@ -106,8 +108,10 @@ public class ChicagoTSClient extends BaseChicagoClient {
       ConcurrentLinkedDeque<byte[]> responseList = new ConcurrentLinkedDeque<>();
       try {
         List<String> hashList = rendezvousHash.get(key);
-        List<String> replicationList = zkClient.list(REPLICATION_LOCK_PATH+"/"+new String(key));
-        hashList.removeAll(replicationList);
+        if(!single_server) {
+          List<String> replicationList = zkClient.list(REPLICATION_LOCK_PATH + "/" + new String(key));
+          hashList.removeAll(replicationList);
+        }
         for (String node : hashList) {
           if (node == null) {
           } else {
@@ -194,8 +198,10 @@ public class ChicagoTSClient extends BaseChicagoClient {
         try {
 
           List<String> hashList = rendezvousHash.get(key);
-          List<String> replicationList = zkClient.list(REPLICATION_LOCK_PATH+"/"+new String(key));
-          hashList.removeAll(replicationList);
+          if(!single_server) {
+            List<String> replicationList = zkClient.list(REPLICATION_LOCK_PATH + "/" + new String(key));
+            hashList.removeAll(replicationList);
+          }
           dquorum = hashList.size();
           for (String node : hashList) {
             if (node == null) {
