@@ -278,18 +278,19 @@ public class DBManager {
     return new ArrayList<>(columnFamilies.keySet());
   }
 
-
-  public List<byte[]> getKeys(byte[] colFam){
+  public List<byte[]> getKeys(byte[] colFam, byte[] offset){
     RocksIterator i = db.newIterator(columnFamilies.get(new String(colFam)), readOptions);
     List<byte[]> keySet = new ArrayList();
-    i.seekToFirst();
+    if (offset.length == 0) {
+      i.seekToFirst();
+    } else {
+      i.seek(offset);
+    }
 
     while (i.isValid()) {
       keySet.add(i.key());
       i.next();
     }
-
     return keySet;
-
   }
 }

@@ -84,17 +84,22 @@ public class NodeWatcher {
                 log.info("Replicatng colFam " + cf + " to " + s);
                 zkClient.createIfNotExist(REPLICATION_LOCK_PATH + "/" + cf + "/" + s,config.getDBBindEndpoint());
                 ChicagoTSClient c = new ChicagoTSClient((String) s);
-
-                dbManager.getKeys(cf.getBytes()).forEach(k -> {
-                  log.info("Replicatng key " + k + " to " + s);
-                  try {
-                    c._write(cf.getBytes(), k, dbManager.read(cf.getBytes(), k));
-                  } catch (ChicagoClientTimeoutException e) {
-                    e.printStackTrace();
-                  } catch (ChicagoClientException e) {
-                    e.printStackTrace();
+                byte[] offset = new byte[]{};
+                List<byte[]> keys = dbManager.getKeys(cf.getBytes(), offset);
+                while(keys.get(keys.size()-1) != offset) {
+                  for(byte[] k : keys){
+                    log.debug("Replicatng key " + new String(k) + " to " + s);
+                    try {
+                      c._write(cf.getBytes(), k, dbManager.read(cf.getBytes(), k));
+                    } catch (ChicagoClientTimeoutException e) {
+                      e.printStackTrace();
+                    } catch (ChicagoClientException e) {
+                      e.printStackTrace();
+                    }
+                    offset = k;
                   }
-                });
+                  keys=dbManager.getKeys(cf.getBytes(),offset);
+                }
                 zkClient.delete(REPLICATION_LOCK_PATH + "/" + cf + "/" + s);
               } catch (InterruptedException e) {
                 e.printStackTrace();
