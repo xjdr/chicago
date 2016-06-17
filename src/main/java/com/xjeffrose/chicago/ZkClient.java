@@ -119,7 +119,9 @@ public class ZkClient {
 
   public List<String> list(String path) {
     try {
-      return client.getChildren().forPath(path);
+      if (client.checkExists().forPath(path) != null) {
+        return client.getChildren().forPath(path);
+      }
     } catch (Exception e) {
       //throw new RuntimeException(e);
     }
