@@ -1,9 +1,11 @@
 package com.xjeffrose.chicago;
 
 import com.google.common.hash.Funnels;
+import com.google.common.primitives.Ints;
 import com.xjeffrose.chicago.client.*;
 
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -86,9 +88,9 @@ public class NodeWatcher {
                 ChicagoTSClient c = new ChicagoTSClient((String) s);
                 byte[] offset = new byte[]{};
                 List<byte[]> keys = dbManager.getKeys(cf.getBytes(), offset);
-                while(keys.get(keys.size()-1) != offset) {
+                while(!Arrays.equals(keys.get(keys.size()-1),offset)) {
                   for(byte[] k : keys){
-                    log.debug("Replicatng key " + new String(k) + " to " + s);
+                    log.info("Replicatng key " + Ints.fromByteArray(k) + " to " + s);
                     try {
                       c._write(cf.getBytes(), k, dbManager.read(cf.getBytes(), k));
                     } catch (ChicagoClientTimeoutException e) {
@@ -98,6 +100,7 @@ public class NodeWatcher {
                     }
                     offset = k;
                   }
+                  log.info("Offset = ",Ints.fromByteArray(offset));
                   keys=dbManager.getKeys(cf.getBytes(),offset);
                 }
                 zkClient.delete(REPLICATION_LOCK_PATH + "/" + cf + "/" + s);
