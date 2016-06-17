@@ -142,7 +142,7 @@ public class ZkClient {
   public boolean createIfNotExist(String path, String data){
     try {
       if (client.checkExists().forPath(path) == null) {
-        client.create().creatingParentContainersIfNeeded().forPath(path,data.getBytes());
+        client.create().creatingParentsIfNeeded().forPath(path,data.getBytes());
       }
     }catch(Exception e){
       //throw new exception.
