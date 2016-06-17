@@ -213,7 +213,7 @@ public class ChicagoTSClient extends BaseChicagoClient {
                     UUID id = UUID.randomUUID();
                     Listener listener = connectionPoolMgr.getListener(node); // Blocking
                     if(colFam != null){
-                      cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.WRITE, colFam, key, value));
+                      cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.TS_WRITE, colFam, key, value));
                     }else {
                       cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.TS_WRITE, key, null, value));
                     }

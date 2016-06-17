@@ -90,6 +90,7 @@ public class NodeWatcher {
                 List<byte[]> keys = dbManager.getKeys(cf.getBytes(), offset);
                 while(!Arrays.equals(keys.get(keys.size()-1),offset)) {
                   for(byte[] k : keys){
+                    log.info("Writing key :"+Ints.fromByteArray(k));
                     try {
                       c._write(cf.getBytes(), k, dbManager.read(cf.getBytes(), k));
                     } catch (ChicagoClientTimeoutException e) {

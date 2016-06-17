@@ -2,6 +2,7 @@ package com.xjeffrose.chicago;
 
 import java.nio.charset.Charset;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
@@ -122,7 +123,7 @@ public class ZkClient {
     } catch (Exception e) {
       //throw new RuntimeException(e);
     }
-    return null;
+    return new ArrayList<String>();
   }
 
   public List<String> getChildren(String path) {

@@ -160,15 +160,7 @@ public class DBManager {
       }
     }
     try {
-      //Insert Key/Value only if it does not exists.
-      if(!db.keyMayExist(readOptions,columnFamilies.get(new String(colFam)),key, new StringBuffer())){
-        //Set the AtomicInteger for the colFam if the key is bigger than the already set value.
-        if(Ints.fromByteArray(key) > counter.get(new String(colFam)).get()) {
-          counter.get(new String(colFam)).set(Ints.fromByteArray(key) + 1);
-        }
-        log.info("Putting key/value : " + Ints.fromByteArray(key) + "/" + new String(value));
-        db.put(columnFamilies.get(new String(colFam)), writeOptions, key, value);
-      }
+      db.put(columnFamilies.get(new String(colFam)), writeOptions, key, value);
       return true;
     } catch (RocksDBException e) {
       log.error("Error writing record: " + new String(key), e);
@@ -221,6 +213,35 @@ public class DBManager {
 
   public void destroy() {
     db.close();
+  }
+
+  public byte[] tsWrite(byte[] colFam, byte[] key, byte[] value){
+    if (key == null) {
+      log.error("Tried to write a null key");
+      return null;
+    } else if (value == null) {
+      log.error("Tried to write a null value");
+      return null;
+    } else if (!colFamilyExists(colFam)) {
+      synchronized (columnFamilies) {
+        createColumnFamily(colFam);
+      }
+    }
+    try {
+      //Insert Key/Value only if it does not exists.
+      if(!db.keyMayExist(readOptions,columnFamilies.get(new String(colFam)),key, new StringBuffer())){
+        //Set the AtomicInteger for the colFam if the key is bigger than the already set value.
+        if(Ints.fromByteArray(key) > counter.get(new String(colFam)).get()) {
+          counter.get(new String(colFam)).set(Ints.fromByteArray(key) + 1);
+        }
+        log.info("Putting colFam/key/value : " +new String(colFam) + Ints.fromByteArray(key) + "/" + new String(value));
+        db.put(columnFamilies.get(new String(colFam)), writeOptions, key, value);
+      }
+      return key;
+    } catch (RocksDBException e) {
+      log.error("Error writing record: " + new String(key), e);
+      return null;
+    }
   }
 
   public byte[] tsWrite(byte[] colFam, byte[] value) {

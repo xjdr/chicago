@@ -91,7 +91,11 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
           dbLog.addDelete(finalMsg.getColFam(), finalMsg.getKey());
           break;
         case TS_WRITE:
-          readResponse = dbManager.tsWrite(finalMsg.getColFam(), finalMsg.getVal());
+          if(finalMsg.getKey().length == 0) {
+            readResponse = dbManager.tsWrite(finalMsg.getColFam(), finalMsg.getVal());
+          }else{
+            readResponse = dbManager.tsWrite(finalMsg.getColFam(),finalMsg.getKey(), finalMsg.getVal());
+          }
           if (readResponse != null) {
             status = true;
           }

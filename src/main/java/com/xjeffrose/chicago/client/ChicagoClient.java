@@ -64,6 +64,10 @@ public class ChicagoClient extends BaseChicagoClient {
     super(zkConnectionString, quorum);
   }
 
+  public ChicagoClient(String address) throws InterruptedException {
+    super(address);
+  }
+
   public ListenableFuture<byte[]> stream(byte[] key) throws ChicagoClientTimeoutException {
     return stream("chicago".getBytes(), key);
   }
