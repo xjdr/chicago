@@ -90,7 +90,6 @@ public class NodeWatcher {
                 List<byte[]> keys = dbManager.getKeys(cf.getBytes(), offset);
                 while(!Arrays.equals(keys.get(keys.size()-1),offset)) {
                   for(byte[] k : keys){
-                    log.info("Replicatng key " + Ints.fromByteArray(k) + " to " + s);
                     try {
                       c._write(cf.getBytes(), k, dbManager.read(cf.getBytes(), k));
                     } catch (ChicagoClientTimeoutException e) {
@@ -100,7 +99,6 @@ public class NodeWatcher {
                     }
                     offset = k;
                   }
-                  log.info("Offset = ",Ints.fromByteArray(offset));
                   keys=dbManager.getKeys(cf.getBytes(),offset);
                 }
                 zkClient.delete(REPLICATION_LOCK_PATH + "/" + cf + "/" + s);

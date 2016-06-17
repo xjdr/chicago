@@ -162,7 +162,10 @@ public class DBManager {
     try {
       //Insert Key/Value only if it does not exists.
       if(!db.keyMayExist(readOptions,columnFamilies.get(new String(colFam)),key, new StringBuffer())){
-        counter.get(new String(colFam)).set(Ints.fromByteArray(key)+1);
+        //Set the AtomicInteger for the colFam if the key is bigger than the already set value.
+        if(Ints.fromByteArray(key) > counter.get(new String(colFam)).get()) {
+          counter.get(new String(colFam)).set(Ints.fromByteArray(key) + 1);
+        }
         log.info("Putting key/value : " + Ints.fromByteArray(key) + "/" + new String(value));
         db.put(columnFamilies.get(new String(colFam)), writeOptions, key, value);
       }
