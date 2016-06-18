@@ -146,6 +146,7 @@ public class ZkClient {
       }
     }catch(Exception e){
       //throw new exception.
+      return false;
     }
     return true;
   }

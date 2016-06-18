@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
@@ -92,10 +94,12 @@ public class NodeWatcher {
                   for(byte[] k : keys){
                     log.info("Writing key :"+Ints.fromByteArray(k));
                     try {
-                      c._write(cf.getBytes(), k, dbManager.read(cf.getBytes(), k));
+                      c._write(cf.getBytes(), k, dbManager.read(cf.getBytes(), k)).get();
                     } catch (ChicagoClientTimeoutException e) {
                       e.printStackTrace();
                     } catch (ChicagoClientException e) {
+                      e.printStackTrace();
+                    } catch (ExecutionException e) {
                       e.printStackTrace();
                     }
                     offset = k;
