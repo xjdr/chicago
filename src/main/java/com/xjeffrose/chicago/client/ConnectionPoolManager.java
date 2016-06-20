@@ -112,7 +112,7 @@ public class ConnectionPoolManager {
     cf.channel().close();
     cf.cancel(true);
     connectionMap.remove(node);
-    //log.info("removing and reconnecting to "+ node);
+    log.debug("removing and reconnecting to "+ node);
     connect(new InetSocketAddress(node, 12000), listenerMap.get(node));
     return getNode(node);
 

@@ -69,6 +69,7 @@ public class NodeWatcher {
 
   private void redistributeKeys(String node, TreeCacheEvent.Type type) {
       log.info("Starting replication...");
+      long startTime = System.currentTimeMillis();
       RendezvousHash rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), zkClient.list(NODE_LIST_PATH), config.getQuorum());
       RendezvousHash rendezvousHashnOld = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), zkClient.list(NODE_LIST_PATH), config.getQuorum());
       switch(type){
@@ -116,7 +117,7 @@ public class NodeWatcher {
             }
           });
         });
-
+      log.info("Replication ended in " + (System.currentTimeMillis() - startTime) + "ms");
   }
 
   private void nodeAdded(String path, TreeCacheEvent.Type type) {
