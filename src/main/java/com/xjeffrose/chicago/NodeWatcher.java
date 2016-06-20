@@ -78,10 +78,12 @@ public class NodeWatcher {
                            break;
       }
 
+      //For all the column family present on this server.
       dbManager.getColFams().forEach(cf -> {
         List<String> newS = rendezvousHash.get(cf.getBytes());
         List<String> oldS = rendezvousHashnOld.get(cf.getBytes());
         newS.removeAll(oldS);
+        //For all the nodes that have been newly added to the hash.
         newS.forEach(s -> {
             if(!s.equals(config.getDBBindEndpoint())) {
               try {
@@ -90,9 +92,10 @@ public class NodeWatcher {
                 ChicagoTSClient c = new ChicagoTSClient((String) s);
                 byte[] offset = new byte[]{};
                 List<byte[]> keys = dbManager.getKeys(cf.getBytes(), offset);
+                // Start replicating all the keys to the new server.
                 while(!Arrays.equals(keys.get(keys.size()-1),offset)) {
                   for(byte[] k : keys){
-                    log.info("Writing key :"+Ints.fromByteArray(k));
+                    log.debug("Writing key :"+Ints.fromByteArray(k));
                     try {
                       c._write(cf.getBytes(), k, dbManager.read(cf.getBytes(), k)).get();
                     } catch (ChicagoClientTimeoutException e) {
@@ -114,12 +117,6 @@ public class NodeWatcher {
           });
         });
 
-//      RendezvousHash rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), zkClient.list(NODE_LIST_PATH), config.getQuorum());
-//      dbManager.getKeys(new ReadOptions()).forEach(xs -> {
-//        rendezvousHash.get(xs).stream()
-//            .filter(xxs -> xxs == config.getDBBindIP())
-//            .forEach(xxs -> chicagoClient.write(xs, dbManager.read(finalMsg.getColFam(), xs)));
-//      });
   }
 
   private void nodeAdded(String path, TreeCacheEvent.Type type) {

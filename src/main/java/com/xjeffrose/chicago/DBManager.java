@@ -234,7 +234,7 @@ public class DBManager {
         if(Ints.fromByteArray(key) > counter.get(new String(colFam)).get()) {
           counter.get(new String(colFam)).set(Ints.fromByteArray(key) + 1);
         }
-        log.info("Putting colFam/key/value : " +new String(colFam) + Ints.fromByteArray(key) + "/" + new String(value));
+        //log.info("Putting colFam/key/value : " +new String(colFam) + Ints.fromByteArray(key) + "/" + new String(value));
         db.put(columnFamilies.get(new String(colFam)), writeOptions, key, value);
       }
       return key;
@@ -253,7 +253,7 @@ public class DBManager {
     }
     try {
       byte[] ts = Ints.toByteArray(counter.get(new String(colFam)).getAndIncrement());
-      log.info("Putting key/value : "+ Ints.fromByteArray(ts)+"/"+new String(value));
+      //log.info("Putting key/value : "+ Ints.fromByteArray(ts)+"/"+new String(value));
       db.put(columnFamilies.get(new String(colFam)), writeOptions, ts, value);
       return ts;
     } catch (RocksDBException e) {
