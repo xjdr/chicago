@@ -74,7 +74,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
       switch (finalMsg.getOp()) {
         case READ:
           readResponse = dbManager.read(finalMsg.getColFam(), finalMsg.getKey());
-          dbLog.addRead(finalMsg.getColFam(), finalMsg.getKey());
+          //dbLog.addRead(finalMsg.getColFam(), finalMsg.getKey());
 
           if (readResponse != null) {
             status = true;
@@ -82,13 +82,13 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
           break;
         case WRITE:
           status = dbManager.write(finalMsg.getColFam(), finalMsg.getKey(), finalMsg.getVal());
-          dbLog.addWrite(finalMsg.getColFam(), finalMsg.getKey(), finalMsg.getVal());
+          //dbLog.addWrite(finalMsg.getColFam(), finalMsg.getKey(), finalMsg.getVal());
           log.debug("  ========================================================== Server wrote :" +
               status + " For UUID" + finalMsg.getId() + " and key " + new String(finalMsg.getKey()));
           break;
         case DELETE:
           status = dbManager.delete(finalMsg.getColFam(), finalMsg.getKey());
-          dbLog.addDelete(finalMsg.getColFam(), finalMsg.getKey());
+          //dbLog.addDelete(finalMsg.getColFam(), finalMsg.getKey());
           break;
         case TS_WRITE:
           if(finalMsg.getKey().length == 0) {
