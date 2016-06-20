@@ -3,6 +3,7 @@ package com.xjeffrose.chicago.client;
 import com.xjeffrose.chicago.TestChicago;
 import com.xjeffrose.chicago.server.ChicagoServer;
 import com.google.common.util.concurrent.ListenableFuture;
+import org.apache.curator.test.InstanceSpec;
 import org.apache.curator.test.TestingServer;
 
 import java.util.Arrays;
@@ -24,7 +25,8 @@ public class ChicagoTSClientTest {
 
   @Before
   public void setup() throws Exception {
-    testingServer = new TestingServer(true);
+    InstanceSpec spec = new InstanceSpec(null, 2182,  -1 , -1, true, -1 , 20 , -1);
+    testingServer = new TestingServer(spec,true);
     servers = TestChicago.makeServers(TestChicago.chicago_dir(tmp), 4, testingServer.getConnectString());
     for (ChicagoServer server : servers) {
       server.start();

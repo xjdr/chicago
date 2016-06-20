@@ -2,11 +2,13 @@ package com.xjeffrose.chicago.cluster;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.xjeffrose.chicago.TestChicago;
+import com.xjeffrose.chicago.ZkClient;
 import com.xjeffrose.chicago.client.ChicagoClientTimeoutException;
 import com.xjeffrose.chicago.client.ChicagoStream;
 import com.xjeffrose.chicago.client.ChicagoTSClient;
 import com.xjeffrose.chicago.server.ChicagoServer;
 import io.netty.util.internal.StringUtil;
+import org.apache.curator.test.InstanceSpec;
 import org.apache.curator.test.TestingServer;
 import org.junit.After;
 import org.junit.Before;
@@ -16,6 +18,9 @@ import org.junit.rules.TemporaryFolder;
 
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -32,7 +37,8 @@ public class NodeDownTest {
 
   @Before
   public void setup() throws Exception {
-    testingServer = new TestingServer(2182);
+    InstanceSpec spec = new InstanceSpec(null, 2182,  -1 , -1, true, -1 , 20 , -1);
+    testingServer = new TestingServer(spec,true);
     servers = TestChicago.makeNamedServers(TestChicago.chicago_dir(tmp), 4, testingServer.getConnectString());
     for (String server : servers.keySet()) {
       servers.get(server).start();
@@ -61,7 +67,7 @@ public class NodeDownTest {
     for (int i = 0; i < 30; i++) {
       String _v = "val" + i;
       byte[] val = _v.getBytes();
-      if (i == 19) {
+      if (i == 9) {
         offset = chicagoTSClient.write(key.getBytes(), val);
       }else {
         assertNotNull(chicagoTSClient.write(key.getBytes(), val));
@@ -73,45 +79,47 @@ public class NodeDownTest {
     printStrem(key, null);
 
     //Restart chicago1 intermittently
-//    ExecutorService executor = Executors.newFixedThreadPool(1);
-//     Future restartTask = executor.submit(() -> {
-//       for(int i=0;i<30;i++) {
-//         int random = (int) (Math.random() * 4 + 1);
-//         String server = "chicago1";
-//         stopServer(server);
-//         try {
-//           Thread.sleep(200);
-//           startServer(server);
-//           Thread.sleep(200);
-//         } catch (Exception e) {
-//           e.printStackTrace();
-//         }
-//       }
-//    });
+    ExecutorService executor = Executors.newFixedThreadPool(10);
+     Future restartTask = executor.submit(() -> {
+       for(int i=0;i<10;i++) {
+         int random = (int) (Math.random() * 4 + 1);
+         String server = "chicago1";
+         try {
+           stopServer(server);
+           Thread.sleep(100);
+           printStrem(key, null);
+           startServer(server);
+           printStrem(key, null);
+           Thread.sleep(100);
+         } catch (Exception e) {
+           e.printStackTrace();
+         }
+       }
+    });
 
-    for(int i=0;i<30;i++) {
-      printStrem(key, offset);
-      Thread.sleep(200);
-    }
-    //restartTask.get();
+    restartTask.get();
 
   }
 
-  public void stopServer(String server){
+  public void stopServer(String server) throws Exception{
     //BringDown one server
-    System.out.println("Stopping server : "+servers.get(server).getDBAddress());
-    servers.get(server).stop();
+    ZkClient zk = new ZkClient(testingServer.getConnectString());
+    zk.start();
+    System.out.println("Stopping server : "+servers.get(server).config.getDBBindEndpoint());
+    zk.delete("/chicago/node-list/" + servers.get(server).config.getDBBindEndpoint());
   }
 
   public void startServer(String server) throws Exception {
     //BringDown one server
-    System.out.println("Starting server : "+servers.get(server).getDBAddress());
-    servers.get(server).start();
+    ZkClient zk = new ZkClient(testingServer.getConnectString());
+    zk.start();
+    System.out.println("Starting server : "+ servers.get(server).config.getDBBindEndpoint());
+    zk.set("/chicago/node-list/"+ servers.get(server).config.getDBBindEndpoint(), "");
   }
 
   public void printStrem(String key, byte[] offset) throws ChicagoClientTimeoutException, ExecutionException, InterruptedException {
     System.out.println("Clients : " + chicagoTSClient.getNodeList(key.getBytes()).toString());
-    ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream("tskey".getBytes(), offset);
+    ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream(key.getBytes(), offset);
     ChicagoStream cs = _f.get();
     ListenableFuture<byte[]> _resp = cs.getStream();
 

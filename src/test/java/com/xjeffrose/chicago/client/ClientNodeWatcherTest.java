@@ -3,6 +3,7 @@ package com.xjeffrose.chicago.client;
 import com.xjeffrose.chicago.TestChicago;
 import com.xjeffrose.chicago.server.ChicagoServer;
 import com.google.common.collect.ImmutableList;
+import org.apache.curator.test.InstanceSpec;
 import org.apache.curator.test.TestingServer;
 
 import java.util.List;
@@ -25,7 +26,8 @@ public class ClientNodeWatcherTest {
 
   @Before
   public void setup() throws Exception {
-    testingServer = new TestingServer(true);
+    InstanceSpec spec = new InstanceSpec(null, 2182,  -1 , -1, true, -1 , 20 , -1);
+    testingServer = new TestingServer(spec,true);
     servers = TestChicago.makeServers(TestChicago.chicago_dir(tmp), 5, testingServer.getConnectString());
     servers.get(0).start();
     servers.get(1).start();

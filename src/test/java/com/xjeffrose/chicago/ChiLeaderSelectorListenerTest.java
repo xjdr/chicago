@@ -2,6 +2,8 @@ package com.xjeffrose.chicago;
 
 import com.xjeffrose.chicago.server.ChicagoServer;
 import java.util.List;
+
+import org.apache.curator.test.InstanceSpec;
 import org.apache.curator.test.TestingServer;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -27,7 +29,8 @@ public class ChiLeaderSelectorListenerTest {
 
   @Before
   public void setup() throws Exception {
-    testingServer = new TestingServer(true);
+    InstanceSpec spec = new InstanceSpec(null, 2182,  -1 , -1, true, -1 , 20 , -1);
+    testingServer = new TestingServer(spec,true);
     zk = CuratorFrameworkFactory.newClient(testingServer.getConnectString(), new ExponentialBackoffRetry(2000, 20));
     zk.start();
     servers = TestChicago.makeServers(TestChicago.chicago_dir(tmp), 4, testingServer.getConnectString());
