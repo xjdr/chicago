@@ -45,6 +45,7 @@ public class ChicagoReplicationTSClientTest {
 		chicagoTSClient = new ChicagoTSClient(testingServer.getConnectString(),
 				3);
 		zkClient = new ZkClient(testingServer.getConnectString());
+    zkClient.start();
 		chicagoTSClient.startAndWaitForNodes(4);
 		System.out.println("Started all four nodes");
 
@@ -56,7 +57,11 @@ public class ChicagoReplicationTSClientTest {
 		for (ChicagoServer server : servers) {
 			server.stop();
 		}
+    servers.clear();
+    zkClient.stop();
 		chicagoTSClient.stop();
+    chicagoTSClient = null;
+    zkClient = null;
 		testingServer.stop();
 	}
 
@@ -73,38 +78,7 @@ public class ChicagoReplicationTSClientTest {
 				.getBytes());
 		ChicagoStream cs = f.get();
 		ListenableFuture<byte[]> resp = cs.getStream();
-
 		assertNotNull(resp.get());
-		String result = new String(resp.get());
-		byte[] old = null;
-		int count = 0;
-		while (result.contains("@@@")) {
-
-			if (count > 10) {
-				break;
-			}
-			offset = result.split("@@@")[1].getBytes();
-			if (old != null && Arrays.equals(old, offset)) {
-				Thread.sleep(500);
-			}
-			System.out.println(result.split("@@@")[0]);
-			cs.close();
-			ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream(
-					testKey.getBytes(), offset);
-			cs = _f.get();
-			resp = cs.getStream();
-			result = new String(resp.get());
-			old = offset;
-			count++;
-		}
-
-		ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream(
-				"tskey".getBytes(), offset);
-		cs = _f.get();
-		ListenableFuture<byte[]> _resp = cs.getStream();
-
-		assertNotNull(_resp.get());
-		System.out.println(new String(_resp.get()));
 
 	}
 	public void testValidResponse(List<String> nodes, int key) throws InterruptedException, ExecutionException, ChicagoClientTimeoutException{
@@ -125,15 +99,14 @@ public class ChicagoReplicationTSClientTest {
 	public void testReplicationOnNodesAfterWait() throws Exception {
 
 		List<String> nodes = chicagoTSClient.getNodeList(testKey.getBytes());
-		System.out.println("Querying old set of nodes" + nodes.get(0)
-				+ nodes.get(1) + nodes.get(2));
+		System.out.println("Querying old set of nodes" + nodes.toString());
 		testValidResponse(nodes,100);
 		testValidResponse(nodes,999);
 		
-		for (ChicagoServer server : servers) {
+		for (String node : nodes) {
 			System.out.println("Stopping server.. "
-					+ server.getDBAddress());
-			zkClient.delete("/chicago/node-list/" + server.config.getDBBindEndpoint());
+					+ node);
+			zkClient.delete(ChicagoTSClient.NODE_LIST_PATH +"/"+ node);
 			break;
 		}
 
@@ -142,30 +115,32 @@ public class ChicagoReplicationTSClientTest {
 		System.out.println("Waiting for replication lock to be created");
 		replicationList = zkClient.list(REPLICATION_LOCK_PATH + "/"
 				+ new String(testKey));
-//		while  (replicationList.isEmpty()){
-//			Thread.sleep(1);
-//			//do nothing, wait for the lock path to get created
-//			replicationList = zkClient.list(REPLICATION_LOCK_PATH + "/"
-//					+ new String(testKey));
-//		}
-			for (String repli : replicationList) {
-				System.out.println("This is the list being replicated right now "+ repli);
-			}
-			System.out.println("Waiting for replicatio to terminate");
+
+		while  (replicationList.isEmpty()){
+			Thread.sleep(1);
+			//do nothing, wait for the lock path to get created
 			replicationList = zkClient.list(REPLICATION_LOCK_PATH + "/"
 					+ new String(testKey));
-		 while (!replicationList.isEmpty()){
-			 Thread.sleep(1);
-				//do nothing, wait for the lock path to get deleted
-				replicationList = zkClient.list(REPLICATION_LOCK_PATH + "/"
-						+ new String(testKey));
-		 }
-		
+		}
+
+    System.out.println("This is the list being replicated right now "+ replicationList.toString());
+
+    System.out.println("Waiting for replication to terminate");
+    replicationList = zkClient.list(REPLICATION_LOCK_PATH + "/"
+        + new String(testKey));
+    while (!replicationList.isEmpty()){
+       Thread.sleep(1);
+        //do nothing, wait for the lock path to get deleted
+        replicationList = zkClient.list(REPLICATION_LOCK_PATH + "/"
+            + new String(testKey));
+    }
+    System.out.println("Replication completed!!");
+
+
 		//Test after replication is completed
-		
 		for (int i = 1; i < 5; i++) {
 			System.out.println(i + "th iteration - Querying new set of nodes"
-					+ newNodes.get(0) + newNodes.get(1) + newNodes.get(2));
+					+ nodes.toString());
 			testValidResponse(newNodes,100);
 			testValidResponse(newNodes,999);
 		}
@@ -177,15 +152,14 @@ public class ChicagoReplicationTSClientTest {
 		List<String> nodes = chicagoTSClient.getNodeList(testKey.getBytes());
 
 		ChicagoTSClient cc = new ChicagoTSClient(nodes.get(0));
-		System.out.println("Querying old set of nodes" + nodes.get(0)
-				+ nodes.get(1) + nodes.get(2));
+		System.out.println("Querying old set of nodes" + nodes.toString());
 		testValidResponse(nodes,100);
 		testValidResponse(nodes,999);
 
-		for (ChicagoServer server : servers) {
+		for (String node : nodes) {
 			System.out.println("Test stopping a server.. "
-					+ server.getDBAddress());
-			zkClient.delete("/chicago/node-list/" + server.config.getDBBindEndpoint());
+					+ node);
+			zkClient.delete(ChicagoTSClient.NODE_LIST_PATH +"/"+ node);
 			break;
 		}
 
@@ -193,7 +167,7 @@ public class ChicagoReplicationTSClientTest {
 
 		for (int i = 0; i < 5; i++) {
 			System.out.println(i + "th iteration - Querying new set of nodes"
-					+ newNodes.get(0) + newNodes.get(1) + newNodes.get(2));
+					+ newNodes.toString());
 			
 			int noOfGoodResponses=getNoOfValidResponse(newNodes,999);
 
@@ -206,22 +180,22 @@ public class ChicagoReplicationTSClientTest {
 				System.out.println("Waiting for replication lock to be created");
 				replicationList = zkClient.list(REPLICATION_LOCK_PATH + "/"
 						+ new String(testKey));
-//				while  (replicationList.isEmpty()){
-//					Thread.sleep(1);
-//					//do nothing, wait for the lock path to get created
-//					replicationList = zkClient.list(REPLICATION_LOCK_PATH + "/"
-//							+ new String(testKey));
-//				}
-					for (String repli : replicationList) {
-						System.out.println("This is the list being replicated right now "+ repli);
-					}
-					System.out.println("Waiting for replication to be over");
-				 while (!replicationList.isEmpty()){
+				while  (replicationList.isEmpty()){
+					Thread.sleep(1);
+					//do nothing, wait for the lock path to get created
+					replicationList = zkClient.list(REPLICATION_LOCK_PATH + "/"
+							+ new String(testKey));
+				}
+        System.out.println("This is the list being replicated right now "+ replicationList.toString());
+        System.out.println("Waiting for replication to be over");
+        while (!replicationList.isEmpty()){
 					 Thread.sleep(1);
 						//do nothing, wait for the lock path to get deleted
 						replicationList = zkClient.list(REPLICATION_LOCK_PATH + "/"
 								+ new String(testKey));
-				 }
+        }
+
+
 				//Test after replication is completed
 				
 			} else {
