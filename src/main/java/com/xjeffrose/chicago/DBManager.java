@@ -183,6 +183,21 @@ public class DBManager {
     }
   }
 
+  boolean delete(byte[] colFam){
+    if(!colFamilyExists(colFam)) {
+      return true;
+    }
+    try{
+      ColumnFamilyHandle ch = columnFamilies.get(new String(colFam));
+      db.dropColumnFamily(ch);
+      counter.remove(new String(colFam));
+    }catch(RocksDBException e){
+      e.printStackTrace();
+      return false;
+    }
+    return true;
+  }
+
   boolean delete(byte[] colFam, byte[] key) {
     if (key == null) {
       log.error("Tried to delete a null key");

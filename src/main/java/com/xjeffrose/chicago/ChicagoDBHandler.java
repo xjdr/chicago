@@ -87,7 +87,11 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
               status + " For UUID" + finalMsg.getId() + " and key " + new String(finalMsg.getKey()));
           break;
         case DELETE:
-          status = dbManager.delete(finalMsg.getColFam(), finalMsg.getKey());
+          if(finalMsg.getKey().length == 0){
+            status = dbManager.delete(finalMsg.getColFam());
+          }else{
+            status = dbManager.delete(finalMsg.getColFam(), finalMsg.getKey());
+          }
           //dbLog.addDelete(finalMsg.getColFam(), finalMsg.getKey());
           break;
         case TS_WRITE:
