@@ -188,6 +188,7 @@ public class DBManager {
       return true;
     }
     try{
+      log.info("Deleting the column Family :"+ new String(colFam));
       ColumnFamilyHandle ch = columnFamilies.get(new String(colFam));
       db.dropColumnFamily(ch);
       counter.remove(new String(colFam));
