@@ -189,7 +189,7 @@ public class DBManager {
     }
     try{
       log.info("Deleting the column Family :"+ new String(colFam));
-      ColumnFamilyHandle ch = columnFamilies.get(new String(colFam));
+      ColumnFamilyHandle ch = columnFamilies.remove(new String(colFam));
       db.dropColumnFamily(ch);
       counter.remove(new String(colFam));
     }catch(RocksDBException e){
