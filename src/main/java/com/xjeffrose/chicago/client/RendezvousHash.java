@@ -32,11 +32,11 @@ public class RendezvousHash<N> {
     this.quorum = quorum;
   }
 
-  boolean remove(N node) {
+  public boolean remove(N node) {
     return nodeList.remove(node);
   }
 
-  boolean add(N node) {
+  public boolean add(N node) {
     return nodeList.add(node);
   }
 

@@ -2,9 +2,10 @@ package com.xjeffrose.chicago.client;
 
 import com.xjeffrose.chicago.TestChicago;
 import com.xjeffrose.chicago.server.ChicagoServer;
-import com.google.common.util.concurrent.ListenableFuture;
+import org.apache.curator.test.InstanceSpec;
 import org.apache.curator.test.TestingServer;
-import com.xjeffrose.chicago.Chicago;
+
+import java.io.File;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -28,14 +29,15 @@ public class ChicagoClientTest {
 
   @Before
   public void setup() throws Exception {
-    testingServer = new TestingServer(true);
+    InstanceSpec spec = new InstanceSpec(null, 2182,  -1 , -1, true, -1 , 20 , -1);
+    testingServer = new TestingServer(spec,true);
     servers = TestChicago.makeServers(TestChicago.chicago_dir(tmp), 4, testingServer.getConnectString());
     for (ChicagoServer server : servers) {
       server.start();
     }
 
     chicagoClientDHT = new ChicagoClient(testingServer.getConnectString(), 3);
-    chicagoClientDHT.startAndWaitForNodes(4);
+    chicagoClientDHT.startAndWaitForNodes(3);
   }
 
   @After
@@ -58,16 +60,12 @@ public class ChicagoClientTest {
       assertEquals(new String(val), new String(chicagoClientDHT.read(key).get()));
       assertEquals(true, chicagoClientDHT.delete(key));
     }
-    int transactionSum = 0;
-    for (ChicagoServer server : servers) {
-      transactionSum += server.dbLog.entries.size();
-    }
-    assertEquals(1*3*3, transactionSum);
+
   }
 
   @Test
   public void transactMany() throws Exception {
-    for (int i = 0; i < 2000; i++) {
+    for (int i = 0; i < 200; i++) {
       String _k = "key" + i;
       byte[] key = _k.getBytes();
       String _v = "val" + i;
@@ -76,11 +74,7 @@ public class ChicagoClientTest {
       assertEquals(new String(val), new String(chicagoClientDHT.read(key).get()));
       assertEquals(true, chicagoClientDHT.delete(key));
     }
-    int transactionSum = 0;
-    for (ChicagoServer server : servers) {
-      transactionSum += server.dbLog.entries.size();
-    }
-    assertEquals(2000*3*3, transactionSum);
+
   }
 
   @Test

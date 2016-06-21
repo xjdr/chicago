@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 public class ChicagoStream implements AutoCloseable {
   private static final Logger log = LoggerFactory.getLogger(ChicagoStream.class.getName());
   private static final long TIMEOUT = 1000;
-  private static final boolean TIMEOUT_ENABLED = false;
+  private static final boolean TIMEOUT_ENABLED = true;
 
   private final ConcurrentLinkedDeque<UUID> idList = new ConcurrentLinkedDeque<>();
   private Listener listener;

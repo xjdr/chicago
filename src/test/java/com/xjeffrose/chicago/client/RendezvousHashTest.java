@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.hash.Funnel;
 import com.google.common.hash.Funnels;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
 
@@ -156,6 +157,50 @@ public class RendezvousHashTest {
         break;
       }
     }
+  }
+
+  @Test
+  public void testOrder() {
+    String key="key";
+    ArrayList<String> nodes = new ArrayList<>();
+    nodes.add("60");
+    nodes.add("10");
+    nodes.add("20");
+    nodes.add("50");
+    nodes.add("10");
+    nodes.add("40");
+    nodes.add("90");
+    nodes.add("33");
+
+    RendezvousHash rendezvousHash = new RendezvousHash(
+      Funnels.stringFunnel(Charset.defaultCharset()), nodes, 3);
+    printHash(rendezvousHash,key);
+
+    //Adding 100 series node
+    rendezvousHash.add("160");
+    printHash(rendezvousHash,key);
+
+    //Adding more nodes in 200 series.
+    rendezvousHash.add("260");
+    rendezvousHash.add("220");
+    rendezvousHash.add("299");
+    rendezvousHash.add("255");
+    printHash(rendezvousHash,key);
+
+    //Adding 300 series
+    for(int i =0;i<50;i++) {
+      rendezvousHash.add(Integer.toString(300+i));
+    }
+    printHash(rendezvousHash,key);
+    List<String> n4 = rendezvousHash.get(key.getBytes());
+  }
+
+  public void printHash(RendezvousHash r, String key){
+    System.out.println("Hash value :");
+    r.get(key.getBytes()).forEach(x -> {
+      System.out.print(x + " ");
+    });
+    System.out.println();
   }
 
 }

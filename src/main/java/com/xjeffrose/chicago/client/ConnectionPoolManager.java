@@ -33,7 +33,7 @@ public class ConnectionPoolManager {
   private static final Logger log = LoggerFactory.getLogger(ChicagoClient.class);
   private final static String NODE_LIST_PATH = "/chicago/node-list";
   private static final long TIMEOUT = 1000;
-  private static boolean TIMEOUT_ENABLED = false;
+  private static boolean TIMEOUT_ENABLED = true;
 
   private final Map<String, Listener> listenerMap = new ConcurrentHashMap<>();
   private final Map<String, ChannelFuture> connectionMap = new ConcurrentHashMap<>();
@@ -42,14 +42,13 @@ public class ConnectionPoolManager {
   private final AtomicBoolean running = new AtomicBoolean(false);
 
   public ConnectionPoolManager(ZkClient zkClient) {
-
     this.zkClient = zkClient;
   }
 
   public ConnectionPoolManager(String hostname) {
     this.zkClient = null;
     listenerMap.put(hostname, new ChicagoListener());
-    connect(new InetSocketAddress(hostname, 12000), listenerMap.get(hostname));
+    connect(new InetSocketAddress(hostname.split(":")[0], Integer.parseInt(hostname.split(":")[1])), listenerMap.get(hostname));
   }
 
   public void start() {
@@ -87,6 +86,7 @@ public class ConnectionPoolManager {
   }
 
   public ChannelFuture getNode(String node) throws ChicagoClientTimeoutException {
+    log.debug("Trying to get node:"+node);
     return _getNode(node, System.currentTimeMillis());
   }
 
@@ -112,6 +112,7 @@ public class ConnectionPoolManager {
     cf.channel().close();
     cf.cancel(true);
     connectionMap.remove(node);
+    log.debug("removing and reconnecting to "+ node);
     connect(new InetSocketAddress(node, 12000), listenerMap.get(node));
     return getNode(node);
 
@@ -186,10 +187,11 @@ public class ConnectionPoolManager {
           }
         } else {
           log.debug("Chicago connected to: " + server);
-          String hostname = ((InetSocketAddress) future.channel().remoteAddress()).getHostName();
+          String hostname = server.getAddress().getHostAddress();
           if (hostname.equals("localhost")) {
             hostname = "127.0.0.1";
           }
+          log.debug("Adding hostname: " + hostname + ":" + ((InetSocketAddress) future.channel().remoteAddress()).getPort());
           addNode(hostname + ":" + ((InetSocketAddress) future.channel().remoteAddress()).getPort(), future);
         }
       }

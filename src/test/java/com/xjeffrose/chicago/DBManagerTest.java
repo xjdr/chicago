@@ -1,11 +1,6 @@
 package com.xjeffrose.chicago;
 
-import com.typesafe.config.ConfigFactory;
-import java.io.File;
-import java.util.List;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.rocksdb.ReadOptions;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -19,7 +14,7 @@ public class DBManagerTest {
 
   @Before
   public void setupFixture() throws Exception {
-    dbManager = new DBManager(TestChicago.makeConfig(TestChicago.chicago_dir(tmp), 1, ""));
+    dbManager = new DBManager(TestChicago.makeConfig(TestChicago.chicago_dir(tmp), 1, "",false));
   }
 
   @Test

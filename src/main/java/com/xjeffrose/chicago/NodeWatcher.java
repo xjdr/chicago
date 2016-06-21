@@ -1,10 +1,16 @@
 package com.xjeffrose.chicago;
 
 import com.google.common.hash.Funnels;
-import com.xjeffrose.chicago.client.ChicagoClient;
-import com.xjeffrose.chicago.client.RendezvousHash;
+import com.google.common.primitives.Ints;
+import com.xjeffrose.chicago.client.*;
+
 import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
@@ -14,7 +20,8 @@ import org.rocksdb.ReadOptions;
 
 public class NodeWatcher {
   private static final Logger log = LoggerFactory.getLogger(NodeWatcher.class);
-  private final static String NODE_LIST_PATH = "/chicago/node-list";
+  private final String NODE_LIST_PATH;
+  private final String REPLICATION_LOCK_PATH;
   private final CountDownLatch latch = new CountDownLatch(1);
   private final GenericListener genericListener = new GenericListener();
   private ChicagoClient chicagoClient;
@@ -23,7 +30,9 @@ public class NodeWatcher {
   private DBManager dbManager;
   private ChiConfig config;
 
-  public NodeWatcher() {
+  public NodeWatcher(String nodeListPath, String replicationLockPath) {
+    NODE_LIST_PATH = nodeListPath;
+    REPLICATION_LOCK_PATH = replicationLockPath;
   }
 
   /**
@@ -58,21 +67,67 @@ public class NodeWatcher {
     nodeList.stop();
   }
 
-  private void redistributeKeys() {
-//      RendezvousHash rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), zkClient.list(NODE_LIST_PATH), config.getQuorum());
-//    dbManager.getKeys(new ReadOptions()).forEach(xs -> {
-//      rendezvousHash.get(xs).stream()
-//          .filter(xxs -> xxs == config.getDBBindIP())
-//          .forEach(xxs -> chicagoClient.write(xs, dbManager.read(finalMsg.getColFam(), xs)));
-//    });
+  private void redistributeKeys(String node, TreeCacheEvent.Type type) {
+      log.info("Starting replication...");
+      long startTime = System.currentTimeMillis();
+      RendezvousHash rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), zkClient.list(NODE_LIST_PATH), config.getQuorum());
+      RendezvousHash rendezvousHashnOld = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), zkClient.list(NODE_LIST_PATH), config.getQuorum());
+      switch(type){
+        case NODE_ADDED: rendezvousHashnOld.remove(node);
+                         break;
+        case NODE_REMOVED: rendezvousHashnOld.add(node);
+                           break;
+      }
+
+      //For all the column family present on this server.
+      dbManager.getColFams().forEach(cf -> {
+        List<String> newS = rendezvousHash.get(cf.getBytes());
+        List<String> oldS = rendezvousHashnOld.get(cf.getBytes());
+        newS.removeAll(oldS);
+        //For all the nodes that have been newly added to the hash.
+        newS.forEach(s -> {
+            if(!s.equals(config.getDBBindEndpoint())) {
+              try {
+                log.info("Replicatng colFam " + cf + " to " + s);
+                zkClient.createIfNotExist(REPLICATION_LOCK_PATH + "/" + cf + "/" + s,config.getDBBindEndpoint());
+                ChicagoTSClient c = new ChicagoTSClient((String) s);
+                byte[] offset = new byte[]{};
+                List<byte[]> keys = dbManager.getKeys(cf.getBytes(), offset);
+                // Start replicating all the keys to the new server.
+                while(!Arrays.equals(keys.get(keys.size()-1),offset)) {
+                  for(byte[] k : keys){
+                    log.debug("Writing key :"+Ints.fromByteArray(k));
+                    try {
+                      c._write(cf.getBytes(), k, dbManager.read(cf.getBytes(), k)).get();
+                    } catch (ChicagoClientTimeoutException e) {
+                      e.printStackTrace();
+                    } catch (ChicagoClientException e) {
+                      e.printStackTrace();
+                    } catch (ExecutionException e) {
+                      e.printStackTrace();
+                    }
+                    offset = k;
+                  }
+                  keys=dbManager.getKeys(cf.getBytes(),offset);
+                }
+                zkClient.delete(REPLICATION_LOCK_PATH + "/" + cf + "/" + s);
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+              }
+            }
+          });
+        });
+      log.info("Replication ended in " + (System.currentTimeMillis() - startTime) + "ms");
   }
 
-  private void nodeAdded() {
-    redistributeKeys();
+  private void nodeAdded(String path, TreeCacheEvent.Type type) {
+    String[] _path = path.split("/");
+    redistributeKeys(_path[_path.length - 1],type);
   }
 
-  private void nodeRemoved() {
-    redistributeKeys();
+  private void nodeRemoved(String path, TreeCacheEvent.Type type) {
+    String[] _path = path.split("/");
+    redistributeKeys(_path[_path.length - 1],type);
   }
 
   private class GenericListener implements TreeCacheListener {
@@ -85,20 +140,17 @@ public class NodeWatcher {
     public void childEvent(CuratorFramework curatorFramework, TreeCacheEvent event) throws Exception {
       switch (event.getType()) {
         case INITIALIZED:
-          if (initialized) {
-            redistributeKeys();
-          }
           latch.countDown();
           initialized = true;
           break;
         case NODE_ADDED:
           if (initialized) {
-            nodeAdded();
+            nodeAdded(event.getData().getPath(),event.getType());
           }
           break;
         case NODE_REMOVED:
           if (initialized) {
-            nodeRemoved();
+            nodeRemoved(event.getData().getPath(), event.getType());
           }
           break;
         default: {
