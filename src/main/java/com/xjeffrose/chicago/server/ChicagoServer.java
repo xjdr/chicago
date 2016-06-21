@@ -49,6 +49,7 @@ public class ChicagoServer {
     try {
       nodeWatcher.stop();
       zkClient.stop();
+      zkClient = null;
       dbRouter.close();
       dbManager.destroy();
 

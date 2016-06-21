@@ -115,8 +115,10 @@ public class DBManager {
   boolean deleteColumnFamily(byte[] _name) {
     final String name = new String(_name);
     try {
-      db.dropColumnFamily(columnFamilies.get(name));
-      columnFamilies.remove(name);
+      if(colFamilyExists(_name)) {
+        db.dropColumnFamily(columnFamilies.get(name));
+        columnFamilies.remove(name);
+      }
       return true;
     } catch (RocksDBException e) {
       log.error("Could not delete Column Family: " + name, e);
@@ -184,15 +186,14 @@ public class DBManager {
   }
 
   boolean delete(byte[] colFam){
-    if(!colFamilyExists(colFam)) {
-      return true;
-    }
     try{
-      log.info("Deleting the column Family :"+ new String(colFam));
-      ColumnFamilyHandle ch = columnFamilies.remove(new String(colFam));
-      db.dropColumnFamily(ch);
-      counter.remove(new String(colFam));
-    }catch(RocksDBException e){
+      if (colFamilyExists(colFam)) {
+        log.info("Deleting the column Family :"+ new String(colFam));
+        ColumnFamilyHandle ch = columnFamilies.remove(new String(colFam));
+        db.dropColumnFamily(ch);
+        counter.remove(new String(colFam));
+      }
+    }catch (RocksDBException e) {
       e.printStackTrace();
       return false;
     }
@@ -245,9 +246,9 @@ public class DBManager {
     }
     try {
       //Insert Key/Value only if it does not exists.
-      if(!db.keyMayExist(readOptions,columnFamilies.get(new String(colFam)),key, new StringBuffer())){
+      if (!db.keyMayExist(readOptions,columnFamilies.get(new String(colFam)),key, new StringBuffer())){
         //Set the AtomicInteger for the colFam if the key is bigger than the already set value.
-        if(Ints.fromByteArray(key) > counter.get(new String(colFam)).get()) {
+        if (Ints.fromByteArray(key) > counter.get(new String(colFam)).get()) {
           counter.get(new String(colFam)).set(Ints.fromByteArray(key) + 1);
         }
         log.info("Putting colFam/key : " +new String(colFam) + Ints.fromByteArray(key));

@@ -83,7 +83,7 @@ public class NodeDownTest {
     //Restart chicago1 intermittently
     ExecutorService executor = Executors.newFixedThreadPool(10);
      Future restartTask = executor.submit(() -> {
-       for(int i=0;i<10;i++) {
+       for(int i=0;i<2;i++) {
          int random = (int) (Math.random() * 4 + 1);
          String server = "chicago1";
          try {
