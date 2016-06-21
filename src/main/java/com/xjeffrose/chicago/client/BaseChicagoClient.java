@@ -26,9 +26,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Base class for Chicago clients
+ * Abstract base class for Chicago clients
  */
-public class BaseChicagoClient {
+abstract public class BaseChicagoClient {
   private static final Logger log = LoggerFactory.getLogger(BaseChicagoClient.class);
   protected final static String NODE_LIST_PATH = "/chicago/node-list";
   protected static final long TIMEOUT = 1000;
