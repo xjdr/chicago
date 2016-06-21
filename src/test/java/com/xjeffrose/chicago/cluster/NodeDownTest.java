@@ -55,6 +55,8 @@ public class NodeDownTest {
     }
     chicagoTSClient.stop();
     testingServer.stop();
+    servers.clear();
+    chicagoTSClient=null;
   }
 
   @Test
@@ -86,11 +88,11 @@ public class NodeDownTest {
          String server = "chicago1";
          try {
            stopServer(server);
-           Thread.sleep(100);
+           Thread.sleep(500);
            printStrem(key, null);
            startServer(server);
            printStrem(key, null);
-           Thread.sleep(100);
+           Thread.sleep(500);
          } catch (Exception e) {
            e.printStackTrace();
          }
@@ -107,6 +109,7 @@ public class NodeDownTest {
     zk.start();
     System.out.println("Stopping server : "+servers.get(server).config.getDBBindEndpoint());
     zk.delete("/chicago/node-list/" + servers.get(server).config.getDBBindEndpoint());
+    zk.stop();
   }
 
   public void startServer(String server) throws Exception {
@@ -115,6 +118,7 @@ public class NodeDownTest {
     zk.start();
     System.out.println("Starting server : "+ servers.get(server).config.getDBBindEndpoint());
     zk.set("/chicago/node-list/"+ servers.get(server).config.getDBBindEndpoint(), "");
+    zk.stop();
   }
 
   public void printStrem(String key, byte[] offset) throws ChicagoClientTimeoutException, ExecutionException, InterruptedException {
