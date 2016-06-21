@@ -1,31 +1,20 @@
 package com.xjeffrose.chicago.client;
 
-import com.google.common.hash.Funnels;
-import com.google.common.primitives.Booleans;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.xjeffrose.chicago.Chicago;
 import com.xjeffrose.chicago.DefaultChicagoMessage;
 import com.xjeffrose.chicago.Op;
-import com.xjeffrose.chicago.ZkClient;
 import io.netty.channel.ChannelFuture;
-import java.net.InetSocketAddress;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class ChicagoTSClient extends BaseChicagoClient {
   private static final Logger log = LoggerFactory.getLogger(ChicagoTSClient.class);
@@ -49,11 +38,7 @@ public class ChicagoTSClient extends BaseChicagoClient {
       final ChicagoStream[] cs = new ChicagoStream[1];
         final long startTime = System.currentTimeMillis();
         try {
-          List<String> hashList = rendezvousHash.get(key);
-          if(!single_server) {
-            List<String> replicationList = zkClient.list(REPLICATION_LOCK_PATH + "/" + new String(key));
-            hashList.removeAll(replicationList);
-          }
+          List<String> hashList = getEffectiveNodes(key);
           for (String node : hashList) {
             if (node == null) {
             } else {
@@ -107,11 +92,7 @@ public class ChicagoTSClient extends BaseChicagoClient {
       final long startTime = System.currentTimeMillis();
       ConcurrentLinkedDeque<byte[]> responseList = new ConcurrentLinkedDeque<>();
       try {
-        List<String> hashList = rendezvousHash.get(key);
-        if(!single_server) {
-          List<String> replicationList = zkClient.list(REPLICATION_LOCK_PATH + "/" + new String(key));
-          hashList.removeAll(replicationList);
-        }
+        List<String> hashList = getEffectiveNodes(key);
         for (String node : hashList) {
           if (node == null) {
           } else {
@@ -183,6 +164,15 @@ public class ChicagoTSClient extends BaseChicagoClient {
     return _write(colFam ,key, value, 0);
   }
 
+  private List<String> getEffectiveNodes(byte[] key){
+    List<String> hashList = rendezvousHash.get(key);
+    if(!single_server) {
+      List<String> replicationList = zkClient.list(REPLICATION_LOCK_PATH + "/" + new String(key));
+      hashList.removeAll(replicationList);
+    }
+    return hashList;
+  }
+
 
   private ListenableFuture<byte[]> _write(byte[] colFam, byte[] key, byte[] value, int _retries) throws ChicagoClientTimeoutException, ChicagoClientException {
     final int retries = _retries;
@@ -197,11 +187,7 @@ public class ChicagoTSClient extends BaseChicagoClient {
         final long startTime = System.currentTimeMillis();
         try {
 
-          List<String> hashList = rendezvousHash.get(key);
-          if(!single_server) {
-            List<String> replicationList = zkClient.list(REPLICATION_LOCK_PATH + "/" + new String(key));
-            hashList.removeAll(replicationList);
-          }
+          List<String> hashList = getEffectiveNodes(key);
           dquorum = hashList.size();
           for (String node : hashList) {
             if (node == null) {
