@@ -145,6 +145,8 @@ public class ChicagoReplicationTSClientTest {
 					+ new String(testKey));
 			while  (replicationList.isEmpty()){
 				//do nothing, wait for the lock path to get created
+				replicationList = zkClient.list(REPLICATION_LOCK_PATH + "/"
+						+ new String(testKey));
 			}
 			for (String repli : replicationList) {
 				System.out.println("This is the list being replicated right now "+ repli);
@@ -198,6 +200,8 @@ public class ChicagoReplicationTSClientTest {
 							+ new String(testKey));
 					while  (replicationList.isEmpty()){
 						//do nothing, wait for the lock path to get created
+						replicationList = zkClient.list(REPLICATION_LOCK_PATH + "/"
+								+ new String(testKey));
 					}
 					for (String repli : replicationList) {
 						System.out.println("This is the list being replicated right now "+ repli);
