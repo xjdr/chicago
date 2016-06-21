@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 public class BaseChicagoClient {
   private static final Logger log = LoggerFactory.getLogger(BaseChicagoClient.class);
   protected final static String NODE_LIST_PATH = "/chicago/node-list";
+  public final static String REPLICATION_LOCK_PATH ="/chicago/replication-lock";
   protected static final long TIMEOUT = 1000;
   protected static boolean TIMEOUT_ENABLED = true;
   protected static int MAX_RETRY = 3;
@@ -122,5 +123,14 @@ public class BaseChicagoClient {
 
   public List<String> getNodeList(byte[] key) {
     return rendezvousHash.get(key);
+  }
+
+  public List<String> getEffectiveNodes(byte[] key){
+    List<String> hashList = rendezvousHash.get(key);
+    if(!single_server) {
+      List<String> replicationList = zkClient.list(REPLICATION_LOCK_PATH + "/" + new String(key));
+      hashList.removeAll(replicationList);
+    }
+    return hashList;
   }
 }

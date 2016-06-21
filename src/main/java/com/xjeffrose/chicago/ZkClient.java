@@ -4,10 +4,15 @@ import java.nio.charset.Charset;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+
+import com.xjeffrose.chicago.server.ChicagoServer;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.leader.LeaderSelector;
+import org.apache.curator.framework.state.ConnectionState;
+import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
@@ -20,6 +25,8 @@ public class ZkClient {
   private final ChiLeaderSelectorListener leaderListener = new ChiLeaderSelectorListener();
   private CuratorFramework client;
   private String connectionString;
+  private ChiConfig config;
+  private InetSocketAddress address;
 
   public ZkClient(CuratorFramework client) {
     this.client = client;
@@ -30,6 +37,7 @@ public class ZkClient {
     connectionString = serverSet;
     RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3);
     client = CuratorFrameworkFactory.newClient(serverSet, retryPolicy);
+    client.getConnectionStateListenable().addListener(connectionStateListener);
   }
 
   public void rebuild() {
@@ -39,6 +47,8 @@ public class ZkClient {
   }
 
   public void register(String NODE_LIST_PATH, ChiConfig config, InetSocketAddress address) {
+    this.address = address;
+    this.config = config;
     try {
       String path = NODE_LIST_PATH + "/" + address.getAddress().getHostAddress() + ":" + address.getPort();
       if(client.checkExists().forPath(path) != null) {
@@ -171,4 +181,17 @@ public class ZkClient {
   public String getConnectionString() {
     return connectionString;
   }
+
+  ConnectionStateListener connectionStateListener = new ConnectionStateListener() {
+    @Override
+    public void stateChanged(CuratorFramework curatorFramework, ConnectionState connectionState) {
+      switch (connectionState) {
+        case RECONNECTED:
+          register(ChicagoServer.NODE_LIST_PATH, config, address);
+          break;
+        default:
+          break;
+      }
+    }
+  };
 }

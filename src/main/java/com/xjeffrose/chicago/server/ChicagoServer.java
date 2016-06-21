@@ -17,7 +17,7 @@ import com.xjeffrose.chicago.*;
 public class ChicagoServer {
   private static final Logger log = LoggerFactory.getLogger(ChicagoServer.class.getName());
   private final static String ELECTION_PATH = "/chicago/chicago-elect";
-  private final static String NODE_LIST_PATH = "/chicago/node-list";
+  public final static String NODE_LIST_PATH = "/chicago/node-list";
   public final static String NODE_LOCK_PATH = "/chicago/replication-lock";
 
   public final ChiConfig config;

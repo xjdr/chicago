@@ -18,7 +18,6 @@ import java.util.concurrent.TimeoutException;
 
 public class ChicagoTSClient extends BaseChicagoClient {
   private static final Logger log = LoggerFactory.getLogger(ChicagoTSClient.class);
-  private final static String REPLICATION_LOCK_PATH ="/chicago/replication-lock";
 
   public ChicagoTSClient(String zkConnectionString, int quorum) throws InterruptedException {
     super(zkConnectionString, quorum);
@@ -162,15 +161,6 @@ public class ChicagoTSClient extends BaseChicagoClient {
 
   public ListenableFuture<byte[]> _write(byte[] colFam, byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException {
     return _write(colFam ,key, value, 0);
-  }
-
-  private List<String> getEffectiveNodes(byte[] key){
-    List<String> hashList = rendezvousHash.get(key);
-    if(!single_server) {
-      List<String> replicationList = zkClient.list(REPLICATION_LOCK_PATH + "/" + new String(key));
-      hashList.removeAll(replicationList);
-    }
-    return hashList;
   }
 
 

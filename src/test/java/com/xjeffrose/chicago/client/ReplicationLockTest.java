@@ -43,11 +43,11 @@ public class ReplicationLockTest {
 
   @After
   public void teardown() throws Exception {
-//    for (ChicagoServer server : servers) {
-//      server.stop();
-//    }
-//    chicagoTSClient.stop();
-//    testingServer.stop();
+    for (ChicagoServer server : servers) {
+      server.stop();
+    }
+    chicagoTSClient.stop();
+    testingServer.stop();
   }
 
   @Test
@@ -56,8 +56,9 @@ public class ReplicationLockTest {
     List<String> servers =  chicagoTSClient.getNodeList(key.getBytes());
     System.out.println("Servers for key : " + servers.toString());
     String val = "testVal";
-    int k  = Ints.fromByteArray(chicagoTSClient.write(key.getBytes(),val.getBytes()));
-    assertTSClient(key,k,val,servers);
+    int insertedKey  = Ints.fromByteArray(chicagoTSClient.write(key.getBytes(),val.getBytes()));
+    assertTSClient(key,insertedKey,val,servers);
+
 
     //Insert one node in replication lock
     ZkClient zk = new ZkClient(testingServer.getConnectString());
@@ -68,18 +69,19 @@ public class ReplicationLockTest {
       System.exit(-1);
     }
     System.out.println("Created the replication path.");
-    k  = Ints.fromByteArray(chicagoTSClient.write(key.getBytes(),val.getBytes()));
+    assertEquals(2,chicagoTSClient.getEffectiveNodes(key.getBytes()).size());
+    insertedKey  = Ints.fromByteArray(chicagoTSClient.write(key.getBytes(),val.getBytes()));
     String removedServer = servers.remove(0);
 
     //Value should be present in only 2 nodes
-    assertTSClient(key,k,val,servers);
+    assertTSClient(key,insertedKey,val,servers);
 
 
     //Value should not be present in the node being replicated
     ChicagoClient cc = new ChicagoClient(removedServer);
     try {
       System.out.println("Trying to get the value from bad node");
-      String futureval = new String(cc.read(key.getBytes(), Ints.toByteArray(k)).get());
+      String futureval = new String(cc.read(key.getBytes(), Ints.toByteArray(insertedKey)).get());
       assertTrue(futureval.equals(""));
     }catch(Exception e){
       e.printStackTrace();
