@@ -132,7 +132,7 @@ public class ChicagoReplicationTSClientTest {
 		for (ChicagoServer server : servers) {
 			System.out.println("Stopping server.. "
 					+ server.getDBAddress());
-			server.stop();
+			zkClient.delete("/chicago/node-list/" + server.config.getDBBindEndpoint());
 			break;
 		}
 
@@ -174,7 +174,7 @@ public class ChicagoReplicationTSClientTest {
 		for (ChicagoServer server : servers) {
 			System.out.println("Test stopping a server.. "
 					+ server.getDBAddress());
-			server.stop();
+			zkClient.delete("/chicago/node-list/" + server.config.getDBBindEndpoint());
 			break;
 		}
 
