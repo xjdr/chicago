@@ -39,6 +39,7 @@ public class DBManager {
   private final ChiConfig config;
   private final String delimeter = "@@@";
   private final HashMap<String,AtomicInteger> counter = new HashMap<>();
+  private final int MAX_ENTRIES = 500;
 
 
   private RocksDB db;
@@ -290,26 +291,29 @@ public class DBManager {
     if (colFamilyExists(colFam)) {
       RocksIterator i = db.newIterator(columnFamilies.get(new String(colFam)), readOptions);
       ByteBuf bb = Unpooled.buffer();
+      byte[] lastOffset=null;
 
       if (offset.length == 0) {
         i.seekToFirst();
       } else {
+        lastOffset = offset;
         i.seek(offset);
       }
+      int count = 0;
 
-      while (i.isValid()) {
+      while (i.isValid() && count<MAX_ENTRIES) {
+        lastOffset=i.key();
         byte[] v = i.value();
         byte[] _v = new byte[v.length + 1];
         System.arraycopy(v, 0, _v, 0, v.length);
         System.arraycopy(new byte[]{'\0'}, 0, _v, v.length, 1);
         bb.writeBytes(_v);
         i.next();
+        count++;
       }
 
-      i.seekToLast();
-
       bb.writeBytes(delimeter.getBytes());
-      bb.writeBytes(i.key());
+      bb.writeBytes(lastOffset);
       log.info("Stream response from DB : "+ (System.currentTimeMillis() - startTime)+ "ms");
       return bb.array();
     } else {
