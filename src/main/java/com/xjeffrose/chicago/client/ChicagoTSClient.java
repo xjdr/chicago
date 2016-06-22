@@ -52,6 +52,8 @@ public class ChicagoTSClient extends BaseChicagoClient {
                     listener.addID(id);
                     cs[0].addID(id);
                 });
+              }else{
+                log.info("Channel is not writeable !!!!!"+cf.channel().toString());
               }
             }
           }

@@ -138,6 +138,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
           }
         };
       needsToWrite = true;
+      log.info("Writing final outgoing message");
       ctx.writeAndFlush(new DefaultChicagoMessage(finalMsg.getId(), Op.fromInt(3), finalMsg.getColFam(), Boolean.toString(status).getBytes(), readResponse)).addListener(writeComplete);
   }
 

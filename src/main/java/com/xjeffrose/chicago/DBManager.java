@@ -285,6 +285,7 @@ public class DBManager {
   }
 
   public byte[] stream(byte[] colFam, byte[] offset) {
+    long startTime = System.currentTimeMillis();
     log.info("Requesting stream");
     if (colFamilyExists(colFam)) {
       RocksIterator i = db.newIterator(columnFamilies.get(new String(colFam)), readOptions);
@@ -309,7 +310,7 @@ public class DBManager {
 
       bb.writeBytes(delimeter.getBytes());
       bb.writeBytes(i.key());
-
+      log.info("Stream response from DB : "+ (System.currentTimeMillis() - startTime)+ "ms");
       return bb.array();
     } else {
       return null;
