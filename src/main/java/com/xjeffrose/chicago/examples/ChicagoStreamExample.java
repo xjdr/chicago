@@ -1,8 +1,6 @@
 package com.xjeffrose.chicago.examples;
 
-import com.google.common.primitives.Ints;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.sun.tools.javac.util.StringUtils;
 import com.xjeffrose.chicago.client.ChicagoStream;
 import com.xjeffrose.chicago.client.ChicagoTSClient;
 
