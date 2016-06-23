@@ -32,13 +32,16 @@ public class ChicagoStreamExample {
     cs.close();
     byte[] old=null;
     int count =0;
-    while(result.contains("@@@")){
-
+    while(true){
+      if(!result.contains("@@@"))
+        break;
       offset = result.split("@@@")[1].getBytes();
       String[] lines = (result.split("@@@")[0]).split("\0");
       for(String line : lines){
-        if(line.length()!= 0)
-          System.out.println(line);
+        if(line.length()!= 0) {
+          count++;
+          System.out.println(count +" : "+line);
+        }
       }
       if(old != null && Arrays.equals(old,offset)){
         Thread.sleep(500);
@@ -51,10 +54,5 @@ public class ChicagoStreamExample {
       old = offset;
     }
 
-    ListenableFuture<com.xjeffrose.chicago.client.ChicagoStream> _f = chicagoTSClient.stream(key.getBytes(), offset);
-    cs = _f.get();
-    ListenableFuture<byte[]> _resp = cs.getStream();
-
-    System.out.println(new String(_resp.get()));
   }
 }
