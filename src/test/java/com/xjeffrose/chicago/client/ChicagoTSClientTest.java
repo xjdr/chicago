@@ -1,119 +1,339 @@
 package com.xjeffrose.chicago.client;
 
-import com.xjeffrose.chicago.TestChicago;
-import com.xjeffrose.chicago.server.ChicagoServer;
-import com.google.common.util.concurrent.ListenableFuture;
-import org.apache.curator.test.InstanceSpec;
-import org.apache.curator.test.TestingServer;
+import static org.junit.Assert.assertNotNull;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.apache.curator.test.InstanceSpec;
+import org.apache.curator.test.TestingServer;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import static org.junit.Assert.*;
 
+import com.google.common.primitives.Ints;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.xjeffrose.chicago.TestChicago;
+import com.xjeffrose.chicago.server.ChicagoServer;
 
 public class ChicagoTSClientTest {
-  TestingServer testingServer;
-  @Rule
-  public TemporaryFolder tmp = new TemporaryFolder();
-  List<ChicagoServer> servers;
-  ChicagoTSClient chicagoTSClient;
+	TestingServer testingServer;
+	@Rule
+	public TemporaryFolder tmp = new TemporaryFolder();
+	List<ChicagoServer> servers;
+	ChicagoTSClient chicagoTSClient;
 
-  @Before
-  public void setup() throws Exception {
-    InstanceSpec spec = new InstanceSpec(null, 2182,  -1 , -1, true, -1 , 20 , -1);
-    testingServer = new TestingServer(spec,true);
-    servers = TestChicago.makeServers(TestChicago.chicago_dir(tmp), 4, testingServer.getConnectString());
-    for (ChicagoServer server : servers) {
-      server.start();
-    }
+	@Before
+	public void setup() throws Exception {
+		InstanceSpec spec = new InstanceSpec(null, 2182, -1, -1, true, -1,
+				2000, -1);
+		testingServer = new TestingServer(spec, true);
+		servers = TestChicago.makeServers(TestChicago.chicago_dir(tmp), 4,
+				testingServer.getConnectString());
+		for (ChicagoServer server : servers) {
+			server.start();
+		}
+		chicagoTSClient = new ChicagoTSClient(testingServer.getConnectString(),
+				3);
+		chicagoTSClient.startAndWaitForNodes(4);
+	}
 
-    chicagoTSClient = new ChicagoTSClient(testingServer.getConnectString(), 4);
-    chicagoTSClient.startAndWaitForNodes(4);
-  }
+	@After
+	public void teardown() throws Exception {
+		for (ChicagoServer server : servers) {
+			server.stop();
+		}
+		chicagoTSClient.stop();
+		testingServer.stop();
+	}
 
-  @After
-  public void teardown() throws Exception {
-    for (ChicagoServer server : servers) {
-      server.stop();
-    }
-    chicagoTSClient.stop();
-    testingServer.stop();
-  }
+	@Test
+	public void transactStreamWhileWritingSameClient() throws Exception {
+		for (int i = 0; i < 10; i++) {
+			String _v = "val" + i;
+			byte[] val = _v.getBytes();
+			assertNotNull(chicagoTSClient.write("tskey".getBytes(), val));
+			// System.out.println(i);
+		}
+		final ChicagoTSClient chicagoTSClientParalellel = new ChicagoTSClient(
+				testingServer.getConnectString(), 3);
+		chicagoTSClientParalellel.startAndWaitForNodes(4);
+		final ArrayList<String> response = new ArrayList<String>();
+		Runnable runnableStreamer = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(200);
+					ListenableFuture<ChicagoStream> _f = chicagoTSClientParalellel
+							.stream("tskey".getBytes(), Ints.toByteArray(2));
+					ChicagoStream cs = _f.get();
+					ListenableFuture<byte[]> _resp = cs.getStream();
+					assertNotNull(_resp.get());
+					response.add(new String(_resp.get()));
+					Thread.sleep(200);
+					_f = chicagoTSClientParalellel.stream("tskey".getBytes(),
+							Ints.toByteArray(4));
+					cs = _f.get();
+					_resp = cs.getStream();
+					assertNotNull(_resp.get());
+					response.add(new String(_resp.get()));
+					Thread.sleep(200);
+					_f = chicagoTSClientParalellel.stream("tskey".getBytes(),
+							Ints.toByteArray(6));
+					cs = _f.get();
+					_resp = cs.getStream();
+					assertNotNull(_resp.get());
+					response.add(new String(_resp.get()));
+				} catch (Exception e) {
 
-  @Test
-  public void transactStream() throws Exception {
-    byte[] offset = null;
-    for (int i = 0; i < 1000; i++) {
-      String _v = "val" + i;
-      byte[] val = _v.getBytes();
-      if (i == 12) {
-        offset = chicagoTSClient.write("tskey".getBytes(), val);
-      }
-      assertNotNull(chicagoTSClient.write("tskey".getBytes(), val));
-      //System.out.println(i);
-    }
+				}
+			}
+		};
 
-    ListenableFuture<ChicagoStream> f = chicagoTSClient.stream("tskey".getBytes());
-    ChicagoStream cs = f.get();
-    ListenableFuture<byte[]> resp = cs.getStream();
+		Runnable runnable2 = new Runnable() {
+			@Override
+			public void run() {
+				for (int i = 10; i < 20; i++) {
+					String _v = "val" + i;
+					byte[] val = _v.getBytes();
+					try {
+						chicagoTSClientParalellel
+								.write("tskey".getBytes(), val);
+						try {
+							Thread.sleep(200);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					} catch (ChicagoClientTimeoutException e) {
+						e.printStackTrace();
+					} catch (ChicagoClientException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		};
 
-    assertNotNull(resp.get());
-    String result = new String(resp.get());
-    byte[] old=null;
-    int count =0;
-    while(result.contains("@@@")){
+		Thread t1 = new Thread(runnableStreamer);
+		Thread t2 = new Thread(runnable2);
 
-      if(count > 10){
-        break;
-      }
-      offset = result.split("@@@")[1].getBytes();
-      if(old != null && Arrays.equals(old,offset)){
-        Thread.sleep(500);
-      }
-      System.out.println(result.split("@@@")[0]);
-      cs.close();
-      ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream("tskey".getBytes(), offset);
-      cs = _f.get();
-      resp = cs.getStream();
-      result = new String(resp.get());
-      old = offset;
-      count++;
-    }
+		t1.start();
+		t2.start();
+		t1.join();
+		t2.join();
+		Assert.assertEquals(response.size(), 3);
+		System.out.println(response.get(0) + " " + response.get(1)
+				+ response.get(2));
+		Assert.assertEquals(response.get(0).contains("val11"), false);// Ensures
+																		// that
+																		// insert
+																		// and
+																		// read
+																		// are
+																		// interwoven
+		Assert.assertEquals(response.get(2).contains("val11"), true);// Ensures
+																		// that
+																		// insert
+																		// and
+																		// read
+																		// are
+																		// interwoven
 
-    ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream("tskey".getBytes(), offset);
-    cs = _f.get();
-    ListenableFuture<byte[]> _resp = cs.getStream();
+	}
 
-    assertNotNull(_resp.get());
-    System.out.println(new String(_resp.get()));
-  }
+	@Test
+	public void transactStreamWhileWritingDifferentClients() throws Exception {
+		for (int i = 0; i < 10; i++) {
+			String _v = "val" + i;
+			byte[] val = _v.getBytes();
+			assertNotNull(chicagoTSClient.write("tskey".getBytes(), val));
+			// System.out.println(i);
+		}
+		final ChicagoTSClient chicagoTSClientParalellel = new ChicagoTSClient(
+				testingServer.getConnectString(), 3);
+		chicagoTSClientParalellel.startAndWaitForNodes(4);
+		final ArrayList<String> response = new ArrayList<String>();
+		Runnable runnableStreamer = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(200);
+					ListenableFuture<ChicagoStream> _f = chicagoTSClient
+							.stream("tskey".getBytes(), Ints.toByteArray(2));
+					ChicagoStream cs = _f.get();
+					ListenableFuture<byte[]> _resp = cs.getStream();
+					assertNotNull(_resp.get());
+					response.add(new String(_resp.get()));
+					Thread.sleep(200);
+					_f = chicagoTSClient.stream("tskey".getBytes(),
+							Ints.toByteArray(4));
+					cs = _f.get();
+					_resp = cs.getStream();
+					assertNotNull(_resp.get());
+					response.add(new String(_resp.get()));
+					Thread.sleep(200);
+					_f = chicagoTSClient.stream("tskey".getBytes(),
+							Ints.toByteArray(6));
+					cs = _f.get();
+					_resp = cs.getStream();
+					assertNotNull(_resp.get());
+					response.add(new String(_resp.get()));
+				} catch (Exception e) {
 
+				}
+			}
+		};
 
-  @Test
-  public void transactLargeStream() throws Exception {
-    byte[] offset = null;
-    for (int i = 0; i < 10; i++) {
-      byte[] val = new byte[10240];
-      if (i == 12) {
-        offset = chicagoTSClient.write("LargeTskey".getBytes(), val);
-      }
-      assertNotNull(chicagoTSClient.write("tskey".getBytes(), val));
-    }
+		Runnable runnable2 = new Runnable() {
+			@Override
+			public void run() {
+				for (int i = 10; i < 20; i++) {
+					String _v = "val" + i;
+					byte[] val = _v.getBytes();
+					try {
+						chicagoTSClientParalellel
+								.write("tskey".getBytes(), val);
+						try {
+							Thread.sleep(200);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					} catch (ChicagoClientTimeoutException e) {
+						e.printStackTrace();
+					} catch (ChicagoClientException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		};
 
-    ListenableFuture<byte[]> f = chicagoTSClient.read("tskey".getBytes());
-    byte[] resp = f.get();
+		Thread t1 = new Thread(runnableStreamer);
+		Thread t2 = new Thread(runnable2);
 
-    System.out.println(new String(resp));
+		t1.start();
+		t2.start();
+		t1.join();
+		t2.join();
+		Assert.assertEquals(response.size(), 3);
+		System.out.println(response.get(0) + " " + response.get(1)
+				+ response.get(2));
+		Assert.assertEquals(response.get(0).contains("val11"), false);// Ensures
+																		// that
+																		// insert
+																		// and
+																		// read
+																		// are
+																		// interwoven
+		Assert.assertEquals(response.get(2).contains("val11"), true);// Ensures
+																		// that
+																		// insert
+																		// and
+																		// read
+																		// are
+																		// interwoven
 
-    ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream("tskey".getBytes(), offset);
-    ChicagoStream _cs = _f.get();
-    ListenableFuture<byte[]> _resp = _cs.getStream();
+	}
 
-    System.out.println(new String(_resp.get()));
-  }
+	@Test
+	public void transactRoundTripStream() throws Exception {
+		long startTime=System.currentTimeMillis();
+		for (int i = 0; (i < 1000); i++) {
+			String _v = "val" + i;
+			byte[] val = _v.getBytes();
+			assertNotNull(chicagoTSClient.write("tskey".getBytes(), val));
+			boolean gotResponse = false;
+			while (!gotResponse) {
+				ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream(
+						"tskey".getBytes(), Ints.toByteArray(i));
+				ChicagoStream cs = _f.get();
+				ListenableFuture<byte[]> _resp = cs.getStream();
+				assertNotNull(_resp.get());
+				String response = new String(_resp.get());
+				if (response.contains(_v)){
+					gotResponse = true;
+				}
+			}
+		}
+		long testTime=(System.currentTimeMillis()-startTime)/1000;
+		System.out.println("Tiem taken for one round robin read/write on avergae is: "+testTime );
+		Assert.assertTrue(testTime <10);
+	}
+
+	@Test
+	public void transactStream() throws Exception {
+
+		byte[] offset = null;
+		for (int i = 0; i < 1000; i++) {
+			String _v = "val" + i;
+			byte[] val = _v.getBytes();
+			assertNotNull(chicagoTSClient.write("tskey".getBytes(), val));
+			// System.out.println(i);
+		}
+
+		ListenableFuture<ChicagoStream> f = chicagoTSClient.stream("tskey"
+				.getBytes());
+		ChicagoStream cs = f.get();
+		ListenableFuture<byte[]> resp = cs.getStream();
+
+		assertNotNull(resp.get());
+		String result = new String(resp.get());
+		byte[] old = null;
+		int count = 0;
+		while (result.contains("@@@")) {
+
+			if (count > 10) {
+				break;
+			}
+			offset = result.split("@@@")[1].getBytes();
+			if (old != null && Arrays.equals(old, offset)) {
+				Thread.sleep(500);
+			}
+			System.out.println(result.split("@@@")[0]);
+			cs.close();
+			ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream(
+					"tskey".getBytes(), offset);
+			cs = _f.get();
+			resp = cs.getStream();
+			result = new String(resp.get());
+			old = offset;
+			count++;
+		}
+
+		ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream(
+				"tskey".getBytes(), offset);
+		cs = _f.get();
+		ListenableFuture<byte[]> _resp = cs.getStream();
+
+		assertNotNull(_resp.get());
+		System.out.println(new String(_resp.get()));
+	}
+
+	@Test
+	public void transactLargeStream() throws Exception {
+		byte[] offset = null;
+		for (int i = 0; i < 10; i++) {
+			byte[] val = new byte[10240];
+			if (i == 12) {
+				offset = chicagoTSClient.write("LargeTskey".getBytes(), val);
+			}
+			assertNotNull(chicagoTSClient.write("tskey".getBytes(), val));
+		}
+
+		ListenableFuture<byte[]> f = chicagoTSClient.read("tskey".getBytes());
+		byte[] resp = f.get();
+
+		System.out.println(new String(resp));
+
+		ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream(
+				"tskey".getBytes(), offset);
+		ChicagoStream _cs = _f.get();
+		ListenableFuture<byte[]> _resp = _cs.getStream();
+
+		System.out.println(new String(_resp.get()));
+	}
 }
