@@ -127,7 +127,7 @@ public class DBManager {
     }
   }
 
-  private boolean createColumnFamily(byte[] name) {
+  private synchronized boolean createColumnFamily(byte[] name) {
     if (colFamilyExists(name)){
       return true;
     }
@@ -241,9 +241,7 @@ public class DBManager {
       log.error("Tried to write a null value");
       return null;
     } else if (!colFamilyExists(colFam)) {
-      synchronized (columnFamilies) {
-        createColumnFamily(colFam);
-      }
+      createColumnFamily(colFam);
     }
     try {
       //Insert Key/Value only if it does not exists.
@@ -314,7 +312,7 @@ public class DBManager {
 
       bb.writeBytes(delimeter.getBytes());
       bb.writeBytes(lastOffset);
-      log.info("Stream response from DB : "+ (System.currentTimeMillis() - startTime)+ "ms");
+      log.info("Stream response from DB : "+ (System.currentTimeMillis() - startTime)+ "ms with last offset as "+Ints.fromByteArray(lastOffset));
       return bb.array();
     } else {
       return null;
