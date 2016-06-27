@@ -37,7 +37,6 @@ public class DBManager {
   private final WriteOptions writeOptions = new WriteOptions();
   private final Map<String, ColumnFamilyHandle> columnFamilies = new ConcurrentHashMap<>();
   private final ChiConfig config;
-  private final String delimeter = "@@@";
   private final HashMap<String,AtomicInteger> counter = new HashMap<>();
   private final int MAX_ENTRIES = 500;
 
@@ -269,7 +268,9 @@ public class DBManager {
     }
     try {
       byte[] ts = Ints.toByteArray(counter.get(new String(colFam)).getAndIncrement());
-      log.info("Putting key : "+ Ints.fromByteArray(ts));
+      if(Ints.fromByteArray(ts)%500 == 0) {
+        log.info("key reached " + Ints.fromByteArray(ts) + "for colFam "+ new String(colFam));
+      }
       db.put(columnFamilies.get(new String(colFam)), writeOptions, ts, value);
       return ts;
     } catch (RocksDBException e) {
@@ -285,6 +286,7 @@ public class DBManager {
 
   public byte[] stream(byte[] colFam, byte[] offset) {
     long startTime = System.currentTimeMillis();
+
     log.info("Requesting stream");
     if (colFamilyExists(colFam)) {
       RocksIterator i = db.newIterator(columnFamilies.get(new String(colFam)), readOptions);
@@ -300,17 +302,17 @@ public class DBManager {
       int count = 0;
 
       while (i.isValid() && count<MAX_ENTRIES) {
-        lastOffset=i.key();
         byte[] v = i.value();
         byte[] _v = new byte[v.length + 1];
         System.arraycopy(v, 0, _v, 0, v.length);
         System.arraycopy(new byte[]{'\0'}, 0, _v, v.length, 1);
         bb.writeBytes(_v);
+        lastOffset=i.key();
         i.next();
         count++;
       }
 
-      bb.writeBytes(delimeter.getBytes());
+      bb.writeBytes(ChiUtil.delimiter.getBytes());
       bb.writeBytes(lastOffset);
       log.info("Stream response from DB : "+ (System.currentTimeMillis() - startTime)+ "ms with last offset as "+Ints.fromByteArray(lastOffset));
       return bb.array();

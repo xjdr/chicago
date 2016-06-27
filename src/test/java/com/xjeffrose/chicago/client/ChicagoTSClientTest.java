@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.sun.tools.javac.util.ArrayUtils;
+import com.xjeffrose.chicago.ChiUtil;
 import org.apache.curator.test.InstanceSpec;
 import org.apache.curator.test.TestingServer;
 import org.junit.After;
@@ -267,13 +269,17 @@ public class ChicagoTSClientTest {
 	@Test
 	public void transactStream() throws Exception {
 
-		byte[] offset = null;
 		for (int i = 0; i < 1000; i++) {
-			String _v = "val" + i;
+			String _v = "val" + i + "                                                   " +
+        "                                                                          " +
+        "                                                                    end!!"+i;
 			byte[] val = _v.getBytes();
 			assertNotNull(chicagoTSClient.write("tskey".getBytes(), val));
 			// System.out.println(i);
 		}
+
+    String delimiter = ChiUtil.delimiter;
+
 
 		ListenableFuture<ChicagoStream> f = chicagoTSClient.stream("tskey"
 				.getBytes());
@@ -281,31 +287,41 @@ public class ChicagoTSClientTest {
 		ListenableFuture<byte[]> resp = cs.getStream();
 
 		assertNotNull(resp.get());
-		String result = new String(resp.get());
-		byte[] old = null;
+		byte[] resultArray = resp.get();
+    int offset = ChiUtil.findOffset(resultArray);
+    String result = new String(resultArray);
+
+		int old = -1;
 		int count = 0;
-		while (result.contains("@@@")) {
+		while (result.contains(delimiter)) {
 
 			if (count > 10) {
 				break;
 			}
-			offset = result.split("@@@")[1].getBytes();
-			if (old != null && Arrays.equals(old, offset)) {
+			offset = ChiUtil.findOffset(resultArray);
+			if (old != -1 && (old == offset)) {
 				Thread.sleep(500);
 			}
-			System.out.println(result.split("@@@")[0]);
+
+      String output = result.split(ChiUtil.delimiter)[0];
+			System.out.println(output);
 			cs.close();
+
+      if(!output.isEmpty()){
+        offset = offset +1;
+      }
 			ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream(
-					"tskey".getBytes(), offset);
+					"tskey".getBytes(), Ints.toByteArray(offset));
 			cs = _f.get();
 			resp = cs.getStream();
+      resultArray = resp.get();
 			result = new String(resp.get());
 			old = offset;
 			count++;
 		}
 
 		ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream(
-				"tskey".getBytes(), offset);
+				"tskey".getBytes(), Ints.toByteArray(offset));
 		cs = _f.get();
 		ListenableFuture<byte[]> _resp = cs.getStream();
 

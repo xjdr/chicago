@@ -110,17 +110,18 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
           status = true;
         }
 
-        if (readResponse != null && readResponse.length > MAX_BUFFER_SIZE) {
-          ByteBuf bb = Unpooled.buffer();
-          bb.writeBytes(readResponse);
-
-          for (int i = 0; i < Math.ceil(bb.readableBytes() / MAX_BUFFER_SIZE) ; i++) {
-            ByteBuf bbs = bb.slice(MAX_BUFFER_SIZE * i, MAX_BUFFER_SIZE);
-            ctx.writeAndFlush(new DefaultChicagoMessage(finalMsg.getId(), Op.fromInt(3), finalMsg.getColFam(), Boolean.toString(status).getBytes(), bbs.array()));
-          }
-
-          readResponse = new byte[]{};
-        }
+//        if (readResponse != null && readResponse.length > MAX_BUFFER_SIZE) {
+//          ByteBuf bb = Unpooled.buffer();
+//          bb.writeBytes(readResponse);
+//          log.info("Breaking into chunks");
+//          for (int i = 0; i < Math.ceil(bb.readableBytes() / MAX_BUFFER_SIZE) ; i++) {
+//            ByteBuf bbs = bb.slice(MAX_BUFFER_SIZE * i, MAX_BUFFER_SIZE);
+//            log.info("Sending value: "+ new String(bbs.array()));
+//            ctx.writeAndFlush(new DefaultChicagoMessage(finalMsg.getId(), Op.fromInt(3), finalMsg.getColFam(), Boolean.toString(status).getBytes(), bbs.array()));
+//          }
+//
+//          readResponse = new byte[]{};
+//        }
 
         break;
 
