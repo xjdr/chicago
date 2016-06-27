@@ -269,7 +269,7 @@ public class DBManager {
     try {
       byte[] ts = Ints.toByteArray(counter.get(new String(colFam)).getAndIncrement());
       if(Ints.fromByteArray(ts)%500 == 0) {
-        log.info("key reached " + Ints.fromByteArray(ts) + "for colFam "+ new String(colFam));
+        log.info("key reached " + Ints.fromByteArray(ts) + " for colFam "+ new String(colFam));
       }
       db.put(columnFamilies.get(new String(colFam)), writeOptions, ts, value);
       return ts;

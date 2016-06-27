@@ -3,10 +3,8 @@ package com.xjeffrose.chicago.client;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import com.sun.tools.javac.util.ArrayUtils;
 import com.xjeffrose.chicago.ChiUtil;
 import org.apache.curator.test.InstanceSpec;
 import org.apache.curator.test.TestingServer;
