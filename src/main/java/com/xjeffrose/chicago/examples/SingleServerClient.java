@@ -11,13 +11,15 @@ import java.util.concurrent.ExecutionException;
 public class SingleServerClient {
 
   public static void main(String[] args) throws InterruptedException, ChicagoClientTimeoutException, ExecutionException, ChicagoClientException {
-    ChicagoClient cc = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.24.33.123:2181,10.25.145.56:2181",3);
-    cc.startAndWaitForNodes(3);
+    //ChicagoClient cc = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.24.33.123:2181,10.25.145.56:2181",3);
+    //cc.startAndWaitForNodes(3);
 //    cc.deleteColFam("tsRepKey".getBytes()).get();
 
   //write("10.24.25.188:12000","tskey",34,"val34");
-    printStream("10.24.25.188:12000", "testKey");
-    getValue("10.24.25.188:12000", "testKey",29);
+    //printStream("10.24.25.188:12000", "testKey");
+    getValue("10.24.33.123:12000", "writeTestKey",496);
+    getValue("10.24.25.189:12000", "writeTestKey",496);
+    getValue("10.25.145.56:12000", "writeTestKey",496);
     //printStream("10.24.25.189:12000");
      //printStream("10.25.145.56:12000");
      //getValue("10.25.145.56:12000","tsRepKey",90);

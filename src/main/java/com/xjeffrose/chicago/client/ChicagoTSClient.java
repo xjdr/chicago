@@ -47,11 +47,15 @@ public class ChicagoTSClient extends BaseChicagoClient {
 //                try {
                     UUID id = UUID.randomUUID();
                     Listener listener = connectionPoolMgr.getListener(node); //Blocking
-                    cs[0] = new ChicagoStream(listener);
+                    if(cs[0] == null) {
+                      cs[0] = new ChicagoStream(listener);
+                    }
                     cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.STREAM, key, null, offset));
                     listener.addID(id);
                     cs[0].addID(id);
                 });
+              }else{
+                log.info("Channel is not writeable !!!!!"+cf.channel().toString());
               }
             }
           }

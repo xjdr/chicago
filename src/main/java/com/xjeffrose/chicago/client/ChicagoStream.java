@@ -21,7 +21,6 @@ public class ChicagoStream implements AutoCloseable {
   private final ExecutorService exe = Executors.newFixedThreadPool(4);
 
   public ChicagoStream(Listener listener) {
-
     this.listener = listener;
   }
 
@@ -33,6 +32,7 @@ public class ChicagoStream implements AutoCloseable {
       public byte[] call() throws Exception {
         final long startTime = System.currentTimeMillis();
         while (idList.isEmpty()) {
+          log.info(this.hashCode() + " Why is the list empty ???");
           if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
             Thread.currentThread().interrupt();
             throw new ChicagoClientTimeoutException();
@@ -66,7 +66,7 @@ public class ChicagoStream implements AutoCloseable {
   public void close() throws Exception {
     exe.shutdown();
     idList.stream().forEach(xs -> {
-	listener.removeID(xs);
+	    listener.removeID(xs);
     });
   }
 }

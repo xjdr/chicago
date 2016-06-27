@@ -63,6 +63,7 @@ public class NodeWatcher {
   public void stop() throws Exception {
     log.info("Nodewatcher stopping");
     chicagoClient.stop();
+    zkClient = null;
     nodeList.getCache().getListenable().removeListener(genericListener);
     nodeList.stop();
   }

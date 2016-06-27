@@ -37,8 +37,8 @@ public class DBManager {
   private final WriteOptions writeOptions = new WriteOptions();
   private final Map<String, ColumnFamilyHandle> columnFamilies = new ConcurrentHashMap<>();
   private final ChiConfig config;
-  private final String delimeter = "@@@";
   private final HashMap<String,AtomicInteger> counter = new HashMap<>();
+  private final int MAX_ENTRIES = 500;
 
 
   private RocksDB db;
@@ -115,8 +115,10 @@ public class DBManager {
   boolean deleteColumnFamily(byte[] _name) {
     final String name = new String(_name);
     try {
-      db.dropColumnFamily(columnFamilies.get(name));
-      columnFamilies.remove(name);
+      if(colFamilyExists(_name)) {
+        db.dropColumnFamily(columnFamilies.get(name));
+        columnFamilies.remove(name);
+      }
       return true;
     } catch (RocksDBException e) {
       log.error("Could not delete Column Family: " + name, e);
@@ -124,7 +126,7 @@ public class DBManager {
     }
   }
 
-  private boolean createColumnFamily(byte[] name) {
+  private synchronized boolean createColumnFamily(byte[] name) {
     if (colFamilyExists(name)){
       return true;
     }
@@ -184,15 +186,14 @@ public class DBManager {
   }
 
   boolean delete(byte[] colFam){
-    if(!colFamilyExists(colFam)) {
-      return true;
-    }
     try{
-      log.info("Deleting the column Family :"+ new String(colFam));
-      ColumnFamilyHandle ch = columnFamilies.remove(new String(colFam));
-      db.dropColumnFamily(ch);
-      counter.remove(new String(colFam));
-    }catch(RocksDBException e){
+      if (colFamilyExists(colFam)) {
+        log.info("Deleting the column Family :"+ new String(colFam));
+        ColumnFamilyHandle ch = columnFamilies.remove(new String(colFam));
+        db.dropColumnFamily(ch);
+        counter.remove(new String(colFam));
+      }
+    }catch (RocksDBException e) {
       e.printStackTrace();
       return false;
     }
@@ -239,15 +240,13 @@ public class DBManager {
       log.error("Tried to write a null value");
       return null;
     } else if (!colFamilyExists(colFam)) {
-      synchronized (columnFamilies) {
-        createColumnFamily(colFam);
-      }
+      createColumnFamily(colFam);
     }
     try {
       //Insert Key/Value only if it does not exists.
-      if(!db.keyMayExist(readOptions,columnFamilies.get(new String(colFam)),key, new StringBuffer())){
+      if (!db.keyMayExist(readOptions,columnFamilies.get(new String(colFam)),key, new StringBuffer())){
         //Set the AtomicInteger for the colFam if the key is bigger than the already set value.
-        if(Ints.fromByteArray(key) > counter.get(new String(colFam)).get()) {
+        if (Ints.fromByteArray(key) > counter.get(new String(colFam)).get()) {
           counter.get(new String(colFam)).set(Ints.fromByteArray(key) + 1);
         }
         log.info("Putting colFam/key : " +new String(colFam) + Ints.fromByteArray(key));
@@ -269,7 +268,9 @@ public class DBManager {
     }
     try {
       byte[] ts = Ints.toByteArray(counter.get(new String(colFam)).getAndIncrement());
-      log.info("Putting key : "+ Ints.fromByteArray(ts));
+      if(Ints.fromByteArray(ts)%500 == 0) {
+        log.info("key reached " + Ints.fromByteArray(ts) + " for colFam "+ new String(colFam));
+      }
       db.put(columnFamilies.get(new String(colFam)), writeOptions, ts, value);
       return ts;
     } catch (RocksDBException e) {
@@ -284,31 +285,36 @@ public class DBManager {
   }
 
   public byte[] stream(byte[] colFam, byte[] offset) {
+    long startTime = System.currentTimeMillis();
+
     log.info("Requesting stream");
     if (colFamilyExists(colFam)) {
       RocksIterator i = db.newIterator(columnFamilies.get(new String(colFam)), readOptions);
       ByteBuf bb = Unpooled.buffer();
+      byte[] lastOffset=null;
 
       if (offset.length == 0) {
         i.seekToFirst();
       } else {
+        lastOffset = offset;
         i.seek(offset);
       }
+      int count = 0;
 
-      while (i.isValid()) {
+      while (i.isValid() && count<MAX_ENTRIES) {
         byte[] v = i.value();
         byte[] _v = new byte[v.length + 1];
         System.arraycopy(v, 0, _v, 0, v.length);
         System.arraycopy(new byte[]{'\0'}, 0, _v, v.length, 1);
         bb.writeBytes(_v);
+        lastOffset=i.key();
         i.next();
+        count++;
       }
 
-      i.seekToLast();
-
-      bb.writeBytes(delimeter.getBytes());
-      bb.writeBytes(i.key());
-
+      bb.writeBytes(ChiUtil.delimiter.getBytes());
+      bb.writeBytes(lastOffset);
+      log.info("Stream response from DB : "+ (System.currentTimeMillis() - startTime)+ "ms with last offset as "+Ints.fromByteArray(lastOffset));
       return bb.array();
     } else {
       return null;
