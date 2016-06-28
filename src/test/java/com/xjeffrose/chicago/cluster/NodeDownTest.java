@@ -125,7 +125,7 @@ public class NodeDownTest {
     zk.stop();
   }
 
-  public void printStrem(String key, byte[] offset) throws ChicagoClientTimeoutException, ExecutionException, InterruptedException {
+  public void printStrem(String key, byte[] offset) throws Exception {
     System.out.println("Clients : " + chicagoTSClient.getNodeList(key.getBytes()).toString());
     ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream(key.getBytes(), offset);
     ChicagoStream cs = _f.get();
@@ -134,6 +134,7 @@ public class NodeDownTest {
     String result = new String(_resp.get());
     assertEquals(true, !StringUtil.isNullOrEmpty(result));
     System.out.println(result);
+    cs.close();
   }
 
 }

@@ -50,6 +50,7 @@ public class SingleServerClient {
     try {
       ChicagoTSClient cc = new ChicagoTSClient(host);
       System.out.println(host +" : "+new String(cc.stream(colFam.getBytes(), null).get().getStream().get()));
+      cc.stop();
     }catch(Exception e){
       e.printStackTrace();
     }

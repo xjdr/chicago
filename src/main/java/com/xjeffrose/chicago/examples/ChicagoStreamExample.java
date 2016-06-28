@@ -65,6 +65,7 @@ public class ChicagoStreamExample {
       resultArray = newresp.get();
       result = new String(resultArray);
       old = offset;
+      newcs.close();
     }
 
   }
