@@ -4,10 +4,12 @@ import com.google.common.primitives.Ints;
 import com.xjeffrose.chicago.TestChicago;
 import com.xjeffrose.chicago.ZkClient;
 import com.xjeffrose.chicago.server.ChicagoServer;
+
 import org.apache.curator.test.InstanceSpec;
 import org.apache.curator.test.TestingServer;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -21,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Created by root on 6/21/16.
  */
+
 public class ReplicationLockTest {
   TestingServer testingServer;
   @Rule
@@ -96,6 +99,7 @@ public class ReplicationLockTest {
       try {
         ChicagoClient cc = new ChicagoClient(n);
         assertTrue(val.equals(new String(cc.read(colFam.getBytes(), Ints.toByteArray(key)).get())));
+        cc.stop();
       }catch (Exception e){
         e.printStackTrace();
         return;

@@ -2,6 +2,7 @@ package com.xjeffrose.chicago.client;
 
 import com.xjeffrose.chicago.TestChicago;
 import com.xjeffrose.chicago.server.ChicagoServer;
+
 import org.apache.curator.test.InstanceSpec;
 import org.apache.curator.test.TestingServer;
 
@@ -12,11 +13,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.List;
+
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
 import static org.junit.Assert.*;
 
 
@@ -182,5 +186,6 @@ public class ChicagoClientTest {
 
 
     latch.await(20000, TimeUnit.MILLISECONDS);
+    exe.shutdownNow();
   }
 }

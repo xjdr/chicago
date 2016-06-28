@@ -6,11 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.xjeffrose.chicago.ChiUtil;
+
 import org.apache.curator.test.InstanceSpec;
 import org.apache.curator.test.TestingServer;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -81,6 +83,7 @@ public class ChicagoTSClientTest {
 					_resp = cs.getStream();
 					assertNotNull(_resp.get());
 					response.add(new String(_resp.get()));
+					cs.close();
 					Thread.sleep(200);
 					_f = chicagoTSClientParalellel.stream("tskey".getBytes(),
 							Ints.toByteArray(6));
@@ -88,6 +91,7 @@ public class ChicagoTSClientTest {
 					_resp = cs.getStream();
 					assertNotNull(_resp.get());
 					response.add(new String(_resp.get()));
+					cs.close();
 				} catch (Exception e) {
 
 				}
@@ -182,6 +186,7 @@ public class ChicagoTSClientTest {
 					_resp = cs.getStream();
 					assertNotNull(_resp.get());
 					response.add(new String(_resp.get()));
+					cs.close();
 				} catch (Exception e) {
 
 				}
@@ -257,6 +262,7 @@ public class ChicagoTSClientTest {
 				if (response.contains(_v)){
 					gotResponse = true;
 				}
+				cs.close();
 			}
 		}
 		long testTime=(System.currentTimeMillis()-startTime)/1000;
@@ -325,6 +331,7 @@ public class ChicagoTSClientTest {
 
 		assertNotNull(_resp.get());
 		System.out.println(new String(_resp.get()));
+		cs.close();
 	}
 
 	@Test
@@ -349,5 +356,6 @@ public class ChicagoTSClientTest {
 		ListenableFuture<byte[]> _resp = _cs.getStream();
 
 		System.out.println(new String(_resp.get()));
+		_cs.close();
 	}
 }

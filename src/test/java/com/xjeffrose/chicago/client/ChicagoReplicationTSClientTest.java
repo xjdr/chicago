@@ -78,16 +78,20 @@ public class ChicagoReplicationTSClientTest {
 				.getBytes());
 		ChicagoStream cs = f.get();
 		ListenableFuture<byte[]> resp = cs.getStream();
+		cs.close();
 		assertNotNull(resp.get());
 
 	}
-	public void testValidResponse(List<String> nodes, int key) throws InterruptedException, ExecutionException, ChicagoClientTimeoutException{
+	public void testValidResponse(List<String> nodes, int key) throws Exception{
 		ChicagoClient cc=new ChicagoClient(nodes.get(0));
 		String response1 = new String(cc.read(testKey.getBytes(), Ints.toByteArray(key)).get());
+		cc.stop();
 		cc = new ChicagoClient(nodes.get(1));
 		String response2 = new String(cc.read(testKey.getBytes(), Ints.toByteArray(key)).get());
+		cc.stop();
 		cc = new ChicagoClient(nodes.get(2));
 		String response3 = new String(cc.read(testKey.getBytes(), Ints.toByteArray(key)).get());
+		cc.stop();
 		String expectedResponse="val"+key;
 		assertEquals(response1,(expectedResponse));
 		assertEquals(response2,( expectedResponse));
@@ -151,7 +155,6 @@ public class ChicagoReplicationTSClientTest {
 
 		List<String> nodes = chicagoTSClient.getNodeList(testKey.getBytes());
 
-		ChicagoTSClient cc = new ChicagoTSClient(nodes.get(0));
 		System.out.println("Querying old set of nodes" + nodes.toString());
 		testValidResponse(nodes,100);
 		testValidResponse(nodes,999);
@@ -205,21 +208,24 @@ public class ChicagoReplicationTSClientTest {
 		}
 	}
 
-	private int getNoOfValidResponse(List<String> nodes, int key) throws InterruptedException, ExecutionException, ChicagoClientTimeoutException {
+	private int getNoOfValidResponse(List<String> nodes, int key) throws Exception {
 		ChicagoClient cc=new ChicagoClient(nodes.get(0));
 		int noOfGoodResponse=0;
 		String expectedResponse="val"+key;
 		if(expectedResponse.equals(new String(cc.read(testKey.getBytes(), Ints.toByteArray(key)).get()))){
 			noOfGoodResponse++;
 		}
+		cc.stop();
 		cc = new ChicagoClient(nodes.get(1));
 		if(expectedResponse.equals(new String(cc.read(testKey.getBytes(), Ints.toByteArray(key)).get()))){
 			noOfGoodResponse++;
 		}
+		cc.stop();
 		cc = new ChicagoClient(nodes.get(2));
 		if(expectedResponse.equals(new String(cc.read(testKey.getBytes(), Ints.toByteArray(key)).get()))){
 			noOfGoodResponse++;
 		}
+		cc.stop();
 		return noOfGoodResponse;
 		
 	}
