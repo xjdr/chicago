@@ -13,18 +13,25 @@ import java.util.Arrays;
  */
 public class ChicagoStreamExample {
   ChicagoTSClient chicagoTSClient;
+  private final static String key = "ppfe";
 
   public static void main(String[] args) throws Exception{
     ChicagoStreamExample cs = new ChicagoStreamExample();
     cs.chicagoTSClient = new ChicagoTSClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181",3);
     cs.chicagoTSClient.startAndWaitForNodes(3);
+    //cs.writeSomeData();
     cs.transactStream();
     System.exit(0);
   }
 
+  public void writeSomeData() throws Exception{
+    for(int i =0;i<10;i++){
+      chicagoTSClient.write(key.getBytes(),"Valueeee!!!!!!!".getBytes());
+    }
+  }
+
 
   public void transactStream() throws Exception {
-    String key = "writeTestKey";
     int offset = -1;
 
     ListenableFuture<com.xjeffrose.chicago.client.ChicagoStream> f = chicagoTSClient.stream(key.getBytes());
@@ -65,6 +72,7 @@ public class ChicagoStreamExample {
       resultArray = newresp.get();
       result = new String(resultArray);
       old = offset;
+      newcs.close();
     }
 
   }

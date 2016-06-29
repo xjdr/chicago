@@ -7,11 +7,14 @@ import com.xjeffrose.chicago.client.ChicagoClientTimeoutException;
 import com.xjeffrose.chicago.client.ChicagoStream;
 import com.xjeffrose.chicago.client.ChicagoTSClient;
 import com.xjeffrose.chicago.server.ChicagoServer;
+
 import io.netty.util.internal.StringUtil;
+
 import org.apache.curator.test.InstanceSpec;
 import org.apache.curator.test.TestingServer;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -28,6 +31,7 @@ import static org.junit.Assert.assertNotNull;
 /**
  * Created by smadan on 6/8/16.
  */
+
 public class NodeDownTest {
   TestingServer testingServer;
   @Rule
@@ -100,7 +104,7 @@ public class NodeDownTest {
     });
 
     restartTask.get();
-
+    executor.shutdown();
   }
 
   public void stopServer(String server) throws Exception{
@@ -121,7 +125,7 @@ public class NodeDownTest {
     zk.stop();
   }
 
-  public void printStrem(String key, byte[] offset) throws ChicagoClientTimeoutException, ExecutionException, InterruptedException {
+  public void printStrem(String key, byte[] offset) throws Exception {
     System.out.println("Clients : " + chicagoTSClient.getNodeList(key.getBytes()).toString());
     ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream(key.getBytes(), offset);
     ChicagoStream cs = _f.get();
@@ -130,6 +134,7 @@ public class NodeDownTest {
     String result = new String(_resp.get());
     assertEquals(true, !StringUtil.isNullOrEmpty(result));
     System.out.println(result);
+    cs.close();
   }
 
 }
