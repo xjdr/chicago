@@ -79,8 +79,7 @@ public class ChicagoReplicationTSClientTest {
 		ChicagoStream cs = f.get();
 		ListenableFuture<byte[]> resp = cs.getStream();
 		assertNotNull(resp.get());
-    cs.close();
-
+		cs.close();
 
 	}
 	public void testValidResponse(List<String> nodes, int key) throws Exception{
