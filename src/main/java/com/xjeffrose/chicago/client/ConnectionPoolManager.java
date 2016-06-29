@@ -66,7 +66,7 @@ public class ConnectionPoolManager {
     log.info("Closing channels");
     channelGroup.close().awaitUninterruptibly();
     log.info("Stopping workerLoop");
-    workerLoop.shutdownGracefully().awaitUninterruptibly();
+    workerLoop.shutdownGracefully();
   }
 
   private List<String> buildNodeList() {
