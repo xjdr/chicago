@@ -93,12 +93,16 @@ public class BaseChicagoClient {
     }
   }
 
-  public void startAndWaitForNodes(int count) {
+  public void startAndWaitForNodes(int count){
+    startAndWaitForNodes(count,5000);
+  }
+
+  public void startAndWaitForNodes(int count, long timeout) {
     if(!single_server) {
       try {
         latch = new CountDownLatch(count);
         start();
-        latch.await();
+        latch.await(timeout,TimeUnit.MILLISECONDS);
         for (String node : buildNodeList()) {
           rendezvousHash.add(node);
         }
