@@ -144,7 +144,7 @@ public class ConnectionPoolManager {
             ChannelPipeline cp = channel.pipeline();
             cp.addLast(new XioSecurityHandlerImpl(true).getEncryptionHandler());
 //            cp.addLast(new XioSecurityHandlerImpl(true).getAuthenticationHandler());
-            cp.addLast(new XioIdleDisconnectHandler(60, 60, 60));
+            //cp.addLast(new XioIdleDisconnectHandler(60, 60, 60));
             cp.addLast(new ChicagoClientCodec());
             cp.addLast(new ChicagoClientHandler(listener));
           }
