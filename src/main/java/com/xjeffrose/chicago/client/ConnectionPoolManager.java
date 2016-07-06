@@ -83,7 +83,9 @@ public class ConnectionPoolManager {
     });
 
     reconnectNodes.forEach(s -> {
-      connectionMap.remove(s);
+      ChannelFuture cf = connectionMap.remove(s);
+      cf.channel().close();
+      cf.cancel(true);
       connect(address(s), listenerMap.get(s));
     });
   }
