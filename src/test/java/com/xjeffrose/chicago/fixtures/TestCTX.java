@@ -13,8 +13,15 @@ import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.DefaultEventExecutor;
 import io.netty.util.concurrent.EventExecutor;
 import java.net.SocketAddress;
+import io.netty.channel.ChannelHandlerInvoker;
 
 public class TestCTX implements ChannelHandlerContext{
+
+  @Override
+  public ChannelHandlerInvoker invoker() {
+    return null;
+  }
+
   @Override
   public Channel channel() {
     return null;
