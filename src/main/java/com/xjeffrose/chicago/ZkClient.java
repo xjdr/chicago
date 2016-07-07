@@ -80,7 +80,7 @@ public class ZkClient {
 
   public void start() throws InterruptedException {
     client.start();
-    client.blockUntilConnected();
+    //client.blockUntilConnected();
   }
 
   public void stop() throws Exception {

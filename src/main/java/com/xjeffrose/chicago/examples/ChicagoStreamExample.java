@@ -13,11 +13,13 @@ import java.util.Arrays;
  */
 public class ChicagoStreamExample {
   ChicagoTSClient chicagoTSClient;
-  private final static String key = "ppfe";
+
+  private final static String key = "ppfe-msmaster";
 
   public static void main(String[] args) throws Exception{
     ChicagoStreamExample cs = new ChicagoStreamExample();
-    cs.chicagoTSClient = new ChicagoTSClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181",3);
+    //cs.chicagoTSClient = new ChicagoTSClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181",3);
+    cs.chicagoTSClient = new ChicagoTSClient("10.22.100.183:2181,10.25.180.234:2181,10.22.103.86:2181,10.25.180.247:2181,10.25.69.226:2181",3);
     cs.chicagoTSClient.startAndWaitForNodes(3);
     //cs.writeSomeData();
     cs.transactStream();
