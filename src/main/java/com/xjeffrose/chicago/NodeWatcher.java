@@ -90,7 +90,7 @@ public class NodeWatcher {
         newS.removeAll(oldS);
 
         if(type == TreeCacheEvent.Type.NODE_REMOVED){
-          bounceLockPath = REPLICATION_LOCK_PATH + "/" + cf + node;
+          bounceLockPath = REPLICATION_LOCK_PATH + "/" + cf + "/" + node;
           zkClient.createBounceLockPath(bounceLockPath);
           bounceLock=true;
         }
