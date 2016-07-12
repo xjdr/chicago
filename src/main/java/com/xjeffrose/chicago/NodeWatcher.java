@@ -88,9 +88,9 @@ public class NodeWatcher {
         //For all the nodes that have been newly added to the hash.
         newS.forEach(s -> {
             if(!s.equals(config.getDBBindEndpoint())) {
+              log.info("Replicatng colFam " + cf + " to " + s);
+              String lockPath = REPLICATION_LOCK_PATH + "/" + cf + "/" + s;
               try {
-                log.info("Replicatng colFam " + cf + " to " + s);
-                String lockPath = REPLICATION_LOCK_PATH + "/" + cf + "/" + s;
                 zkClient.createLockPath(lockPath , config.getDBBindEndpoint());
                 ChicagoTSClient c = new ChicagoTSClient((String) s);
                 byte[] offset = new byte[]{};
@@ -103,10 +103,13 @@ public class NodeWatcher {
                       c._write(cf.getBytes(), k, dbManager.read(cf.getBytes(), k)).get();
                     } catch (ChicagoClientTimeoutException e) {
                       e.printStackTrace();
+                      throw new InterruptedException();
                     } catch (ChicagoClientException e) {
                       e.printStackTrace();
+                      throw new InterruptedException();
                     } catch (ExecutionException e) {
                       e.printStackTrace();
+                      throw new InterruptedException();
                     }
                     offset = k;
                   }
@@ -114,7 +117,9 @@ public class NodeWatcher {
                 }
                 zkClient.deleteLockPath(lockPath, config.getDBBindEndpoint());
               } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.error("Something bad happened while replication");
+              } finally {
+                zkClient.deleteLockPath(lockPath, config.getDBBindEndpoint());
               }
             }
           });
