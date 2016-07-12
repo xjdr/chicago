@@ -174,7 +174,11 @@ public class ZkClient {
   }
 
   public boolean createLockPath(String path, String child){
-    return createIfNotExist(path +"/" + child, "LOCK");
+    return createIfNotExist(path +"/" + child, "REPLICATION_LOCK");
+  }
+
+  public boolean createBounceLockPath(String path){
+    return createIfNotExist(path, "BOUNCE_LOCK");
   }
 
   public boolean deleteLockPath(String path, String child) {
