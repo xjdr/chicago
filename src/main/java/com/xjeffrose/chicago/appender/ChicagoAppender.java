@@ -18,7 +18,7 @@ public class ChicagoAppender extends AppenderSkeleton{
     private String key;
     private int pool;
     private String fileName;
-    private static ExecutorService executor = Executors.newFixedThreadPool(10);
+    private static ExecutorService executor = Executors.newFixedThreadPool(20);
     private final ConcurrentLinkedDeque<ChicagoTSClient> queue = new ConcurrentLinkedDeque<>();
     private final RollingFileAppender fileAppender = new RollingFileAppender();
 
@@ -86,7 +86,6 @@ public class ChicagoAppender extends AppenderSkeleton{
     }
     @Override
     protected void append(LoggingEvent loggingEvent) {
-
         Long timeStamp = loggingEvent.getTimeStamp();
         String message = subAppend(loggingEvent);
         LogLog.debug("[" + new Date(timeStamp) + "]" + message);
