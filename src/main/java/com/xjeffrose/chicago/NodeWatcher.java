@@ -81,7 +81,7 @@ public class NodeWatcher {
       }
 
       //For all the column family present on this server.
-      dbManager.getColFams().forEach(cf -> {
+      dbManager.getColFams().parallelStream().forEach(cf -> {
         List<String> newS = rendezvousHash.get(cf.getBytes());
         List<String> oldS = rendezvousHashnOld.get(cf.getBytes());
         newS.removeAll(oldS);

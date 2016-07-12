@@ -145,7 +145,6 @@ public class ConnectionPoolManager {
     if (cf.channel().isWritable()) {
       return cf;
     }else{
-      connectionMap.remove(node);
       checkConnection();
       return _getNode(node,startTime);
     }
@@ -176,7 +175,6 @@ public class ConnectionPoolManager {
         protected void initChannel(SocketChannel channel) throws Exception {
           ChannelPipeline cp = channel.pipeline();
           cp.addLast(new XioSecurityHandlerImpl(true).getEncryptionHandler());
-//            cp.addLast(new XioSecurityHandlerImpl(true).getAuthenticationHandler());
           cp.addLast(new XioIdleDisconnectHandler(20, 20, 20));
           cp.addLast(new ChicagoClientCodec());
           cp.addLast(new ChicagoClientHandler(listener));
