@@ -65,6 +65,7 @@ public class NodeWatcher {
     chicagoClient.stop();
     zkClient = null;
     nodeList.getCache().getListenable().removeListener(genericListener);
+    replicationWorker.shutdownNow();
     nodeList.stop();
   }
 

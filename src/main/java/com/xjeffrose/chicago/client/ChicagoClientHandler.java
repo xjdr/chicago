@@ -30,7 +30,9 @@ class ChicagoClientHandler extends SimpleChannelInboundHandler<ChicagoMessage> {
 
   @Override
   public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-    listener.onChannelReadComplete();
+    if(listener != null) {
+      listener.onChannelReadComplete();
+    }
 //    ctx.fireChannelReadComplete();
   }
 

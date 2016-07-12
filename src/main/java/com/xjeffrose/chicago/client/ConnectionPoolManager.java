@@ -70,6 +70,7 @@ public class ConnectionPoolManager {
     channelGroup.close().awaitUninterruptibly();
     log.info("Stopping workerLoop");
     workerLoop.shutdownGracefully();
+    connectCheck.shutdownNow();
   }
 
   public void checkConnection(){
