@@ -114,8 +114,7 @@ public class ConnectionPoolManager {
       connect(address(xs), listenerMap.get(xs));
     });
 
-    /*try {
-      Thread.sleep(2000);
+    try {
       connectCheck.scheduleAtFixedRate(new Runnable() {
         @Override
         public void run() {
@@ -124,7 +123,7 @@ public class ConnectionPoolManager {
       }, 3000, 7000, TimeUnit.MILLISECONDS);
     } catch (Exception e){
       e.printStackTrace();
-    }*/
+    }
   }
 
   public ChannelFuture getNode(String node) throws ChicagoClientTimeoutException {
