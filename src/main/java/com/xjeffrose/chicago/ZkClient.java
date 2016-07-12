@@ -167,7 +167,30 @@ public class ZkClient {
         client.delete().forPath(path);
       }
     }catch(Exception e){
-      //throw new exception.
+      //Todo: Need to throw proper exception.
+      return false;
+    }
+    return true;
+  }
+
+  public boolean createLockPath(String path, String child){
+    return createIfNotExist(path +"/" + child, "LOCK");
+  }
+
+  public boolean deleteLockPath(String path, String child) {
+    try {
+      List<String> children = this.getChildren(path);
+      if (children.size() == 1 && children.get(0).equals(child)){
+        delete(path + "/" + child);
+        delete(path);
+      }else if(children.size() > 1){
+        delete(path +"/" + child);
+      }else {
+        log.error("Lock path corrupted !!!!");
+      }
+    }catch (Exception e){
+      //Todo: Need to throw proper exception.
+      return false;
     }
     return true;
   }

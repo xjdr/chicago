@@ -81,15 +81,12 @@ public class DBManager {
     options
         .createStatistics()
         .setCreateIfMissing(true)
-        .setWriteBufferSize(8 * SizeUnit.KB)
+        .setWriteBufferSize(1 * SizeUnit.GB)
         .setMaxWriteBufferNumber(3)
         .setMaxBackgroundCompactions(10)
         //.setCompressionType(CompressionType.SNAPPY_COMPRESSION)
         .setEnv(env);
-    if(!config.isDatabaseMode()){
-      options.setCompactionStyle(CompactionStyle.FIFO)
-             .setMaxTableFilesSizeFIFO(config.getCompactionSize());
-    }
+    setCompactionOptions(options);
 
 
     options.setMemTableConfig(
@@ -97,6 +94,13 @@ public class DBManager {
             .setBucketCount(100000));
 
 
+  }
+
+  private void setCompactionOptions(Options options){
+    if(!config.isDatabaseMode()){
+      options.setCompactionStyle(CompactionStyle.FIFO)
+        .setMaxTableFilesSizeFIFO(config.getCompactionSize());
+    }
   }
 
   private void configReadOptions() {
@@ -132,9 +136,13 @@ public class DBManager {
     }
     ColumnFamilyOptions columnFamilyOptions = new ColumnFamilyOptions();
     if(!config.isDatabaseMode()){
-      columnFamilyOptions.setCompactionStyle(CompactionStyle.UNIVERSAL)
+      columnFamilyOptions.setCompactionStyle(CompactionStyle.FIFO)
         .setMaxTableFilesSizeFIFO(config.getCompactionSize())
-        .setDisableAutoCompactions(false);
+        .setWriteBufferSize(1 * SizeUnit.GB)
+        .setMemtablePrefixBloomProbes(1)
+        .setMemTableConfig(new HashLinkedListMemTableConfig()
+          .setBucketCount(100000));
+
     }
 
     ColumnFamilyDescriptor columnFamilyDescriptor = new ColumnFamilyDescriptor(name, columnFamilyOptions);
@@ -249,7 +257,9 @@ public class DBManager {
         if (Ints.fromByteArray(key) > counter.get(new String(colFam)).get()) {
           counter.get(new String(colFam)).set(Ints.fromByteArray(key) + 1);
         }
-        log.info("Putting colFam/key : " +new String(colFam) + Ints.fromByteArray(key));
+        if(Ints.fromByteArray(key) %1000 == 0) {
+          log.info("colFam/key reached : " + new String(colFam) + " " + Ints.fromByteArray(key));
+        }
         db.put(columnFamilies.get(new String(colFam)), writeOptions, key, value);
       }
       return key;

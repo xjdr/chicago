@@ -20,7 +20,6 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -75,17 +74,22 @@ public class ConnectionPoolManager {
 
   public void checkConnection(){
     List<String> reconnectNodes = new ArrayList<>();
-    connectionMap.forEach((k,v) ->{
-      if(!v.channel().isWritable()){
-        log.debug("Channel not writable for "+ k);
-        reconnectNodes.add(k);
+    buildNodeList().forEach(s -> {
+      if(connectionMap.get(s) == null){
+        log.debug("Channel not present for "+ s);
+        reconnectNodes.add(s);
+      }else if(connectionMap.get(s) != null && !connectionMap.get(s).channel().isWritable()){
+        log.debug("Channel not writeable for "+ s);
+        reconnectNodes.add(s);
       }
     });
 
     reconnectNodes.forEach(s -> {
       ChannelFuture cf = connectionMap.remove(s);
-      cf.channel().close();
-      cf.cancel(true);
+      if(cf != null) {
+        cf.channel().close();
+        cf.cancel(true);
+      }
       connect(address(s), listenerMap.get(s));
     });
   }
@@ -105,12 +109,16 @@ public class ConnectionPoolManager {
       connect(address(xs), listenerMap.get(xs));
     });
 
-    connectCheck.scheduleAtFixedRate(new Runnable() {
-      @Override
-      public void run() {
-        checkConnection();
-      }
-    },10,500,TimeUnit.MILLISECONDS);
+    try {
+      connectCheck.scheduleAtFixedRate(new Runnable() {
+        @Override
+        public void run() {
+          checkConnection();
+        }
+      }, 1000, 10000, TimeUnit.MILLISECONDS);
+    } catch (Exception e){
+      e.printStackTrace();
+    }
   }
 
   public ChannelFuture getNode(String node) throws ChicagoClientTimeoutException {
@@ -122,6 +130,7 @@ public class ConnectionPoolManager {
     while (connectionMap.get(node) == null) {
       if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
         Thread.currentThread().interrupt();
+        System.out.println("Cannot get connection for node "+ node +" connectionMap ="+ connectionMap.keySet().toString());
         throw new ChicagoClientTimeoutException();
       }
       try {
@@ -136,7 +145,9 @@ public class ConnectionPoolManager {
     if (cf.channel().isWritable()) {
       return cf;
     }else{
-      return getNode(node);
+      connectionMap.remove(node);
+      checkConnection();
+      return _getNode(node,startTime);
     }
   }
 

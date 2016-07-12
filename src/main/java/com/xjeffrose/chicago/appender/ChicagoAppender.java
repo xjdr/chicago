@@ -4,6 +4,8 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.RollingFileAppender;
 import org.apache.log4j.helpers.LogLog;
 import org.apache.log4j.spi.LoggingEvent;
 import com.xjeffrose.chicago.client.ChicagoTSClient;
@@ -15,8 +17,10 @@ public class ChicagoAppender extends AppenderSkeleton{
     private String chicagoZk;
     private String key;
     private int pool;
+    private String fileName;
     private static ExecutorService executor = Executors.newFixedThreadPool(10);
     private final ConcurrentLinkedDeque<ChicagoTSClient> queue = new ConcurrentLinkedDeque<>();
+    private final RollingFileAppender fileAppender = new RollingFileAppender();
 
     private class Write implements Runnable {
         private ChicagoTSClient cts;
@@ -120,6 +124,10 @@ public class ChicagoAppender extends AppenderSkeleton{
             this.closed = true;
         }
 
+    }
+
+    public void setFileName(String fileName){
+      this.fileName = fileName;
     }
 
     public boolean requiresLayout() {

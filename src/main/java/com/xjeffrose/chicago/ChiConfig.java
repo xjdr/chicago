@@ -61,7 +61,7 @@ public class ChiConfig {
     this.quorum = conf.getInt("quorum");
     this.zkHosts = conf.getString("zk_hosts");
     this.graceFullStart = false;
-    this.compactionSize = (conf.getLong("compaction_size") * SizeUnit.KB);
+    this.compactionSize = (conf.getLong("compaction_size") * SizeUnit.GB);
     this.databaseMode = conf.getBoolean("database_mode");
 
     if (System.getProperty("graceful") != null) {
