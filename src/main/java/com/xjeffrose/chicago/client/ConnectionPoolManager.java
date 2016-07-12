@@ -92,6 +92,9 @@ public class ConnectionPoolManager {
         cf.channel().close();
         cf.cancel(true);
       }
+      if(listenerMap.get(s) == null){
+        listenerMap.put(s, new ChicagoListener());
+      }
       connect(address(s), listenerMap.get(s));
     });
   }
