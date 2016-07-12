@@ -87,6 +87,7 @@ public class BaseChicagoClient {
         zkClient.start();
         connectionPoolMgr.start();
         clientNodeWatcher.start();
+        clientNodeWatcher.registerConnectionPoolManager(connectionPoolMgr);
       }
     } catch (Exception e) {
       e.printStackTrace();

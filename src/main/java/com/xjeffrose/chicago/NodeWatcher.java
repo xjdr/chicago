@@ -101,23 +101,18 @@ public class NodeWatcher {
                     log.debug("Writing key :"+Ints.fromByteArray(k));
                     try {
                       c._write(cf.getBytes(), k, dbManager.read(cf.getBytes(), k)).get();
-                    } catch (ChicagoClientTimeoutException e) {
+                    } catch (Exception e) {
                       e.printStackTrace();
-                      throw new InterruptedException();
-                    } catch (ChicagoClientException e) {
-                      e.printStackTrace();
-                      throw new InterruptedException();
-                    } catch (ExecutionException e) {
-                      e.printStackTrace();
-                      throw new InterruptedException();
+                      throw new ChicagoClientException(e.getCause().getMessage());
                     }
                     offset = k;
                   }
                   keys=dbManager.getKeys(cf.getBytes(),offset);
                 }
-                zkClient.deleteLockPath(lockPath, config.getDBBindEndpoint());
-              } catch (InterruptedException e) {
+              } catch (ChicagoClientException e) {
                 log.error("Something bad happened while replication");
+              } catch (InterruptedException e) {
+                e.printStackTrace();
               } finally {
                 zkClient.deleteLockPath(lockPath, config.getDBBindEndpoint());
               }
