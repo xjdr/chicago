@@ -87,6 +87,7 @@ public class ConnectionPoolManager {
     reconnectNodes.forEach(s -> {
       ChannelFuture cf = connectionMap.remove(s);
       if(cf != null) {
+        cf.channel().disconnect();
         cf.channel().close();
         cf.cancel(true);
       }
@@ -109,16 +110,17 @@ public class ConnectionPoolManager {
       connect(address(xs), listenerMap.get(xs));
     });
 
-    try {
+    /*try {
+      Thread.sleep(2000);
       connectCheck.scheduleAtFixedRate(new Runnable() {
         @Override
         public void run() {
           checkConnection();
         }
-      }, 1000, 10000, TimeUnit.MILLISECONDS);
+      }, 3000, 7000, TimeUnit.MILLISECONDS);
     } catch (Exception e){
       e.printStackTrace();
-    }
+    }*/
   }
 
   public ChannelFuture getNode(String node) throws ChicagoClientTimeoutException {
@@ -175,7 +177,7 @@ public class ConnectionPoolManager {
         protected void initChannel(SocketChannel channel) throws Exception {
           ChannelPipeline cp = channel.pipeline();
           cp.addLast(new XioSecurityHandlerImpl(true).getEncryptionHandler());
-          cp.addLast(new XioIdleDisconnectHandler(20, 20, 20));
+          //cp.addLast(new XioIdleDisconnectHandler(20, 20, 20));
           cp.addLast(new ChicagoClientCodec());
           cp.addLast(new ChicagoClientHandler(listener));
         }
