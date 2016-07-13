@@ -80,7 +80,7 @@ public class ZkClient {
 
   public void start() throws InterruptedException {
     client.start();
-    client.blockUntilConnected();
+    //client.blockUntilConnected();
   }
 
   public void stop() throws Exception {
@@ -167,7 +167,34 @@ public class ZkClient {
         client.delete().forPath(path);
       }
     }catch(Exception e){
-      //throw new exception.
+      //Todo: Need to throw proper exception.
+      return false;
+    }
+    return true;
+  }
+
+  public boolean createLockPath(String path, String child){
+    return createIfNotExist(path +"/" + child, "REPLICATION_LOCK");
+  }
+
+  public boolean createBounceLockPath(String path){
+    return createIfNotExist(path, "BOUNCE_LOCK");
+  }
+
+  public boolean deleteLockPath(String path, String child) {
+    try {
+      List<String> children = this.getChildren(path);
+      if (children.size() == 1 && children.get(0).equals(child)){
+        delete(path + "/" + child);
+        delete(path);
+      }else if(children.size() > 1){
+        delete(path +"/" + child);
+      }else {
+        log.error("Lock path corrupted !!!!");
+      }
+    }catch (Exception e){
+      //Todo: Need to throw proper exception.
+      return false;
     }
     return true;
   }

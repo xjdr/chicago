@@ -1,6 +1,8 @@
 package com.xjeffrose.chicago.client;
 
 import com.xjeffrose.chicago.ChicagoMessage;
+
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
@@ -43,8 +45,12 @@ class ChicagoListener implements Listener<byte[]> {
 
   @Override
   public void onChannelError(Exception requestException) throws ChicagoClientException {
-    log.error("Error Reading Response: ", requestException);
-    throw new ChicagoClientException(requestException);
+    if(requestException instanceof IOException) {
+      log.debug("Error Reading Response: ", requestException);
+    }else{
+      log.error("Error Reading Response: ", requestException);
+      throw new ChicagoClientException(requestException);
+    }
   }
 
 

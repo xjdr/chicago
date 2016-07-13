@@ -8,8 +8,7 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.*;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
@@ -29,6 +28,7 @@ public class NodeWatcher {
   private ZkClient zkClient;
   private DBManager dbManager;
   private ChiConfig config;
+  private ExecutorService replicationWorker = Executors.newFixedThreadPool(5);
 
   public NodeWatcher(String nodeListPath, String replicationLockPath) {
     NODE_LIST_PATH = nodeListPath;
@@ -65,6 +65,7 @@ public class NodeWatcher {
     chicagoClient.stop();
     zkClient = null;
     nodeList.getCache().getListenable().removeListener(genericListener);
+    replicationWorker.shutdownNow();
     nodeList.stop();
   }
 
@@ -81,16 +82,26 @@ public class NodeWatcher {
       }
 
       //For all the column family present on this server.
-      dbManager.getColFams().forEach(cf -> {
+      dbManager.getColFams().parallelStream().forEach(cf -> {
         List<String> newS = rendezvousHash.get(cf.getBytes());
         List<String> oldS = rendezvousHashnOld.get(cf.getBytes());
+        String bounceLockPath = "";
+        boolean bounceLock=false;
         newS.removeAll(oldS);
+
+        if(type == TreeCacheEvent.Type.NODE_REMOVED){
+          bounceLockPath = REPLICATION_LOCK_PATH + "/" + cf + "/" + node;
+          zkClient.createBounceLockPath(bounceLockPath);
+          bounceLock=true;
+        }
+
         //For all the nodes that have been newly added to the hash.
         newS.forEach(s -> {
             if(!s.equals(config.getDBBindEndpoint())) {
+              log.info("Replicatng colFam " + cf + " to " + s);
+              String lockPath = REPLICATION_LOCK_PATH + "/" + cf + "/" + s;
               try {
-                log.info("Replicatng colFam " + cf + " to " + s);
-                zkClient.createIfNotExist(REPLICATION_LOCK_PATH + "/" + cf + "/" + s,config.getDBBindEndpoint());
+                zkClient.createLockPath(lockPath , config.getDBBindEndpoint());
                 ChicagoTSClient c = new ChicagoTSClient((String) s);
                 byte[] offset = new byte[]{};
                 List<byte[]> keys = dbManager.getKeys(cf.getBytes(), offset);
@@ -100,35 +111,44 @@ public class NodeWatcher {
                     log.debug("Writing key :"+Ints.fromByteArray(k));
                     try {
                       c._write(cf.getBytes(), k, dbManager.read(cf.getBytes(), k)).get();
-                    } catch (ChicagoClientTimeoutException e) {
+                    } catch (Exception e) {
                       e.printStackTrace();
-                    } catch (ChicagoClientException e) {
-                      e.printStackTrace();
-                    } catch (ExecutionException e) {
-                      e.printStackTrace();
+                      throw new ChicagoClientException(e.getCause().getMessage());
                     }
                     offset = k;
                   }
                   keys=dbManager.getKeys(cf.getBytes(),offset);
                 }
-                zkClient.delete(REPLICATION_LOCK_PATH + "/" + cf + "/" + s);
+              } catch (ChicagoClientException e) {
+                log.error("Something bad happened while replication");
               } catch (InterruptedException e) {
                 e.printStackTrace();
+              } finally {
+                zkClient.deleteLockPath(lockPath, config.getDBBindEndpoint());
               }
             }
           });
+
+          //Remove the bounce lock.
+          if(bounceLock){
+            zkClient.delete(bounceLockPath);
+          }
         });
       log.info("Replication ended in " + (System.currentTimeMillis() - startTime) + "ms");
   }
 
   private void nodeAdded(String path, TreeCacheEvent.Type type) {
     String[] _path = path.split("/");
-    redistributeKeys(_path[_path.length - 1],type);
+    replicationWorker.submit(() -> {
+      redistributeKeys(_path[_path.length - 1],type);
+    });
   }
 
   private void nodeRemoved(String path, TreeCacheEvent.Type type) {
     String[] _path = path.split("/");
-    redistributeKeys(_path[_path.length - 1],type);
+    replicationWorker.submit(() -> {
+      redistributeKeys(_path[_path.length - 1],type);
+    });
   }
 
   private class GenericListener implements TreeCacheListener {
