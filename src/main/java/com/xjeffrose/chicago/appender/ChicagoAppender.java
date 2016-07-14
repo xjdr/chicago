@@ -37,7 +37,6 @@ public class ChicagoAppender extends AppenderSkeleton{
             try {
                 cts.write(key.getBytes(), message.getBytes());
             } catch (Exception e) {
-                e.printStackTrace();
                 appender.getErrorHandler().error(message);
             }
         }
@@ -81,7 +80,7 @@ public class ChicagoAppender extends AppenderSkeleton{
                 LogLog.debug("Chicago connected to " + chicagoZk);
             }
         }catch (InterruptedException exception) {
-            throw new RuntimeException(exception);
+
         }
     }
     @Override
@@ -100,12 +99,6 @@ public class ChicagoAppender extends AppenderSkeleton{
 
     private String subAppend(LoggingEvent event) {
         return (this.layout == null) ? event.getRenderedMessage() : this.layout.format(event);
-    }
-
-    private byte[] longToBytes(long x) {
-        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
-        buffer.putLong(x);
-        return buffer.array();
     }
 
     public void close() {

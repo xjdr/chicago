@@ -1,7 +1,7 @@
 package com.xjeffrose.chicago;
 
 import com.google.common.hash.Funnels;
-import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 import com.xjeffrose.chicago.client.*;
 
 import java.nio.charset.Charset;
@@ -108,7 +108,7 @@ public class NodeWatcher {
                 // Start replicating all the keys to the new server.
                 while(!Arrays.equals(keys.get(keys.size()-1),offset)) {
                   for(byte[] k : keys){
-                    log.debug("Writing key :"+Ints.fromByteArray(k));
+                    log.debug("Writing key :"+ Longs.fromByteArray(k));
                     try {
                       c._write(cf.getBytes(), k, dbManager.read(cf.getBytes(), k)).get();
                     } catch (Exception e) {

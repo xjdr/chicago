@@ -183,6 +183,7 @@ public class ChicagoTSClient extends BaseChicagoClient {
 
           List<String> hashList = getEffectiveNodes(key);
           dquorum = hashList.size();
+          //log.info("Writing to "+hashList.toString());
           for (String node : hashList) {
             if (node == null) {
 

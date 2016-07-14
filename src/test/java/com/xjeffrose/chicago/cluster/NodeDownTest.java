@@ -1,5 +1,6 @@
 package com.xjeffrose.chicago.cluster;
 
+import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.xjeffrose.chicago.TestChicago;
 import com.xjeffrose.chicago.ZkClient;
@@ -82,7 +83,7 @@ public class NodeDownTest {
     }
 
     System.out.println("On normal state : ");
-    printStrem(key, null);
+    printStrem(key, Longs.toByteArray(0));
 
     //Restart chicago1 intermittently
     ExecutorService executor = Executors.newFixedThreadPool(10);

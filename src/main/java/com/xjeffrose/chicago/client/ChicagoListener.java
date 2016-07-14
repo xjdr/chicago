@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
+
+import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +46,7 @@ class ChicagoListener implements Listener<byte[]> {
   }
 
   @Override
-  public void onChannelError(Exception requestException) throws ChicagoClientException {
+  public void onChannelError(ChannelHandlerContext ctx,Exception requestException) throws ChicagoClientException {
     if(requestException instanceof IOException) {
       log.debug("Error Reading Response: ", requestException);
     }else{

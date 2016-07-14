@@ -2,6 +2,8 @@ package com.xjeffrose.chicago.client;
 
 
 import com.xjeffrose.chicago.ChicagoMessage;
+import io.netty.channel.ChannelHandlerContext;
+
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
@@ -11,7 +13,7 @@ interface Listener<T> {
 
   void onResponseReceived(T message, boolean success);
 
-  void onChannelError(Exception requestException) throws ChicagoClientException;
+  void onChannelError(ChannelHandlerContext ctx, Exception requestException) throws ChicagoClientException;
 
   T getResponse(UUID id) throws ChicagoClientTimeoutException;
 

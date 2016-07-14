@@ -1,10 +1,13 @@
 package com.xjeffrose.chicago.client;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.common.primitives.Longs;
+import com.sun.source.tree.AssertTree;
 import com.xjeffrose.chicago.ChiUtil;
 
 import org.apache.curator.test.InstanceSpec;
@@ -17,7 +20,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import com.google.common.primitives.Ints;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.xjeffrose.chicago.TestChicago;
 import com.xjeffrose.chicago.server.ChicagoServer;
@@ -71,14 +73,14 @@ public class ChicagoTSClientTest {
 				try {
 					Thread.sleep(200);
 					ListenableFuture<ChicagoStream> _f = chicagoTSClientParalellel
-							.stream("tskey".getBytes(), Ints.toByteArray(2));
+							.stream("tskey".getBytes(), Longs.toByteArray(2));
 					ChicagoStream cs = _f.get();
 					ListenableFuture<byte[]> _resp = cs.getStream();
 					assertNotNull(_resp.get());
 					response.add(new String(_resp.get()));
 					Thread.sleep(200);
 					_f = chicagoTSClientParalellel.stream("tskey".getBytes(),
-							Ints.toByteArray(4));
+							Longs.toByteArray(4));
 					cs = _f.get();
 					_resp = cs.getStream();
 					assertNotNull(_resp.get());
@@ -86,7 +88,7 @@ public class ChicagoTSClientTest {
 					cs.close();
 					Thread.sleep(200);
 					_f = chicagoTSClientParalellel.stream("tskey".getBytes(),
-							Ints.toByteArray(6));
+							Longs.toByteArray(6));
 					cs = _f.get();
 					_resp = cs.getStream();
 					assertNotNull(_resp.get());
@@ -167,21 +169,21 @@ public class ChicagoTSClientTest {
 				try {
 					Thread.sleep(200);
 					ListenableFuture<ChicagoStream> _f = chicagoTSClient
-							.stream("tskey".getBytes(), Ints.toByteArray(2));
+							.stream("tskey".getBytes(), Longs.toByteArray(2));
 					ChicagoStream cs = _f.get();
 					ListenableFuture<byte[]> _resp = cs.getStream();
 					assertNotNull(_resp.get());
 					response.add(new String(_resp.get()));
 					Thread.sleep(200);
 					_f = chicagoTSClient.stream("tskey".getBytes(),
-							Ints.toByteArray(4));
+							Longs.toByteArray(4));
 					cs = _f.get();
 					_resp = cs.getStream();
 					assertNotNull(_resp.get());
 					response.add(new String(_resp.get()));
 					Thread.sleep(200);
 					_f = chicagoTSClient.stream("tskey".getBytes(),
-							Ints.toByteArray(6));
+							Longs.toByteArray(6));
 					cs = _f.get();
 					_resp = cs.getStream();
 					assertNotNull(_resp.get());
@@ -254,7 +256,7 @@ public class ChicagoTSClientTest {
 			boolean gotResponse = false;
 			while (!gotResponse) {
 				ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream(
-						"tskey".getBytes(), Ints.toByteArray(i));
+						"tskey".getBytes(), Longs.toByteArray(i));
 				ChicagoStream cs = _f.get();
 				ListenableFuture<byte[]> _resp = cs.getStream();
 				assertNotNull(_resp.get());
@@ -286,16 +288,16 @@ public class ChicagoTSClientTest {
 
 
 		ListenableFuture<ChicagoStream> f = chicagoTSClient.stream("tskey"
-				.getBytes());
+				.getBytes(), Longs.toByteArray(0));
 		ChicagoStream cs = f.get();
 		ListenableFuture<byte[]> resp = cs.getStream();
 
 		assertNotNull(resp.get());
 		byte[] resultArray = resp.get();
-    int offset = ChiUtil.findOffset(resultArray);
+    long offset = ChiUtil.findOffset(resultArray);
     String result = new String(resultArray);
 
-		int old = -1;
+		long old = -1;
 		int count = 0;
 		while (result.contains(delimiter)) {
 
@@ -315,7 +317,7 @@ public class ChicagoTSClientTest {
         offset = offset +1;
       }
 			ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream(
-					"tskey".getBytes(), Ints.toByteArray(offset));
+					"tskey".getBytes(), Longs.toByteArray(offset));
 			cs = _f.get();
 			resp = cs.getStream();
       resultArray = resp.get();
@@ -325,7 +327,7 @@ public class ChicagoTSClientTest {
 		}
 
 		ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream(
-				"tskey".getBytes(), Ints.toByteArray(offset));
+				"tskey".getBytes(), Longs.toByteArray(offset));
 		cs = _f.get();
 		ListenableFuture<byte[]> _resp = cs.getStream();
 
@@ -334,9 +336,41 @@ public class ChicagoTSClientTest {
 		cs.close();
 	}
 
+
+  @Test
+  public void testLateststream() throws Exception {
+    String lastVal = "";
+    for (int i = 0; i < 1000; i++) {
+      String _v = "val" + i + "                                                   " +
+        "                                                                          " +
+        "                                                                    end!!"+i;
+      lastVal = "val" + i;
+      byte[] val = _v.getBytes();
+      assertNotNull(chicagoTSClient.write("tskey".getBytes(), val));
+      // System.out.println(i);
+    }
+    String delimiter = ChiUtil.delimiter;
+
+    ListenableFuture<ChicagoStream> f = chicagoTSClient.stream("tskey"
+      .getBytes());
+    ChicagoStream cs = f.get();
+    ListenableFuture<byte[]> resp = cs.getStream();
+
+    assertNotNull(resp.get());
+    byte[] resultArray = resp.get();
+    long offset = ChiUtil.findOffset(resultArray);
+    String result = new String(resultArray);
+
+    String output = result.split(ChiUtil.delimiter)[0];
+    System.out.println(output);
+    assertTrue(output.startsWith(lastVal));
+    cs.close();
+
+  }
+
 	@Test
 	public void transactLargeStream() throws Exception {
-		byte[] offset = null;
+		byte[] offset = Longs.toByteArray(0);
 		for (int i = 0; i < 10; i++) {
 			byte[] val = new byte[10240];
 			if (i == 12) {

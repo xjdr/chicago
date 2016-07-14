@@ -1,6 +1,6 @@
 package com.xjeffrose.chicago.client;
 
-import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 import com.xjeffrose.chicago.TestChicago;
 import com.xjeffrose.chicago.ZkClient;
 import com.xjeffrose.chicago.server.ChicagoServer;
@@ -59,7 +59,7 @@ public class ReplicationLockTest {
     List<String> servers =  chicagoTSClient.getNodeList(key.getBytes());
     System.out.println("Servers for key : " + servers.toString());
     String val = "testVal";
-    int insertedKey  = Ints.fromByteArray(chicagoTSClient.write(key.getBytes(),val.getBytes()));
+    long insertedKey  = Longs.fromByteArray(chicagoTSClient.write(key.getBytes(),val.getBytes()));
     assertTSClient(key,insertedKey,val,servers);
 
 
@@ -73,7 +73,7 @@ public class ReplicationLockTest {
     }
     System.out.println("Created the replication path.");
     assertEquals(2,chicagoTSClient.getEffectiveNodes(key.getBytes()).size());
-    insertedKey  = Ints.fromByteArray(chicagoTSClient.write(key.getBytes(),val.getBytes()));
+    insertedKey  = Longs.fromByteArray(chicagoTSClient.write(key.getBytes(),val.getBytes()));
     String removedServer = servers.remove(0);
 
     //Value should be present in only 2 nodes
@@ -84,7 +84,7 @@ public class ReplicationLockTest {
     ChicagoClient cc = new ChicagoClient(removedServer);
     try {
       System.out.println("Trying to get the value from bad node");
-      String futureval = new String(cc.read(key.getBytes(), Ints.toByteArray(insertedKey)).get());
+      String futureval = new String(cc.read(key.getBytes(), Longs.toByteArray(insertedKey)).get());
       assertTrue(futureval.equals(""));
     }catch(Exception e){
       e.printStackTrace();
@@ -93,12 +93,12 @@ public class ReplicationLockTest {
 
   }
 
-  public void assertTSClient(String colFam, int key, String val, List<String> nodes){
+  public void assertTSClient(String colFam, long key, String val, List<String> nodes){
     nodes.forEach(n -> {
       System.out.println("Checking node "+n);
       try {
         ChicagoClient cc = new ChicagoClient(n);
-        assertTrue(val.equals(new String(cc.read(colFam.getBytes(), Ints.toByteArray(key)).get())));
+        assertTrue(val.equals(new String(cc.read(colFam.getBytes(), Longs.toByteArray(key)).get())));
         cc.stop();
       }catch (Exception e){
         e.printStackTrace();

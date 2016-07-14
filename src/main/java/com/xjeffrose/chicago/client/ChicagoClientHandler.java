@@ -21,7 +21,7 @@ class ChicagoClientHandler extends SimpleChannelInboundHandler<ChicagoMessage> {
     if (cause.getClass() == XioIdleDisconnectException.class) {
 
     } else {
-      listener.onChannelError((Exception) cause);
+      listener.onChannelError(ctx, (Exception) cause);
     }
 
 //    ctx.fireExceptionCaught(cause);
