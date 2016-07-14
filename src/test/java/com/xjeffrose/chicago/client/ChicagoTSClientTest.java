@@ -9,6 +9,7 @@ import java.util.List;
 import com.google.common.primitives.Longs;
 import com.xjeffrose.chicago.ChiUtil;
 
+import com.xjeffrose.chicago.TestChicago;
 import org.apache.curator.test.InstanceSpec;
 import org.apache.curator.test.TestingServer;
 import org.junit.After;
@@ -19,7 +20,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import com.xjeffrose.chicago.TestChicago;
 import com.xjeffrose.chicago.server.ChicagoServer;
 
 public class ChicagoTSClientTest {

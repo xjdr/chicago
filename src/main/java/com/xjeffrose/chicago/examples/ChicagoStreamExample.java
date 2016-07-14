@@ -48,7 +48,7 @@ public class ChicagoStreamExample {
 
 
   public void transactStream() throws Exception {
-    long offset = 1770000;
+    long offset = 0;
 
     ListenableFuture<com.xjeffrose.chicago.client.ChicagoStream> f = chicagoTSClient.stream(key.getBytes(), Longs.toByteArray(offset));
     com.xjeffrose.chicago.client.ChicagoStream cs = f.get();
