@@ -5,6 +5,7 @@ import com.beust.jcommander.Parameter;
 import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.xjeffrose.chicago.ChiUtil;
+import com.xjeffrose.chicago.Chicago;
 import com.xjeffrose.chicago.client.ChicagoStream;
 import com.xjeffrose.chicago.client.ChicagoTSClient;
 
@@ -25,7 +26,7 @@ public class Taillog {
   @Parameter(names = {"--debug","-d"}, description = "Debug mode")
   private boolean debug = false;
 
-  @Parameter(names = "--help", help = true)
+  @Parameter(names = "--help", description="Show usage", help = true)
   private boolean help;
 
 
@@ -80,7 +81,7 @@ public class Taillog {
           if(debug) {
             System.out.println(offset + ":" + line);
           }else{
-            System.out.println(line);
+            printLine(line);
           }
           count++;
         }
@@ -100,6 +101,33 @@ public class Taillog {
       old = offset;
       newcs.close();
     }
+  }
+
+  public void printLine(String line){
+    String responseCode ="";
+    try{
+       responseCode =line.split("ResponseCode:")[1].split(" ")[2];
+    } catch (Exception e){
+
+    }
+    String cc;
+
+    if(line.startsWith("E")){
+      cc = ColorCodes.ANSI_RED;
+    }else if(line.startsWith("W")){
+      cc= ColorCodes.ANSI_WHITE;
+    }else{
+      cc= ColorCodes.ANSI_BLUE;
+      if(responseCode.equals("200")){
+        cc = ColorCodes.ANSI_GREEN;
+      }else if(responseCode.startsWith("4")){
+        cc = ColorCodes.ANSI_RED;
+      }else if(responseCode.startsWith("5")){
+        cc = ColorCodes.ANSI_WHITE;
+      }
+    }
+
+    System.out.println(cc + line + ColorCodes.ANSI_RESET);
   }
 
 
