@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.primitives.Longs;
-import com.sun.source.tree.AssertTree;
 import com.xjeffrose.chicago.ChiUtil;
 
 import org.apache.curator.test.InstanceSpec;
@@ -15,7 +14,6 @@ import org.apache.curator.test.TestingServer;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
