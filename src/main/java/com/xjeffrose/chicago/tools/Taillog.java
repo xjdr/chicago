@@ -79,10 +79,9 @@ public class Taillog {
       for(String line : lines){
         if(line.length()!= 0) {
           if(debug) {
-            System.out.println(offset + ":" + line);
-          }else{
-            printLine(line);
+            System.out.print("Last offset =" + offset + ":");
           }
+          printLine(line);
           count++;
         }
       }
