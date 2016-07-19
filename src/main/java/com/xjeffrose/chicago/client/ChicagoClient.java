@@ -3,6 +3,7 @@ package com.xjeffrose.chicago.client;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.xjeffrose.chicago.ChiUtil;
 import com.xjeffrose.chicago.DefaultChicagoMessage;
 import com.xjeffrose.chicago.Op;
 import io.netty.channel.ChannelFuture;
@@ -69,7 +70,7 @@ public class ChicagoClient extends BaseChicagoClient {
   }
 
   public ListenableFuture<byte[]> stream(byte[] key) throws ChicagoClientTimeoutException {
-    return stream("chicago".getBytes(), key);
+    return stream(ChiUtil.defaultColFam.getBytes(), key);
   }
 
   public ListenableFuture<byte[]> stream(byte[] colFam, byte[] key) throws ChicagoClientTimeoutException {
@@ -135,7 +136,7 @@ public class ChicagoClient extends BaseChicagoClient {
   }
 
   public ListenableFuture<byte[]> read(byte[] key) throws ChicagoClientTimeoutException {
-    return read("chicago".getBytes(), key);
+    return read(ChiUtil.defaultColFam.getBytes(), key);
   }
 
   public ListenableFuture<byte[]> read(byte[] colFam, byte[] key) throws ChicagoClientTimeoutException {
@@ -191,7 +192,7 @@ public class ChicagoClient extends BaseChicagoClient {
   }
 
   public boolean write(byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException {
-    return write("chicago".getBytes(), key, value);
+    return write(ChiUtil.defaultColFam.getBytes(), key, value);
   }
 
   public boolean write(byte[] colFam, byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException {
@@ -307,7 +308,7 @@ public class ChicagoClient extends BaseChicagoClient {
   }
 
   public boolean delete(byte[] key) throws ChicagoClientTimeoutException, ChicagoClientException {
-    return delete("chicago".getBytes(), key);
+    return delete(ChiUtil.defaultColFam.getBytes(), key);
   }
 
   public boolean delete(byte[] colFam, byte[] key) throws ChicagoClientTimeoutException, ChicagoClientException {

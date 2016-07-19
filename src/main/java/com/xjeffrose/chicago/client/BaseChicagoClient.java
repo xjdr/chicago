@@ -4,6 +4,7 @@ import com.google.common.hash.Funnels;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.xjeffrose.chicago.DefaultChicagoMessage;
 import com.xjeffrose.chicago.Op;
 import com.xjeffrose.chicago.ZkClient;
@@ -37,7 +38,10 @@ public class BaseChicagoClient {
   protected static int MAX_RETRY = 3;
   protected final AtomicInteger nodesAvailable = new AtomicInteger(0);
 
-  protected final ExecutorService exe = Executors.newFixedThreadPool(20);
+  protected final ExecutorService exe = Executors.newFixedThreadPool(20,
+    new ThreadFactoryBuilder()
+      .setNameFormat("chicago-client-worker-%d")
+      .build());
 
   protected final boolean single_server;
   protected final RendezvousHash rendezvousHash;
@@ -72,7 +76,7 @@ public class BaseChicagoClient {
   public BaseChicagoClient(String zkConnectionString, int quorum) throws InterruptedException {
 
     this.single_server = false;
-    this.zkClient = new ZkClient(zkConnectionString);
+    this.zkClient = new ZkClient(zkConnectionString, false);
     this.quorum = quorum;
 
     ArrayList<String> nodeList = new ArrayList<>();

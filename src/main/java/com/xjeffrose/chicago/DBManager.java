@@ -4,7 +4,10 @@ import com.google.common.primitives.Longs;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +63,8 @@ public class DBManager {
       log.error("Could not load DB: " + config.getDBPath() + " " + e.getMessage());
       System.exit(-1);
     }
+
+    createColumnFamily(ChiUtil.defaultColFam.getBytes());
   }
 
   void removeDB(File file) {
@@ -132,6 +137,7 @@ public class DBManager {
     if (colFamilyExists(name)){
       return true;
     }
+
     ColumnFamilyOptions columnFamilyOptions = new ColumnFamilyOptions();
     if(!config.isDatabaseMode()){
       columnFamilyOptions.setCompactionStyle(CompactionStyle.FIFO)
@@ -284,7 +290,7 @@ public class DBManager {
     }
     try {
       byte[] ts = Longs.toByteArray(counter.get(new String(colFam)).getAndIncrement());
-      if(Longs.fromByteArray(ts)%500 == 0) {
+      if(Longs.fromByteArray(ts)%1000 == 0) {
         log.info("key reached " + Longs.fromByteArray(ts) + " for colFam "+ new String(colFam));
       }
       resetIfOverflow(counter.get(new String(colFam)));

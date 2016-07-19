@@ -3,6 +3,7 @@ package com.xjeffrose.chicago.client;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.xjeffrose.chicago.ChiUtil;
 import com.xjeffrose.chicago.DefaultChicagoMessage;
 import com.xjeffrose.chicago.Op;
 import io.netty.channel.ChannelFuture;
@@ -50,9 +51,9 @@ public class ChicagoTSClient extends BaseChicagoClient {
                     if(cs[0] == null) {
                       cs[0] = new ChicagoStream(listener);
                     }
-                    cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.STREAM, key, null, offset));
                     listener.addID(id);
                     cs[0].addID(id);
+                    cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.STREAM, key, null, offset));
                 });
               }else{
                 log.info("Channel is not writeable !!!!!"+cf.channel().toString());
@@ -86,7 +87,7 @@ public class ChicagoTSClient extends BaseChicagoClient {
   }
 
   public ListenableFuture<byte[]> read(byte[] key) throws ChicagoClientTimeoutException {
-    return read("chicago".getBytes(), key);
+    return read(ChiUtil.defaultColFam.getBytes(), key);
   }
 
   public ListenableFuture<byte[]> read(byte[] key, byte[] offset) throws ChicagoClientTimeoutException {
@@ -104,7 +105,7 @@ public class ChicagoTSClient extends BaseChicagoClient {
               exe.execute(() -> {
                 UUID id = UUID.randomUUID();
                 Listener listener = connectionPoolMgr.getListener(node); //Blocking
-                cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.STREAM, key, null, offset));
+                cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.READ, key, offset, null));
                 listener.addID(id);
                 exe.execute(() -> {
                   try {

@@ -1,5 +1,6 @@
 package com.xjeffrose.chicago.appender;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -18,7 +19,10 @@ public class ChicagoAppender extends AppenderSkeleton{
     private String key;
     private int pool;
     private String fileName;
-    private static ExecutorService executor = Executors.newFixedThreadPool(20);
+    private static ExecutorService executor = Executors.newFixedThreadPool(20,
+      new ThreadFactoryBuilder()
+        .setNameFormat("chicago-appender-worker-%d")
+        .build());
     private final ConcurrentLinkedDeque<ChicagoTSClient> queue = new ConcurrentLinkedDeque<>();
     private final RollingFileAppender fileAppender = new RollingFileAppender();
 

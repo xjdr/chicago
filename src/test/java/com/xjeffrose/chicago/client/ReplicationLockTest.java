@@ -64,7 +64,7 @@ public class ReplicationLockTest {
 
 
     //Insert one node in replication lock
-    ZkClient zk = new ZkClient(testingServer.getConnectString());
+    ZkClient zk = new ZkClient(testingServer.getConnectString(),false);
     zk.start();
     val = "newVal";
     boolean created  = zk.createIfNotExist(ChicagoServer.NODE_LOCK_PATH+"/"+key+"/"+servers.get(0), "");

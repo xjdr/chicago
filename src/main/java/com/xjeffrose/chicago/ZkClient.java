@@ -27,17 +27,20 @@ public class ZkClient {
   private String connectionString;
   private ChiConfig config;
   private InetSocketAddress address;
+  private final boolean isServer;
 
-  public ZkClient(CuratorFramework client) {
+  public ZkClient(CuratorFramework client, boolean isServer) {
     this.client = client;
     this.connectionString = client.getZookeeperClient().getCurrentConnectionString();
+    this.isServer = isServer;
   }
 
-  public ZkClient(String serverSet) {
+  public ZkClient(String serverSet, boolean isServer) {
     connectionString = serverSet;
     RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3);
     client = CuratorFrameworkFactory.newClient(serverSet, retryPolicy);
     client.getConnectionStateListenable().addListener(connectionStateListener);
+    this.isServer = isServer;
   }
 
   public void rebuild() {
@@ -49,22 +52,25 @@ public class ZkClient {
   public void register(String NODE_LIST_PATH, ChiConfig config, InetSocketAddress address) {
     this.address = address;
     this.config = config;
-    try {
-      String path = NODE_LIST_PATH + "/" + address.getAddress().getHostAddress() + ":" + address.getPort();
-      if(client.checkExists().forPath(path) != null) {
+    if(isServer) {
+      try {
+        String path =
+          NODE_LIST_PATH + "/" + address.getAddress().getHostAddress() + ":" + address.getPort();
+        if (client.checkExists().forPath(path) != null) {
+          client
+            .delete()
+            .forPath(path);
+        }
         client
-          .delete()
-          .forPath(path);
+          .create()
+          .creatingParentsIfNeeded()
+          .withMode(CreateMode.EPHEMERAL)
+          .forPath(path,
+            ConfigSerializer.serialize(config).getBytes());
+      } catch (Exception e) {
+        log.error("Error registering Server", e);
+        throw new RuntimeException(e);
       }
-      client
-        .create()
-        .creatingParentsIfNeeded()
-        .withMode(CreateMode.EPHEMERAL)
-        .forPath(path,
-          ConfigSerializer.serialize(config).getBytes());
-    } catch (Exception e) {
-      log.error("Error registering Server", e);
-      throw new RuntimeException(e);
     }
   }
 

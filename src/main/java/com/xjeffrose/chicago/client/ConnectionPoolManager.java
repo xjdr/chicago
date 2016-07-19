@@ -1,5 +1,6 @@
 package com.xjeffrose.chicago.client;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.xjeffrose.chicago.ZkClient;
 import com.xjeffrose.xio.SSL.XioSecurityHandlerImpl;
 import com.xjeffrose.xio.client.retry.BoundedExponentialBackoffRetry;
@@ -42,7 +43,10 @@ public class ConnectionPoolManager {
   private final NioEventLoopGroup workerLoop = new NioEventLoopGroup(20);
   private final ZkClient zkClient;
   private final AtomicBoolean running = new AtomicBoolean(false);
-  private final ScheduledExecutorService connectCheck = Executors.newSingleThreadScheduledExecutor();
+  private final ScheduledExecutorService connectCheck = Executors
+    .newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
+                                          .setNameFormat("chicago-connection-check")
+                                          .build());
 
   public ConnectionPoolManager(ZkClient zkClient) {
     this.zkClient = zkClient;

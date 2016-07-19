@@ -110,7 +110,7 @@ public class NodeDownTest {
 
   public void stopServer(String server) throws Exception{
     //BringDown one server
-    ZkClient zk = new ZkClient(testingServer.getConnectString());
+    ZkClient zk = new ZkClient(testingServer.getConnectString(),false);
     zk.start();
     System.out.println("Stopping server : "+servers.get(server).config.getDBBindEndpoint());
     zk.delete("/chicago/node-list/" + servers.get(server).config.getDBBindEndpoint());
@@ -119,7 +119,7 @@ public class NodeDownTest {
 
   public void startServer(String server) throws Exception {
     //BringDown one server
-    ZkClient zk = new ZkClient(testingServer.getConnectString());
+    ZkClient zk = new ZkClient(testingServer.getConnectString(),false);
     zk.start();
     System.out.println("Starting server : "+ servers.get(server).config.getDBBindEndpoint());
     zk.set("/chicago/node-list/"+ servers.get(server).config.getDBBindEndpoint(), "");

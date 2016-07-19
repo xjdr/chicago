@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 public class ChiUtil {
   private static final Logger log = LoggerFactory.getLogger(ChiUtil.class.getName());
   public static final String delimiter = "@@@";
+  public static final String defaultColFam = "chicago";
   public static byte[] getTimeStamp() {
     return ZonedDateTime
         .now(ZoneId.of("UTC"))

@@ -1,5 +1,8 @@
 package com.xjeffrose.chicago;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import org.junit.Test;
 import org.junit.Before;
 import org.junit.Rule;
@@ -15,6 +18,16 @@ public class DBManagerTest {
   @Before
   public void setupFixture() throws Exception {
     dbManager = new DBManager(TestChicago.makeConfig(TestChicago.chicago_dir(tmp), 1, "",false));
+  }
+
+  @Test
+  public void TestDatFormat(){
+    byte[] colFam = new String("chicago").getBytes();
+    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    Date date = new Date();
+    String time = dateFormat.format(date);
+    String key = new String(colFam).concat("-").concat(time);
+    System.out.print(key);
   }
 
   @Test
