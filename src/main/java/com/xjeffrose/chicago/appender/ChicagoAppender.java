@@ -1,29 +1,34 @@
 package com.xjeffrose.chicago.appender;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.xjeffrose.chicago.Chicago;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.FileAppender;
 import org.apache.log4j.RollingFileAppender;
 import org.apache.log4j.helpers.LogLog;
 import org.apache.log4j.spi.LoggingEvent;
 import com.xjeffrose.chicago.client.ChicagoTSClient;
-
-import java.nio.ByteBuffer;
-import java.util.Date;
 
 public class ChicagoAppender extends AppenderSkeleton{
     private String chicagoZk;
     private String key;
     private int pool;
     private String fileName;
-    private static ExecutorService executor = Executors.newFixedThreadPool(20,
+    private ChicagoAppender self;
+    private final static ConcurrentLinkedQueue<String> buffer = new ConcurrentLinkedQueue<>();
+    private final static ExecutorService schedulerExecutor = Executors.newSingleThreadExecutor(
       new ThreadFactoryBuilder()
-        .setNameFormat("chicago-appender-worker-%d")
+        .setNameFormat("chicago-appender-scheduler")
         .build());
-    private final ConcurrentLinkedDeque<ChicagoTSClient> queue = new ConcurrentLinkedDeque<>();
+    private final static ExecutorService executor = Executors.newFixedThreadPool(5,
+    new ThreadFactoryBuilder()
+      .setNameFormat("chicago-appender-worker-%d")
+      .build());
+    private final ConcurrentLinkedDeque<ChicagoTSClient> clientQueue = new ConcurrentLinkedDeque<>();
     private final RollingFileAppender fileAppender = new RollingFileAppender();
 
     private class Write implements Runnable {
@@ -41,7 +46,8 @@ public class ChicagoAppender extends AppenderSkeleton{
             try {
                 cts.write(key.getBytes(), message.getBytes());
             } catch (Exception e) {
-                appender.getErrorHandler().error(message);
+                System.out.println(message);
+                e.printStackTrace();
             }
         }
     }
@@ -63,41 +69,64 @@ public class ChicagoAppender extends AppenderSkeleton{
     }
 
     @Override
-    public void activateOptions(){
-        if(chicagoZk == null) {
-            throw new RuntimeException("Chicago Log4j Appender: chicago ZK not configured!");
-        }
+    public void activateOptions() {
+      if (chicagoZk == null) {
+        throw new RuntimeException("Chicago Log4j Appender: chicago ZK not configured!");
+      }
 
-        if(key == null){
-            throw new RuntimeException("Chicago Log4j Appender: chicago key not configured!");
-        }
-        if(pool == 0){
-            pool = 4;
-        }
+      if (key == null) {
+        throw new RuntimeException("Chicago Log4j Appender: chicago key not configured!");
+      }
+      if (pool == 0) {
+        pool = 4;
+      }
 
-        try {
-            for(int i =0; i< pool;i++) {
-                LogLog.debug("Attempting connection");
-                ChicagoTSClient cs=  new ChicagoTSClient(chicagoZk, 3);
-                cs.startAndWaitForNodes(3,2000);
-                queue.add(cs);
-                LogLog.debug("Chicago connected to " + chicagoZk);
-            }
-        }catch (InterruptedException exception) {
-
+      try {
+        for (int i = 0; i < pool; i++) {
+          LogLog.debug("Attempting connection");
+          ChicagoTSClient cs = new ChicagoTSClient(chicagoZk, 3);
+          cs.startAndWaitForNodes(3, 2000);
+          clientQueue.add(cs);
+          LogLog.debug("Chicago connected to " + chicagoZk);
+          self = this;
         }
+      } catch (InterruptedException exception) {
+        LogLog.debug("Chicago Appender failed to initialize!!!");
+      }
+
+      schedulerExecutor.submit(new Runnable() {
+        @Override
+        public void run() {
+          pushToChicago(self);
+        }
+      });
     }
+
+    public void pushToChicago(ChicagoAppender appender){
+      while(true) {
+        if (!buffer.isEmpty()) {
+          executor.submit(new Write(getNext(), buffer.poll(), appender));
+        } else {
+          try {
+            Thread.sleep(10);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+            break;
+          }
+        }
+      }
+    }
+
     @Override
     protected void append(LoggingEvent loggingEvent) {
         Long timeStamp = loggingEvent.getTimeStamp();
         String message = subAppend(loggingEvent);
-        LogLog.debug("[" + new Date(timeStamp) + "]" + message);
-        executor.submit(new Write(getNext(),message,this));
+        buffer.add(message);
     }
 
     private ChicagoTSClient getNext(){
-        ChicagoTSClient cts = queue.removeFirst();
-        queue.addLast(cts);
+        ChicagoTSClient cts = clientQueue.removeFirst();
+        clientQueue.addLast(cts);
         return cts;
     }
 
@@ -107,9 +136,10 @@ public class ChicagoAppender extends AppenderSkeleton{
 
     public void close() {
         executor.shutdownNow();
+        schedulerExecutor.shutdownNow();
         try {
-            while(queue.peekFirst() != null){
-                ChicagoTSClient cts = queue.removeFirst();
+            while(clientQueue.peekFirst() != null){
+                ChicagoTSClient cts = clientQueue.removeFirst();
                 cts.stop();
             }
         } catch (Exception e) {
@@ -119,7 +149,6 @@ public class ChicagoAppender extends AppenderSkeleton{
         if(!this.closed) {
             this.closed = true;
         }
-
     }
 
     public void setFileName(String fileName){
