@@ -21,11 +21,15 @@ class ChicagoListener implements Listener<byte[]> {
   private static final ConcurrentLinkedDeque<UUID> reqIds = new ConcurrentLinkedDeque<>();
   private static final ConcurrentLinkedDeque<UUID> messageIds = new ConcurrentLinkedDeque<>();
   private static final Map<UUID, ChicagoMessage> responseMap = new ConcurrentHashMap<>();
+  private static final Map<UUID, ListenResponse> callBackListener = new ConcurrentHashMap<>();
 
   public ChicagoListener() {
-
   }
 
+  @Override
+  public void registerCallback(UUID uuid,ListenResponse listenResponse){
+    callBackListener.put(uuid, listenResponse);
+  }
 
   @Override
   public void onRequestSent() {
@@ -43,6 +47,8 @@ class ChicagoListener implements Listener<byte[]> {
       messageIds.add(chicagoMessage.getId());
       responseMap.put(chicagoMessage.getId(), chicagoMessage);
     }
+    ListenResponse listenResponse = callBackListener.get(chicagoMessage.getId());
+    listenResponse.onResponse(chicagoMessage.getVal());
   }
 
   @Override

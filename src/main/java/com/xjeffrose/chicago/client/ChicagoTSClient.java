@@ -205,14 +205,19 @@ public class ChicagoTSClient extends BaseChicagoClient {
                     listener.addID(id);
                     idList.add(id);
                     listenerList.add(listener);
-                    exe.execute(() -> {
-                        try {
-                          responseList.add((byte[]) listener.getStatus(idList)); //Blocking
-                        } catch (ChicagoClientTimeoutException e) {
-//                          Thread.currentThread().interrupt();
-                          throw new RuntimeException(e);
-                        }
-                    });
+                    listener.registerCallback(id, new ListenResponse() {
+                       @Override public void onResponse(byte[] value) {
+                         responseList.add(value);
+                       }
+                     });
+//                    exe.execute(() -> {
+//                        try {
+//                          responseList.add((byte[]) listener.getStatus(idList)); //Blocking
+//                        } catch (ChicagoClientTimeoutException e) {
+////                          Thread.currentThread().interrupt();
+//                          throw new RuntimeException(e);
+//                        }
+//                    });
                 });
               }
             }

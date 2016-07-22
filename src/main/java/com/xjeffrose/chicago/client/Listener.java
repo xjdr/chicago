@@ -32,4 +32,6 @@ interface Listener<T> {
   T getResponse(ConcurrentLinkedDeque<UUID> idList) throws ChicagoClientTimeoutException;
 
   T getStatus(ConcurrentLinkedDeque<UUID> idList) throws ChicagoClientTimeoutException;
+
+  void registerCallback(UUID uuid, ListenResponse listenResponse);
 }
