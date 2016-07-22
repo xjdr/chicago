@@ -17,10 +17,10 @@ import java.net.SocketAddress;
 
 public class TestCTX implements ChannelHandlerContext{
 
-//  @Override
-//  public ChannelHandlerInvoker invoker() {
-//    return null;
-//  }
+  //@Override
+  //public ChannelHandlerInvoker invoker() {
+  //  return null;
+  //}
 
   @Override
   public Channel channel() {
@@ -29,7 +29,7 @@ public class TestCTX implements ChannelHandlerContext{
 
   @Override
   public EventExecutor executor() {
-    return new DefaultEventExecutor();
+    return null;
   }
 
 
@@ -223,8 +223,7 @@ public class TestCTX implements ChannelHandlerContext{
     return null;
   }
 
-  @Override
-  public <T> boolean hasAttr(AttributeKey<T> attributeKey) {
+  @Override public <T> boolean hasAttr(AttributeKey<T> attributeKey) {
     return false;
   }
 }

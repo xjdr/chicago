@@ -211,6 +211,7 @@ class ChicagoListener implements Listener<byte[]> {
   }
 
   private byte[] _getStatus(ConcurrentLinkedDeque<UUID> idList, long startTime) throws ChicagoClientTimeoutException {
+    long methodStartTime = System.currentTimeMillis();
     while (Collections.disjoint(reqIds, messageIds)) {
       if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
 //        Thread.currentThread().interrupt();
@@ -251,7 +252,7 @@ class ChicagoListener implements Listener<byte[]> {
     } else {
       return _getStatus(idList, startTime);
     }
-
+    System.out.println("Time to wait for listener is :"+ (System.currentTimeMillis() - methodStartTime) + "ms");
     if (_resp.getKey().length == 4 ) {
       return _resp.getVal();
     } else {

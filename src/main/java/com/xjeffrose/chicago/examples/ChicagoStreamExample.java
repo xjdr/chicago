@@ -8,6 +8,7 @@ import com.xjeffrose.chicago.client.ChicagoClientTimeoutException;
 import com.xjeffrose.chicago.client.ChicagoStream;
 import com.xjeffrose.chicago.client.ChicagoTSClient;
 
+import io.netty.buffer.ByteBuf;
 import java.util.Arrays;
 
 /**
@@ -16,39 +17,42 @@ import java.util.Arrays;
 public class ChicagoStreamExample {
   ChicagoTSClient chicagoTSClient;
 
+  //private static String key = "ppfe-msmaster-LM-SJN-00875858";
   private static String key = "ppfe-msmaster";
 
   public static void main(String[] args) throws Exception{
     ChicagoStreamExample cs = new ChicagoStreamExample();
-    //cs.chicagoTSClient = new ChicagoTSClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181",3);
-    cs.chicagoTSClient = new ChicagoTSClient("10.22.100.183:2181,10.25.180.234:2181,10.22.103.86:2181,10.25.180.247:2181,10.25.69.226:2181",3);
+    cs.chicagoTSClient = new ChicagoTSClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181",3);
+    //cs.chicagoTSClient = new ChicagoTSClient("10.22.100.183:2181,10.25.180.234:2181,10.22.103.86:2181,10.25.180.247:2181,10.25.69.226:2181",3);
 
 
 
     cs.chicagoTSClient.startAndWaitForNodes(3);
-    //cs.writeSomeData();
-    cs.transactStream();
+    cs.writeSomeData();
+    //cs.transactStreamWithBuf();
     System.exit(0);
   }
 
   public void writeSomeData() throws Exception{
     String val = "Test data";
-    for(int i =0;i<60000;i++){
+    long startTime = System.currentTimeMillis();
+    for(int i =0;i<100;i++){
       try {
         System.out.println(i);
-        chicagoTSClient.write(key.getBytes(), (i+val).getBytes());
-        Thread.sleep(300000);
+        System.out.println("Response = " + Longs.fromByteArray(chicagoTSClient.write(key.getBytes(), (i+val).getBytes())));
+        //Thread.sleep(300000);
       } catch (ChicagoClientException e){
         e.printStackTrace();
       } catch (ChicagoClientTimeoutException e){
         e.printStackTrace();
       }
     }
+    System.out.println("Total time taken :"+ (System.currentTimeMillis() - startTime) + "ms");
   }
 
 
   public void transactStream() throws Exception {
-    long offset = 0;
+    Long offset = 0L;
 
     ListenableFuture<com.xjeffrose.chicago.client.ChicagoStream> f = chicagoTSClient.stream(key.getBytes(), Longs.toByteArray(offset));
     com.xjeffrose.chicago.client.ChicagoStream cs = f.get();
@@ -90,6 +94,30 @@ public class ChicagoStreamExample {
       old = offset;
       newcs.close();
     }
+  }
 
+  public void transactStreamWithBuf() throws Exception {
+    ByteBuf buffer = chicagoTSClient.bufStream(key,0l);
+    int readableBytes = buffer.readableBytes();
+    int i =0;
+    while(true) {
+      if (readableBytes > 0) {
+        byte[] data = new byte[buffer.readableBytes()];
+        try {
+          buffer.readBytes(data);
+          String stringData = new String(data);
+          String[] lines = (stringData).split("\0");
+          for (String line : lines) {
+            line.replace('\n',' ');
+            System.out.println(++i + line);
+          }
+        }catch (Exception e){
+          e.printStackTrace();
+        }
+      }else {
+        Thread.sleep(100);
+      }
+      readableBytes = buffer.readableBytes();
+    }
   }
 }

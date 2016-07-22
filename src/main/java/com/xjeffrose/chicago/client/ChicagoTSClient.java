@@ -1,11 +1,14 @@
 package com.xjeffrose.chicago.client;
 
+import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.xjeffrose.chicago.ChiUtil;
 import com.xjeffrose.chicago.DefaultChicagoMessage;
 import com.xjeffrose.chicago.Op;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -234,9 +237,13 @@ public class ChicagoTSClient extends BaseChicagoClient {
         }
 
         if (responseList.stream().allMatch(b -> b != null)) {
-//          return (byte[]) listenerList.removeFirst().getResponse(idList.getFirst());
+          for(byte[] response : responseList){
+            System.out.println("Responses :" + Longs.fromByteArray(response));
+          }
+          System.out.println("Total time for write : "+ (System.currentTimeMillis() - startTime) + "ms" );
           return responseList.getFirst();
         } else {
+          System.out.println("Return value from different servers are not same. Trying to write again!!!");
           if (MAX_RETRY < retries) {
             if (TIMEOUT_ENABLED) {
               return _write(key, value, retries + 1).get(TIMEOUT, TimeUnit.MILLISECONDS);
@@ -248,5 +255,70 @@ public class ChicagoTSClient extends BaseChicagoClient {
           }
         }
     });
+  }
+
+  public ByteBuf bufStream(String key, long offset) throws Exception{
+    ByteBuf returnByteBuf = Unpooled.directBuffer();
+    returnByteBuf.markWriterIndex();
+    returnByteBuf.markReaderIndex();
+    ListeningExecutorService executor = MoreExecutors.listeningDecorator(exe);
+    long[] offsets = new long[1];
+    offsets[0] = offset;
+    executor.submit(() -> {
+      try {
+        ListenableFuture<ChicagoStream> f = stream(key.getBytes(), Longs.toByteArray(offsets[0]));
+        com.xjeffrose.chicago.client.ChicagoStream cs = f.get();
+        ListenableFuture<byte[]> resp = cs.getStream();
+
+        byte[] resultArray = resp.get();
+        String result = new String(resultArray);
+        cs.close();
+        long old = -1;
+        while (true) {
+          if (!result.contains(ChiUtil.delimiter)) {
+            System.out.println("No delimetr present");
+            System.out.println(result);
+            break;
+          }
+
+          offsets[0] = ChiUtil.findOffset(resultArray);
+          String data = (result.split(ChiUtil.delimiter)[0]);
+          int count = data.length();
+          returnByteBuf.writeBytes(data.getBytes());
+          //for (String line : lines) {
+          //  if (line.length() != 0) {
+          //    returnByteBuf.writeBytes(line.getBytes());
+          //    count++;
+          //  }
+          //}
+          if (count > 0) {
+            offsets[0] = offsets[0] + 1;
+          }
+          if (old != -1 && (old == offsets[0])) {
+            Thread.sleep(500);
+          }
+          //if(returnByteBuf.writerIndex() > 900000){
+          //  returnByteBuf.resetWriterIndex();
+          //}
+          //
+          //if(returnByteBuf.readerIndex() > 900000){
+          //  returnByteBuf.resetReaderIndex();
+          //}
+
+          ListenableFuture<com.xjeffrose.chicago.client.ChicagoStream> _f =
+            stream(key.getBytes(), Longs.toByteArray(offsets[0]));
+          ChicagoStream newcs = _f.get();
+          ListenableFuture<byte[]> newresp = newcs.getStream();
+          resultArray = newresp.get();
+          result = new String(resultArray);
+          old = offsets[0];
+          newcs.close();
+        }
+      }catch (Exception e){
+        e.printStackTrace();
+      }
+      return;
+    });
+    return returnByteBuf;
   }
 }

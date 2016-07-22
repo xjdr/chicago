@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.rocksdb.ColumnFamilyDescriptor;
@@ -197,7 +198,7 @@ public class DBManager {
     }
   }
 
-  public void resetIfOverflow(AtomicLong l){
+  public void resetIfOverflow(AtomicLong l, String colFam){
     if(l.get() < 0 || l.get() == Long.MIN_VALUE){
       l.set(0);
     }
@@ -266,7 +267,7 @@ public class DBManager {
         //Set the AtomicInteger for the colFam if the key is bigger than the already set value.
         if (Longs.fromByteArray(key) > counter.get(new String(colFam)).get()) {
           counter.get(new String(colFam)).set(Longs.fromByteArray(key) + 1);
-          resetIfOverflow(counter.get(new String(colFam)));
+          resetIfOverflow(counter.get(new String(colFam)),new String(colFam));
         }
         if(Longs.fromByteArray(key) %1000 == 0) {
           log.info("colFam/key reached : " + new String(colFam) + " " + Longs.fromByteArray(key));
@@ -293,7 +294,7 @@ public class DBManager {
       if(Longs.fromByteArray(ts)%1000 == 0) {
         log.info("key reached " + Longs.fromByteArray(ts) + " for colFam "+ new String(colFam));
       }
-      resetIfOverflow(counter.get(new String(colFam)));
+      resetIfOverflow(counter.get(new String(colFam)),new String(colFam));
       db.put(columnFamilies.get(new String(colFam)), writeOptions, ts, value);
       return ts;
     } catch (RocksDBException e) {

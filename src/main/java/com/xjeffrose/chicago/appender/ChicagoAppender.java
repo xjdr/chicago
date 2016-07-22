@@ -24,6 +24,7 @@ public class ChicagoAppender extends AppenderSkeleton{
       new ThreadFactoryBuilder()
         .setNameFormat("chicago-appender-scheduler")
         .build());
+
     private final static ExecutorService executor = Executors.newFixedThreadPool(5,
     new ThreadFactoryBuilder()
       .setNameFormat("chicago-appender-worker-%d")
@@ -44,6 +45,9 @@ public class ChicagoAppender extends AppenderSkeleton{
         @Override
         public void run() {
             try {
+                if(message.contains("--------")){
+                  System.out.println(message);
+                }
                 cts.write(key.getBytes(), message.getBytes());
             } catch (Exception e) {
                 System.out.println(message);

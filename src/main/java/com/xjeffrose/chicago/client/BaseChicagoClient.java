@@ -33,12 +33,13 @@ public class BaseChicagoClient {
   private static final Logger log = LoggerFactory.getLogger(BaseChicagoClient.class);
   protected final static String NODE_LIST_PATH = "/chicago/node-list";
   public final static String REPLICATION_LOCK_PATH ="/chicago/replication-lock";
-  protected static final long TIMEOUT = 1000;
+  protected static final long TIMEOUT = 4000;
   protected static boolean TIMEOUT_ENABLED = true;
   protected static int MAX_RETRY = 3;
   protected final AtomicInteger nodesAvailable = new AtomicInteger(0);
 
   protected final ExecutorService exe = Executors.newFixedThreadPool(20,
+  protected final ExecutorService exe = Executors.newFixedThreadPool(4,
     new ThreadFactoryBuilder()
       .setNameFormat("chicago-client-worker-%d")
       .build());

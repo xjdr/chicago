@@ -6,6 +6,7 @@ import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.xjeffrose.chicago.ChiUtil;
 import com.xjeffrose.chicago.Chicago;
+import com.xjeffrose.chicago.client.ChicagoClientTimeoutException;
 import com.xjeffrose.chicago.client.ChicagoStream;
 import com.xjeffrose.chicago.client.ChicagoTSClient;
 import java.text.DateFormat;
@@ -41,7 +42,7 @@ public class Taillog {
   @Parameter(names = {"--infinteLoop","-i"}, description = "Keep streaming infintely ?")
   private Boolean infinte = false;
 
-  @Parameter(names = "--help", description="Show usage", help = true)
+  @Parameter(names = {"--help","-h"}, description="Show usage", help = true)
   private boolean help;
   private static final Logger log = LoggerFactory.getLogger(Taillog.class.getName());
   private ChicagoTSClient chicagoTSClient;
@@ -106,7 +107,7 @@ public class Taillog {
           if(debug) {
             System.out.print("Last offset =" + offset + ":");
           }
-          if(endDateTime !=null && endDateTime.before(getDate(line))){
+          if(endDateTime !=null && endDateTime.after(getDate(line))){
             System.out.println("End time reached.");
             System.exit(0);
           }
@@ -125,8 +126,18 @@ public class Taillog {
         Thread.sleep(500);
       }
 
-      ListenableFuture<com.xjeffrose.chicago.client.ChicagoStream> _f = chicagoTSClient.stream(key.getBytes(), Longs.toByteArray(offset));
-      ChicagoStream newcs = _f.get();
+      ChicagoStream newcs = null;
+      while(true) {
+        try {
+          ListenableFuture<com.xjeffrose.chicago.client.ChicagoStream> _f =
+            chicagoTSClient.stream(key.getBytes(), Longs.toByteArray(offset));
+          newcs = _f.get();
+          break;
+        } catch (Exception e) {
+          e.printStackTrace();
+          Thread.sleep(100);
+        }
+      }
       ListenableFuture<byte[]> newresp = newcs.getStream();
       resultArray = newresp.get();
       result = new String(resultArray);
