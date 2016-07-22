@@ -39,7 +39,6 @@ public class BaseChicagoClient {
   protected final AtomicInteger nodesAvailable = new AtomicInteger(0);
 
   protected final ExecutorService exe = Executors.newFixedThreadPool(20,
-  protected final ExecutorService exe = Executors.newFixedThreadPool(4,
     new ThreadFactoryBuilder()
       .setNameFormat("chicago-client-worker-%d")
       .build());
