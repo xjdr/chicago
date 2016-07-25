@@ -5,9 +5,6 @@ import com.beust.jcommander.Parameter;
 import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.xjeffrose.chicago.ChiUtil;
-import com.xjeffrose.chicago.Chicago;
-import com.xjeffrose.chicago.client.ChicagoClientTimeoutException;
-import com.xjeffrose.chicago.client.ChicagoStream;
 import com.xjeffrose.chicago.client.ChicagoTSClient;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -73,23 +70,20 @@ public class Taillog {
   }
 
   public void printStream(String key, long offset, String endTime) throws Exception{
-    ListenableFuture<ChicagoStream> f;
     Date endDateTime = null;
     if(endTime != null) {
       DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
       endDateTime = dateFormat.parse(endTime);
     }
+    ListenableFuture<byte[]> resp = null;
     if(offset == -1){
-      f = chicagoTSClient.stream(key.getBytes());
+      resp = chicagoTSClient.stream(key.getBytes());
     }else {
-      f = chicagoTSClient.stream(key.getBytes(), Longs.toByteArray(offset));
+      resp = chicagoTSClient.stream(key.getBytes(), Longs.toByteArray(offset));
     }
-    ChicagoStream cs = f.get();
-    ListenableFuture<byte[]> resp = cs.getStream();
 
     byte[] resultArray = resp.get();
     String result = new String(resultArray);
-    cs.close();
     long old=-1;
     while(true){
       if(!result.contains(ChiUtil.delimiter)){
@@ -126,23 +120,21 @@ public class Taillog {
         Thread.sleep(500);
       }
 
-      ChicagoStream newcs = null;
-      while(true) {
-        try {
-          ListenableFuture<com.xjeffrose.chicago.client.ChicagoStream> _f =
-            chicagoTSClient.stream(key.getBytes(), Longs.toByteArray(offset));
-          newcs = _f.get();
-          break;
-        } catch (Exception e) {
-          e.printStackTrace();
-          Thread.sleep(100);
-        }
-      }
-      ListenableFuture<byte[]> newresp = newcs.getStream();
+      //while(true) {
+      //  try {
+      //    ListenableFuture<com.xjeffrose.chicago.client.ChicagoStream> _f =
+      //      chicagoTSClient.stream(key.getBytes(), Longs.toByteArray(offset));
+      //    newcs = _f.get();
+      //    break;
+      //  } catch (Exception e) {
+      //    e.printStackTrace();
+      //    Thread.sleep(100);
+      //  }
+      //}
+      ListenableFuture<byte[]> newresp = chicagoTSClient.stream(key.getBytes(), Longs.toByteArray(offset));
       resultArray = newresp.get();
       result = new String(resultArray);
       old = offset;
-      newcs.close();
     }
     return;
   }
@@ -210,9 +202,7 @@ public class Taillog {
   public Long getLastOffset(String key) {
     long endOffset=-1;
     try {
-      ListenableFuture<ChicagoStream> f = chicagoTSClient.stream(key.getBytes());
-      ChicagoStream cs = f.get();
-      ListenableFuture<byte[]> resp = cs.getStream();
+      ListenableFuture<byte[]> resp = chicagoTSClient.stream(key.getBytes());
       byte[] resultArray = resp.get();
       String result = new String(resultArray);
       if (result.contains(ChiUtil.delimiter)) {

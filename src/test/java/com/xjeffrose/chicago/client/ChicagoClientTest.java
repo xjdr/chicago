@@ -62,7 +62,7 @@ public class ChicagoClientTest {
       byte[] val = _v.getBytes();
       assertEquals(true, chicagoClientDHT.write(key, val));
       assertEquals(new String(val), new String(chicagoClientDHT.read(key).get()));
-      assertEquals(true, chicagoClientDHT.delete(key));
+      //assertEquals(true, chicagoClientDHT.delete(key));
     }
 
   }
@@ -76,7 +76,7 @@ public class ChicagoClientTest {
       byte[] val = _v.getBytes();
       assertEquals(true, chicagoClientDHT.write(key, val));
       assertEquals(new String(val), new String(chicagoClientDHT.read(key).get()));
-      assertEquals(true, chicagoClientDHT.delete(key));
+      //assertEquals(true, chicagoClientDHT.delete(key));
     }
 
   }
@@ -90,7 +90,7 @@ public class ChicagoClientTest {
       byte[] val = _v.getBytes();
       assertEquals(true, chicagoClientDHT.write("colfam".getBytes(), key, val));
       assertEquals(new String(val), new String(chicagoClientDHT.read("colfam".getBytes(), key).get()));
-      assertEquals(true, chicagoClientDHT.delete("colfam".getBytes(), key));
+      //assertEquals(true, chicagoClientDHT.delete("colfam".getBytes(), key));
     }
   }
 
@@ -112,7 +112,7 @@ public class ChicagoClientTest {
             byte[] val = _v.getBytes();
             assertEquals(true, chicagoClientDHT.write("xcolfam".getBytes(), key, val));
             assertEquals(new String(val), new String(chicagoClientDHT.read("xcolfam".getBytes(), key).get()));
-            assertEquals(true, chicagoClientDHT.delete("xcolfam".getBytes(), key));
+            //assertEquals(true, chicagoClientDHT.delete("xcolfam".getBytes(), key));
 //            System.out.println("2 " + latch.getCount());
             latch.countDown();
           }
@@ -140,7 +140,7 @@ public class ChicagoClientTest {
             byte[] val = _v.getBytes();
             assertEquals(true, chicagoClientDHT.write("ycolfam".getBytes(), key, val));
             assertEquals(new String(val), new String(chicagoClientDHT.read("ycolfam".getBytes(), key).get()));
-            assertEquals(true, chicagoClientDHT.delete("ycolfam".getBytes(), key));
+            //assertEquals(true, chicagoClientDHT.delete("ycolfam".getBytes(), key));
 //            System.out.println("1 " + latch.getCount());
             latch.countDown();
           }
@@ -168,7 +168,7 @@ public class ChicagoClientTest {
             byte[] val = _v.getBytes();
             assertEquals(true, chicagoClientDHT.write("xcolfam".getBytes(), key, val));
             assertEquals(new String(val), new String(chicagoClientDHT.read("xcolfam".getBytes(), key).get()));
-            assertEquals(true, chicagoClientDHT.delete("xcolfam".getBytes(), key));
+            //assertEquals(true, chicagoClientDHT.delete("xcolfam".getBytes(), key));
 //            System.out.println("2 " + latch.getCount());
             latch.countDown();
           }

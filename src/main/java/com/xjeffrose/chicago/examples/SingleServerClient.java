@@ -49,7 +49,7 @@ public class SingleServerClient {
   public static void printStream(String host, String colFam){
     try {
       ChicagoTSClient cc = new ChicagoTSClient(host);
-      System.out.println(host +" : "+new String(cc.stream(colFam.getBytes(), null).get().getStream().get()));
+      System.out.println(host +" : "+new String(cc.stream(colFam.getBytes(), null).get()));
       cc.stop();
     }catch(Exception e){
       e.printStackTrace();

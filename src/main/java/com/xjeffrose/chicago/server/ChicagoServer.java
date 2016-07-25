@@ -42,6 +42,7 @@ public class ChicagoServer {
     }
     zkClient.register(NODE_LIST_PATH, config, dbRouter.getDBBoundInetAddress());
     zkClient.electLeader(ELECTION_PATH);
+    zkClient.createIfNotExist(NODE_LOCK_PATH,"");
     nodeWatcher.refresh(zkClient, dbManager, config);
   }
   public void stop() {

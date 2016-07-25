@@ -40,7 +40,11 @@ public class ConnectionPoolManager {
 
   private final Map<String, Listener> listenerMap = new ConcurrentHashMap<>();
   private final Map<String, ChannelFuture> connectionMap = new ConcurrentHashMap<>();
-  private final NioEventLoopGroup workerLoop = new NioEventLoopGroup(20);
+  private final NioEventLoopGroup workerLoop = new NioEventLoopGroup(20,
+                                                                     new ThreadFactoryBuilder()
+                                                                     .setNameFormat("chicago-nioEventLoopGroup-%d")
+                                                                     .build()
+                                                                      );
   private final ZkClient zkClient;
   private final AtomicBoolean running = new AtomicBoolean(false);
   private final ScheduledExecutorService connectCheck = Executors
@@ -150,7 +154,6 @@ public class ConnectionPoolManager {
     }
 
     ChannelFuture cf = connectionMap.get(node);
-
     if (cf.channel().isWritable()) {
       return cf;
     }else{

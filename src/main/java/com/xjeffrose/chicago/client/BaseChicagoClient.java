@@ -138,7 +138,8 @@ public class BaseChicagoClient {
   public List<String> getEffectiveNodes(byte[] key){
     List<String> hashList = rendezvousHash.get(key);
     if(!single_server) {
-      List<String> replicationList = zkClient.list(REPLICATION_LOCK_PATH + "/" + new String(key));
+      String path = REPLICATION_LOCK_PATH + "/" + new String(key);
+      List<String> replicationList = clientNodeWatcher.getReplicationPathData(path);
       hashList.removeAll(replicationList);
     }
     return hashList;

@@ -5,11 +5,9 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.xjeffrose.chicago.ChiUtil;
 import com.xjeffrose.chicago.client.ChicagoClientException;
 import com.xjeffrose.chicago.client.ChicagoClientTimeoutException;
-import com.xjeffrose.chicago.client.ChicagoStream;
 import com.xjeffrose.chicago.client.ChicagoTSClient;
 
 import io.netty.buffer.ByteBuf;
-import java.util.Arrays;
 
 /**
  * Created by root on 6/22/16.
@@ -18,7 +16,7 @@ public class ChicagoStreamExample {
   ChicagoTSClient chicagoTSClient;
 
   //private static String key = "ppfe-msmaster-LM-SJN-00875858";
-  private static String key = "ppfe-msmaster";
+  private static String key = "ppfe-test";
 
   public static void main(String[] args) throws Exception{
     ChicagoStreamExample cs = new ChicagoStreamExample();
@@ -27,20 +25,21 @@ public class ChicagoStreamExample {
 
 
 
-    cs.chicagoTSClient.startAndWaitForNodes(3);
-    cs.writeSomeData();
-    //cs.transactStreamWithBuf();
+    cs.chicagoTSClient.startAndWaitForNodes(4);
+    //cs.writeSomeData();
+    //cs.transactStream();
+    cs.transactStreamWithBuf();
     System.exit(0);
   }
 
   public void writeSomeData() throws Exception{
     String val = "Test data";
     long startTime = System.currentTimeMillis();
-    for(int i =0;i<100;i++){
+    for(int i =0;i<100000;i++){
       try {
         System.out.println(i);
         System.out.println("Response = " + Longs.fromByteArray(chicagoTSClient.write(key.getBytes(), (i+val).getBytes())));
-        //Thread.sleep(300000);
+        //Thread.sleep(500);
       } catch (ChicagoClientException e){
         e.printStackTrace();
       } catch (ChicagoClientTimeoutException e){
@@ -54,13 +53,10 @@ public class ChicagoStreamExample {
   public void transactStream() throws Exception {
     Long offset = 0L;
 
-    ListenableFuture<com.xjeffrose.chicago.client.ChicagoStream> f = chicagoTSClient.stream(key.getBytes(), Longs.toByteArray(offset));
-    com.xjeffrose.chicago.client.ChicagoStream cs = f.get();
-    ListenableFuture<byte[]> resp = cs.getStream();
+    ListenableFuture<byte[]> resp = chicagoTSClient.stream(key.getBytes(), Longs.toByteArray(offset));
 
     byte[] resultArray = resp.get();
     String result = new String(resultArray);
-    cs.close();
     long old=-1;
     while(true){
       if(!result.contains(ChiUtil.delimiter)){
@@ -86,13 +82,10 @@ public class ChicagoStreamExample {
         Thread.sleep(500);
       }
 
-      ListenableFuture<com.xjeffrose.chicago.client.ChicagoStream> _f = chicagoTSClient.stream(key.getBytes(), Longs.toByteArray(offset));
-      ChicagoStream newcs = _f.get();
-      ListenableFuture<byte[]> newresp = newcs.getStream();
+      ListenableFuture<byte[]> newresp = chicagoTSClient.stream(key.getBytes(), Longs.toByteArray(offset));
       resultArray = newresp.get();
       result = new String(resultArray);
       old = offset;
-      newcs.close();
     }
   }
 
@@ -114,7 +107,7 @@ public class ChicagoStreamExample {
         }catch (Exception e){
           e.printStackTrace();
         }
-      }else {
+      } else {
         Thread.sleep(100);
       }
       readableBytes = buffer.readableBytes();

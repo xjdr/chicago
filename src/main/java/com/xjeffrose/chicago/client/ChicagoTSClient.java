@@ -5,11 +5,14 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.xjeffrose.chicago.ChiUtil;
+import com.xjeffrose.chicago.ChicagoMessage;
 import com.xjeffrose.chicago.DefaultChicagoMessage;
 import com.xjeffrose.chicago.Op;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
+import java.util.concurrent.CountDownLatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,62 +34,12 @@ public class ChicagoTSClient extends BaseChicagoClient {
     super(address);
   }
 
-  public ListenableFuture<ChicagoStream> stream(byte[] key) throws ChicagoClientTimeoutException {
+  public ListenableFuture<byte[]> stream(byte[] key) throws ChicagoClientTimeoutException {
     return stream(key, null);
   }
 
-  public ListenableFuture<ChicagoStream> stream(byte[] key, byte[] offset) throws ChicagoClientTimeoutException {
-    ListeningExecutorService executor = MoreExecutors.listeningDecorator(exe);
-    return executor.submit(() -> {
-      final ChicagoStream[] cs = new ChicagoStream[1];
-        final long startTime = System.currentTimeMillis();
-        try {
-          List<String> hashList = getEffectiveNodes(key);
-          for (String node : hashList) {
-            if (node == null) {
-            } else {
-              ChannelFuture cf = connectionPoolMgr.getNode(node);
-              if (cf.channel().isWritable()) {
-                exe.execute(() -> {
-//                try {
-                    UUID id = UUID.randomUUID();
-                    Listener listener = connectionPoolMgr.getListener(node); //Blocking
-                    if(cs[0] == null) {
-                      cs[0] = new ChicagoStream(listener);
-                    }
-                    listener.addID(id);
-                    cs[0].addID(id);
-                    cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.STREAM, key, null, offset));
-                });
-              }else{
-                log.info("Channel is not writeable !!!!!"+cf.channel().toString());
-              }
-            }
-          }
-
-        } catch (ChicagoClientTimeoutException e) {
-          Thread.currentThread().interrupt();
-          log.error("Client Timeout During Read Operation:", e);
-          return null;
-        }
-
-        while (cs[0] == null) {
-          if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
-            Thread.currentThread().interrupt();
-            throw new ChicagoClientTimeoutException();
-          }
-          try {
-            Thread.sleep(1);
-          } catch (InterruptedException e) {
-            e.printStackTrace();
-          }
-        }
-
-        return cs[0];
-//      }
-
-    });
-
+  public ListenableFuture<byte[]> stream(byte[] key, byte[] offset) throws ChicagoClientTimeoutException {
+    return _getData(key,offset,Op.STREAM);
   }
 
   public ListenableFuture<byte[]> read(byte[] key) throws ChicagoClientTimeoutException {
@@ -94,53 +47,61 @@ public class ChicagoTSClient extends BaseChicagoClient {
   }
 
   public ListenableFuture<byte[]> read(byte[] key, byte[] offset) throws ChicagoClientTimeoutException {
+    return _getData(key,offset,Op.READ);
+  }
+
+  public ListenableFuture<byte[]> _getData(byte[] key, byte[] offset, Op op) throws ChicagoClientTimeoutException{
     ListeningExecutorService executor = MoreExecutors.listeningDecorator(exe);
+    CountDownLatch latch = new CountDownLatch(1);
     return executor.submit(() -> {
       final long startTime = System.currentTimeMillis();
       ConcurrentLinkedDeque<byte[]> responseList = new ConcurrentLinkedDeque<>();
-      try {
-        List<String> hashList = getEffectiveNodes(key);
-        for (String node : hashList) {
-          if (node == null) {
-          } else {
-            ChannelFuture cf = connectionPoolMgr.getNode(node);
-            if (cf.channel().isWritable()) {
-              exe.execute(() -> {
-                UUID id = UUID.randomUUID();
-                Listener listener = connectionPoolMgr.getListener(node); //Blocking
-                cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.READ, key, offset, null));
-                listener.addID(id);
-                exe.execute(() -> {
-                  try {
-                    responseList.add((byte[]) listener.getResponse(id)); //Blocking
-                  } catch (ChicagoClientTimeoutException e) {
-                    Thread.currentThread().interrupt();
-                    throw new RuntimeException(e);
+      List<String> hashList = getEffectiveNodes(key);
+      for (String node : hashList) {
+        if (node == null) {
+        } else {
+          ChannelFuture cf = connectionPoolMgr.getNode(node);
+          if (cf.channel().isWritable()) {
+            exe.execute(() -> {
+              UUID id = UUID.randomUUID();
+              Listener listener = connectionPoolMgr.getListener(node);
+              switch(op){
+                case READ:
+                  cf.channel().writeAndFlush(new DefaultChicagoMessage(id, op, key, offset, null));
+                  break;
+                case STREAM:
+                  cf.channel().writeAndFlush(new DefaultChicagoMessage(id, op, key, null, offset));
+                  break;
+              }
+              listener.addID(id);
+              listener.registerCallback(id, new ResponseListener() {
+                @Override public void onResponse(ChicagoMessage chicagoMessage, ChannelHandlerContext ctx) {
+                  if(latch.getCount() > 0) {
+                    log.debug("Got response from context " + ctx.channel());
                   }
-                });
+                  if(responseList.isEmpty()) {
+                    responseList.add(chicagoMessage.getVal());
+                  }
+                  latch.countDown();
+                }
               });
-            }
+            });
           }
         }
+        if(latch.getCount() > 0) {
+          Thread.sleep(5);
+        }
+      }
 
-      } catch (ChicagoClientTimeoutException e) {
+      try{
+        //Wait for response from anyone server.
+        latch.await(TIMEOUT, TimeUnit.MILLISECONDS);
+      } catch ( InterruptedException e){
+        log.error("Failed to get response from any server !!!");
         Thread.currentThread().interrupt();
-        log.error("Client Timeout During Read Operation:", e);
-        return null;
+        throw new ChicagoClientTimeoutException();
       }
 
-
-      while (responseList.isEmpty()) {
-        if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
-          Thread.currentThread().interrupt();
-          throw new ChicagoClientTimeoutException();
-        }
-        try {
-          Thread.sleep(1);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        }
-      }
       return responseList.stream().findFirst().orElse(null);
     });
   }
@@ -177,21 +138,20 @@ public class ChicagoTSClient extends BaseChicagoClient {
 
     final ConcurrentLinkedDeque<byte[]> responseList = new ConcurrentLinkedDeque<>();
     final ConcurrentLinkedDeque<UUID> idList = new ConcurrentLinkedDeque<>();
-    final ConcurrentLinkedDeque<Listener> listenerList = new ConcurrentLinkedDeque<>();
 
     ListeningExecutorService executor = MoreExecutors.listeningDecorator(exe);
     return executor.submit(() -> {
         int dquorum = quorum;
         final long startTime = System.currentTimeMillis();
-        try {
+        List<String> hashList = getEffectiveNodes(key);
+        dquorum = hashList.size();
+        CountDownLatch latch = new CountDownLatch(dquorum);
+        log.debug("Writing to "+hashList.toString());
+        hashList.stream().parallel().forEach(node -> {
+          if (node == null) {
 
-          List<String> hashList = getEffectiveNodes(key);
-          dquorum = hashList.size();
-          //log.info("Writing to "+hashList.toString());
-          for (String node : hashList) {
-            if (node == null) {
-
-            } else {
+          } else {
+            try {
               ChannelFuture cf = connectionPoolMgr.getNode(node);
               if (cf.channel().isWritable()) {
                 exe.execute(() -> {
@@ -204,41 +164,28 @@ public class ChicagoTSClient extends BaseChicagoClient {
                     }
                     listener.addID(id);
                     idList.add(id);
-                    listenerList.add(listener);
-                    listener.registerCallback(id, new ListenResponse() {
-                       @Override public void onResponse(byte[] value) {
-                         responseList.add(value);
+                    listener.registerCallback(id, new ResponseListener() {
+                       @Override public void onResponse(ChicagoMessage chicagoMessage, ChannelHandlerContext ctx) {
+                         responseList.add(chicagoMessage.getVal());
+                         latch.countDown();
                        }
                      });
-//                    exe.execute(() -> {
-//                        try {
-//                          responseList.add((byte[]) listener.getStatus(idList)); //Blocking
-//                        } catch (ChicagoClientTimeoutException e) {
-////                          Thread.currentThread().interrupt();
-//                          throw new RuntimeException(e);
-//                        }
-//                    });
                 });
               }
+            } catch (ChicagoClientTimeoutException e){
+              log.error("Client Timeout During Write Operation: ", e);
             }
           }
+        });
 
-        } catch (ChicagoClientTimeoutException e) {
-          log.error("Client Timeout During Write Operation: ", e);
-          return null;
-        }
-
-
-        while (responseList.size() < dquorum) {
-          if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
-            Thread.currentThread().interrupt();
-            throw new ChicagoClientTimeoutException();
-          }
-          try {
-            Thread.sleep(1);
-          } catch (InterruptedException e) {
-            e.printStackTrace();
-          }
+        try {
+          //Wait for all the servers to respond
+          latch.await(TIMEOUT, TimeUnit.MILLISECONDS);
+        }catch (InterruptedException e){
+          log.error("Write failed. Expected number of response :"+dquorum +
+            ". Number of response received :"+responseList.size());
+          Thread.currentThread().interrupt();
+          throw new ChicagoClientTimeoutException();
         }
 
         if (responseList.stream().allMatch(b -> b != null)) {
@@ -271,17 +218,14 @@ public class ChicagoTSClient extends BaseChicagoClient {
     offsets[0] = offset;
     executor.submit(() -> {
       try {
-        ListenableFuture<ChicagoStream> f = stream(key.getBytes(), Longs.toByteArray(offsets[0]));
-        com.xjeffrose.chicago.client.ChicagoStream cs = f.get();
-        ListenableFuture<byte[]> resp = cs.getStream();
+        ListenableFuture<byte[]> resp =  stream(key.getBytes(), Longs.toByteArray(offsets[0]));
 
         byte[] resultArray = resp.get();
         String result = new String(resultArray);
-        cs.close();
         long old = -1;
         while (true) {
           if (!result.contains(ChiUtil.delimiter)) {
-            System.out.println("No delimetr present");
+            System.out.println("No delimiter present");
             System.out.println(result);
             break;
           }
@@ -310,14 +254,10 @@ public class ChicagoTSClient extends BaseChicagoClient {
           //  returnByteBuf.resetReaderIndex();
           //}
 
-          ListenableFuture<com.xjeffrose.chicago.client.ChicagoStream> _f =
-            stream(key.getBytes(), Longs.toByteArray(offsets[0]));
-          ChicagoStream newcs = _f.get();
-          ListenableFuture<byte[]> newresp = newcs.getStream();
+          ListenableFuture<byte[]> newresp = stream(key.getBytes(), Longs.toByteArray(offsets[0]));
           resultArray = newresp.get();
           result = new String(resultArray);
           old = offsets[0];
-          newcs.close();
         }
       }catch (Exception e){
         e.printStackTrace();

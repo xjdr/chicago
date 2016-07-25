@@ -21,14 +21,14 @@ class ChicagoListener implements Listener<byte[]> {
   private static final ConcurrentLinkedDeque<UUID> reqIds = new ConcurrentLinkedDeque<>();
   private static final ConcurrentLinkedDeque<UUID> messageIds = new ConcurrentLinkedDeque<>();
   private static final Map<UUID, ChicagoMessage> responseMap = new ConcurrentHashMap<>();
-  private static final Map<UUID, ListenResponse> callBackListener = new ConcurrentHashMap<>();
+  private static final Map<UUID, ResponseListener> callBackListener = new ConcurrentHashMap<>();
 
   public ChicagoListener() {
   }
 
   @Override
-  public void registerCallback(UUID uuid,ListenResponse listenResponse){
-    callBackListener.put(uuid, listenResponse);
+  public void registerCallback(UUID uuid,ResponseListener responseListener){
+    callBackListener.put(uuid, responseListener);
   }
 
   @Override
@@ -40,15 +40,19 @@ class ChicagoListener implements Listener<byte[]> {
   }
 
   @Override
-  public void onResponseReceived(ChicagoMessage chicagoMessage) {
+  public void onResponseReceived(ChicagoMessage chicagoMessage){
+  }
+
+  @Override
+  public void onResponseReceived(ChicagoMessage chicagoMessage, ChannelHandlerContext ctx) {
     if (chicagoMessage.getId() == null) {
       log.error("Returned null message: " + chicagoMessage);
     } else {
       messageIds.add(chicagoMessage.getId());
       responseMap.put(chicagoMessage.getId(), chicagoMessage);
     }
-    ListenResponse listenResponse = callBackListener.get(chicagoMessage.getId());
-    listenResponse.onResponse(chicagoMessage.getVal());
+    ResponseListener responseListener = callBackListener.remove(chicagoMessage.getId());
+    responseListener.onResponse(chicagoMessage, ctx);
   }
 
   @Override

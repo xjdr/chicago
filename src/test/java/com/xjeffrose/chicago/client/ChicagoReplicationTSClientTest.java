@@ -74,13 +74,9 @@ public class ChicagoReplicationTSClientTest {
 			System.out.println(i);
 		}
 
-		ListenableFuture<ChicagoStream> f = chicagoTSClient.stream(testKey
-				.getBytes(), Longs.toByteArray(0));
-		ChicagoStream cs = f.get();
-		ListenableFuture<byte[]> resp = cs.getStream();
+		ListenableFuture<byte[]> resp = chicagoTSClient.stream(testKey
+      .getBytes(), Longs.toByteArray(0));
 		assertNotNull(resp.get());
-		cs.close();
-
 	}
 	public void testValidResponse(List<String> nodes, int key) throws Exception{
 		ChicagoClient cc=new ChicagoClient(nodes.get(0));
@@ -106,7 +102,7 @@ public class ChicagoReplicationTSClientTest {
 		System.out.println("Querying old set of nodes" + nodes.toString());
 		testValidResponse(nodes,100);
 		testValidResponse(nodes,999);
-		
+
 		for (String node : nodes) {
 			System.out.println("Stopping server.. "
 					+ node);
@@ -171,7 +167,7 @@ public class ChicagoReplicationTSClientTest {
 		for (int i = 0; i < 5; i++) {
 			System.out.println(i + "th iteration - Querying new set of nodes"
 					+ newNodes.toString());
-			
+
 			int noOfGoodResponses=getNoOfValidResponse(newNodes,999);
 
 			if (i == 0) {
@@ -200,7 +196,7 @@ public class ChicagoReplicationTSClientTest {
 
 
 				//Test after replication is completed
-				
+
 			} else {
 				assertEquals("Failed on read after Delayed wait: ", 3,
 						noOfGoodResponses);
@@ -227,7 +223,7 @@ public class ChicagoReplicationTSClientTest {
 		}
 		cc.stop();
 		return noOfGoodResponse;
-		
+
 	}
 
 }

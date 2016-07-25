@@ -109,23 +109,10 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
         if (readResponse != null) {
           status = true;
         }
-
-
-        /* smadan - Commenting out logic for chinking the response as this is handled by netty .
-        if (readResponse != null && readResponse.length > MAX_BUFFER_SIZE) {
-          ByteBuf bb = Unpooled.buffer();
-          bb.writeBytes(readResponse);
-          log.info("Breaking into chunks");
-          for (int i = 0; i < Math.ceil(bb.readableBytes() / MAX_BUFFER_SIZE) ; i++) {
-            ByteBuf bbs = bb.slice(MAX_BUFFER_SIZE * i, MAX_BUFFER_SIZE);
-            log.info("Sending value: "+ new String(bbs.array()));
-            ctx.writeAndFlush(new DefaultChicagoMessage(finalMsg.getId(), Op.fromInt(3), finalMsg.getColFam(), Boolean.toString(status).getBytes(), bbs.array()));
-          }
-
-          readResponse = new byte[]{};
-        }*/
-
         break;
+      case CANCEL:
+          //Todo: Canncel the request with UUID.
+          break;
 
       default:
         break;
@@ -143,19 +130,4 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
       needsToWrite = true;
       ctx.writeAndFlush(new DefaultChicagoMessage(finalMsg.getId(), Op.fromInt(3), finalMsg.getColFam(), Boolean.toString(status).getBytes(), readResponse)).addListener(writeComplete);
   }
-
-//  @Override
-//  public void channelActive(ChannelHandlerContext ctx) {
-//    writeIfPossible(ctx.channel());
-//  }
-//  @Override
-//  public void channelWritabilityChanged(ChannelHandlerContext ctx) {
-//    writeIfPossible(ctx.channel());
-//  }
-//
-//  private void writeIfPossible(Channel channel) {
-//    while(needsToWrite && channel.isWritable()) {
-//      channel.writeAndFlush(createMessage());
-//    }
-//  }
 }

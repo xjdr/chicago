@@ -27,11 +27,13 @@ interface Listener<T> {
 
   void onResponseReceived(ChicagoMessage chicagoMessage);
 
+  void onResponseReceived(ChicagoMessage chicagoMessage, ChannelHandlerContext ctx);
+
   ConcurrentLinkedDeque<UUID> getReqIds();
 
   T getResponse(ConcurrentLinkedDeque<UUID> idList) throws ChicagoClientTimeoutException;
 
   T getStatus(ConcurrentLinkedDeque<UUID> idList) throws ChicagoClientTimeoutException;
 
-  void registerCallback(UUID uuid, ListenResponse listenResponse);
+  void registerCallback(UUID uuid, ResponseListener responseListener);
 }

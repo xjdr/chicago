@@ -39,6 +39,6 @@ class ChicagoClientHandler extends SimpleChannelInboundHandler<ChicagoMessage> {
   @Override
   protected void channelRead0(ChannelHandlerContext ctx, ChicagoMessage chicagoMessage) throws Exception {
     log.debug("channelRead0 message: " + chicagoMessage);
-      listener.onResponseReceived(chicagoMessage);
+      listener.onResponseReceived(chicagoMessage, ctx);
   }
 }

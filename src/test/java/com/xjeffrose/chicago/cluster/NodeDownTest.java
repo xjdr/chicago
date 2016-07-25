@@ -4,8 +4,6 @@ import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.xjeffrose.chicago.TestChicago;
 import com.xjeffrose.chicago.ZkClient;
-import com.xjeffrose.chicago.client.ChicagoClientTimeoutException;
-import com.xjeffrose.chicago.client.ChicagoStream;
 import com.xjeffrose.chicago.client.ChicagoTSClient;
 import com.xjeffrose.chicago.server.ChicagoServer;
 
@@ -128,14 +126,11 @@ public class NodeDownTest {
 
   public void printStrem(String key, byte[] offset) throws Exception {
     System.out.println("Clients : " + chicagoTSClient.getNodeList(key.getBytes()).toString());
-    ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream(key.getBytes(), offset);
-    ChicagoStream cs = _f.get();
-    ListenableFuture<byte[]> _resp = cs.getStream();
+    ListenableFuture<byte[]> _resp = chicagoTSClient.stream(key.getBytes(), offset);
 
     String result = new String(_resp.get());
     assertEquals(true, !StringUtil.isNullOrEmpty(result));
     System.out.println(result);
-    cs.close();
   }
 
 }
