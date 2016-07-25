@@ -72,6 +72,7 @@ public class ReplicationLockTest {
       System.exit(-1);
     }
     System.out.println("Created the replication path.");
+    Thread.sleep(100);
     assertEquals(2,chicagoTSClient.getEffectiveNodes(key.getBytes()).size());
     insertedKey  = Longs.fromByteArray(chicagoTSClient.write(key.getBytes(),val.getBytes()));
     String removedServer = servers.remove(0);

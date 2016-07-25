@@ -347,7 +347,7 @@ public class ChicagoTSClientTest {
 			assertNotNull(chicagoTSClient.write("tskey".getBytes(), val));
 		}
 
-		ListenableFuture<byte[]> f = chicagoTSClient.read("tskey".getBytes());
+		ListenableFuture<byte[]> f = chicagoTSClient.stream("tskey".getBytes());
 		byte[] resp = f.get();
 
 		System.out.println(new String(resp));

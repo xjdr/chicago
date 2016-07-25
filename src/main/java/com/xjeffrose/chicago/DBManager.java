@@ -64,8 +64,7 @@ public class DBManager {
       log.error("Could not load DB: " + config.getDBPath() + " " + e.getMessage());
       System.exit(-1);
     }
-
-    createColumnFamily(ChiUtil.defaultColFam.getBytes());
+    //createColumnFamily(ChiUtil.defaultColFam.getBytes());
   }
 
   void removeDB(File file) {

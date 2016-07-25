@@ -3,7 +3,6 @@ package com.xjeffrose.chicago.client;
 import com.xjeffrose.chicago.ChicagoMessage;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,12 +14,8 @@ import org.slf4j.LoggerFactory;
 
 class ChicagoListener implements Listener<byte[]> {
   private static final Logger log = LoggerFactory.getLogger(ChicagoListener.class);
-  private static final long TIMEOUT = 1000;
-  private static final boolean TIMEOUT_ENABLED = true;
 
   private static final ConcurrentLinkedDeque<UUID> reqIds = new ConcurrentLinkedDeque<>();
-  private static final ConcurrentLinkedDeque<UUID> messageIds = new ConcurrentLinkedDeque<>();
-  private static final Map<UUID, ChicagoMessage> responseMap = new ConcurrentHashMap<>();
   private static final Map<UUID, ResponseListener> callBackListener = new ConcurrentHashMap<>();
 
   public ChicagoListener() {
@@ -47,9 +42,6 @@ class ChicagoListener implements Listener<byte[]> {
   public void onResponseReceived(ChicagoMessage chicagoMessage, ChannelHandlerContext ctx) {
     if (chicagoMessage.getId() == null) {
       log.error("Returned null message: " + chicagoMessage);
-    } else {
-      messageIds.add(chicagoMessage.getId());
-      responseMap.put(chicagoMessage.getId(), chicagoMessage);
     }
     ResponseListener responseListener = callBackListener.remove(chicagoMessage.getId());
     responseListener.onResponse(chicagoMessage, ctx);
@@ -72,40 +64,8 @@ class ChicagoListener implements Listener<byte[]> {
   }
 
   private byte[] _getResponse(UUID id, long startTime) throws ChicagoClientTimeoutException {
-    while (Collections.disjoint(reqIds, messageIds)) {
-      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
-//        Thread.currentThread().interrupt();
-        throw new ChicagoClientTimeoutException();
-      }
-      try {
-        Thread.sleep(1);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
-
-    while (!responseMap.containsKey(id)) {
-      try {
-        if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
-//        Thread.currentThread().interrupt();
-          throw new ChicagoClientTimeoutException();
-        }
-        Thread.sleep(1);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
-
-    ChicagoMessage _resp = responseMap.remove(id);
-
-    if (_resp.getSuccess()) {
-      reqIds.remove(id);
-      messageIds.remove(id);
-      return _resp.getVal();
-    } else {
-      log.error("Invalid Response returned");
-      return null;
-    }
+    //Todo: Need to delete this from interface and here.
+    return null;
   }
 
   @Override
@@ -115,37 +75,8 @@ class ChicagoListener implements Listener<byte[]> {
   }
 
   private boolean _getStatus(UUID id, long startTime) throws ChicagoClientTimeoutException {
-    while (Collections.disjoint(reqIds, messageIds)) {
-      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
-//        Thread.currentThread().interrupt();
-        throw new ChicagoClientTimeoutException();
-      }
-      try {
-        Thread.sleep(1);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
-
-    while (!responseMap.containsKey(id)) {
-      try {
-        if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
-//        Thread.currentThread().interrupt();
-          throw new ChicagoClientTimeoutException();
-        }
-        Thread.sleep(1);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
-    if (responseMap.remove(id).getKey().length == 4) {
-      reqIds.remove(id);
-      messageIds.remove(id);
-      return true;
-    } else {
-      return false;
-    }
-
+    //Todo: Need to delete this from interface and here.
+    return true;
   }
 
 
@@ -175,44 +106,8 @@ class ChicagoListener implements Listener<byte[]> {
   }
 
   private byte[] _getResponse(ConcurrentLinkedDeque<UUID> idList, long startTime) throws ChicagoClientTimeoutException {
-    while (Collections.disjoint(reqIds, messageIds)) {
-      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
-//        Thread.currentThread().interrupt();
-        throw new ChicagoClientTimeoutException();
-      }
-      try {
-        Thread.sleep(1);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
-
-    while (Collections.disjoint(responseMap.keySet(), idList)) {
-      try {
-        if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
-//          Thread.currentThread().interrupt();
-          throw new ChicagoClientTimeoutException();
-        }
-        Thread.sleep(1);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
-
-
-    while (!responseMap.containsKey(idList.getFirst())) {
-      messageIds.remove(idList.getFirst());
-      //      reqIds.remove(idList.removeFirst());
-    }
-
-    ChicagoMessage _resp = responseMap.remove(idList.getFirst());
-
-    if (_resp.getSuccess()) {
-      return _resp.getVal();
-    } else {
-      log.error("Invalid Response returned");
-      return null;
-    }
+    //Todo: Need to delete this from interface and here.
+    return null;
   }
 
   @Override
@@ -221,53 +116,7 @@ class ChicagoListener implements Listener<byte[]> {
   }
 
   private byte[] _getStatus(ConcurrentLinkedDeque<UUID> idList, long startTime) throws ChicagoClientTimeoutException {
-    long methodStartTime = System.currentTimeMillis();
-    while (Collections.disjoint(reqIds, messageIds)) {
-      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
-//        Thread.currentThread().interrupt();
-        throw new ChicagoClientTimeoutException();
-      }
-      try {
-        Thread.sleep(1);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
-
-    while (Collections.disjoint(responseMap.keySet(), idList)) {
-      try {
-        if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
-//          Thread.currentThread().interrupt();
-          throw new ChicagoClientTimeoutException();
-        }
-        Thread.sleep(1);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
-
-    while (!responseMap.containsKey(idList.getFirst())) {
-      try {
-        Thread.sleep(1);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
-
-    ChicagoMessage _resp = responseMap.remove(idList.getFirst());
-
-    if (_resp != null) {
-      messageIds.remove(idList.getFirst());
-      reqIds.remove(idList.removeFirst());
-    } else {
-      return _getStatus(idList, startTime);
-    }
-    System.out.println("Time to wait for listener is :"+ (System.currentTimeMillis() - methodStartTime) + "ms");
-    if (_resp.getKey().length == 4 ) {
-      return _resp.getVal();
-    } else {
-      log.error("Invalid Response returned");
-      return null;
-    }
+    //Todo: Need to delete this from interface and here.
+    return null;
   }
 }

@@ -14,6 +14,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.List;
 
+import org.apache.tomcat.jni.Thread;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -33,7 +34,7 @@ public class ChicagoClientTest {
 
   @Before
   public void setup() throws Exception {
-    InstanceSpec spec = new InstanceSpec(null, 2182,  -1 , -1, true, -1 , 20 , -1);
+    InstanceSpec spec = new InstanceSpec(null, 2182,  -1 , -1, true, -1 , 2000 , -1);
     testingServer = new TestingServer(spec,true);
     servers = TestChicago.makeServers(TestChicago.chicago_dir(tmp), 4, testingServer.getConnectString());
     for (ChicagoServer server : servers) {
@@ -68,7 +69,7 @@ public class ChicagoClientTest {
   }
 
   @Test
-  public void transactMany() throws Exception {
+  public void transactManyAA() throws Exception {
     for (int i = 0; i < 200; i++) {
       String _k = "key" + i;
       byte[] key = _k.getBytes();
