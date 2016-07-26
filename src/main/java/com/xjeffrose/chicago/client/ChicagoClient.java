@@ -74,7 +74,7 @@ public class ChicagoClient extends BaseChicagoClient {
         Futures.addCallback(f, new FutureCallback<byte[]>() {
           @Override
           public void onSuccess(@Nullable byte[] bytes) {
-
+            relevantFutures.get(1).cancel(true);
           }
 
           @Override
@@ -102,7 +102,7 @@ public class ChicagoClient extends BaseChicagoClient {
               Futures.addCallback(f1, new FutureCallback<byte[]>() {
                 @Override
                 public void onSuccess(@Nullable byte[] bytes) {
-                  relevantFutures.get(1).cancel(true);
+                  
                 }
 
                 @Override
@@ -141,7 +141,7 @@ public class ChicagoClient extends BaseChicagoClient {
         Futures.addCallback(f, new FutureCallback<byte[]>() {
           @Override
           public void onSuccess(@Nullable byte[] bytes) {
-
+            relevantFutures.get(1).cancel(true);
           }
 
           @Override
@@ -169,7 +169,6 @@ public class ChicagoClient extends BaseChicagoClient {
               Futures.addCallback(f1, new FutureCallback<byte[]>() {
                 @Override
                 public void onSuccess(@Nullable byte[] bytes) {
-                  relevantFutures.get(1).cancel(true);
                 }
 
                 @Override
