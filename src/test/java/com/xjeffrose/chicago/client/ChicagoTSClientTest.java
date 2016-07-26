@@ -134,14 +134,14 @@ public class ChicagoTSClientTest {
 		Assert.assertEquals(response.size(), 3);
 		System.out.println(response.get(0) + " /// " + response.get(1)
 				+ response.get(2));
-//		Assert.assertEquals(response.get(0).contains("val11"), false);// Ensures
+		Assert.assertEquals(response.get(0).contains("val11"), false);// Ensures
 																		// that
 																		// insert
 																		// and
 																		// read
 																		// are
 																		// interwoven
-//		Assert.assertEquals(response.get(2).contains("val11"), true);// Ensures
+		Assert.assertEquals(response.get(2).contains("val11"), true);// Ensures
 																		// that
 																		// insert
 																		// and
