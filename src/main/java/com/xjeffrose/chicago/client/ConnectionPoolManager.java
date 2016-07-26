@@ -1,5 +1,7 @@
 package com.xjeffrose.chicago.client;
 
+import com.google.common.util.concurrent.SettableFuture;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.xjeffrose.chicago.ZkClient;
 import com.xjeffrose.xio.SSL.XioSecurityHandlerImpl;
 import com.xjeffrose.xio.client.retry.BoundedExponentialBackoffRetry;
@@ -22,6 +24,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -39,19 +42,30 @@ public class ConnectionPoolManager {
 
   private final Map<String, Listener> listenerMap = new ConcurrentHashMap<>();
   private final Map<String, ChannelFuture> connectionMap = new ConcurrentHashMap<>();
-  private final NioEventLoopGroup workerLoop = new NioEventLoopGroup(20);
+  private final NioEventLoopGroup workerLoop = new NioEventLoopGroup(20,
+      new ThreadFactoryBuilder()
+          .setNameFormat("chicago-nioEventLoopGroup-%d")
+          .build()
+  );
   private final ZkClient zkClient;
   private final AtomicBoolean running = new AtomicBoolean(false);
-  private final ScheduledExecutorService connectCheck = Executors.newSingleThreadScheduledExecutor();
+  private final ScheduledExecutorService connectCheck = Executors
+      .newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
+          .setNameFormat("chicago-connection-check")
+          .build());
 
-  public ConnectionPoolManager(ZkClient zkClient) {
+  private final Map<UUID, SettableFuture<byte[]>> futureMap;
+
+  public ConnectionPoolManager(ZkClient zkClient, Map<UUID, SettableFuture<byte[]>> futureMap) {
     this.zkClient = zkClient;
+    this.futureMap = futureMap;
   }
 
   public ConnectionPoolManager(String hostname) {
     this.zkClient = null;
     listenerMap.put(hostname, new ChicagoListener());
     connect(new InetSocketAddress(hostname.split(":")[0], Integer.parseInt(hostname.split(":")[1])), listenerMap.get(hostname));
+    this.futureMap = null;
   }
 
   public void start() {
@@ -146,7 +160,6 @@ public class ConnectionPoolManager {
     }
 
     ChannelFuture cf = connectionMap.get(node);
-
     if (cf.channel().isWritable()) {
       return cf;
     }else{
@@ -168,23 +181,23 @@ public class ConnectionPoolManager {
     // Start the connection attempt.
     Bootstrap bootstrap = new Bootstrap();
     bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 500)
-      .option(ChannelOption.SO_REUSEADDR, true)
-      .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-      .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024)
-      .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
-      .option(ChannelOption.TCP_NODELAY, true);
+        .option(ChannelOption.SO_REUSEADDR, true)
+        .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+        .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024)
+        .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
+        .option(ChannelOption.TCP_NODELAY, true);
     bootstrap.group(workerLoop)
-      .channel(NioSocketChannel.class)
-      .handler(new ChannelInitializer<SocketChannel>() {
-        @Override
-        protected void initChannel(SocketChannel channel) throws Exception {
-          ChannelPipeline cp = channel.pipeline();
-          cp.addLast(new XioSecurityHandlerImpl(true).getEncryptionHandler());
-          //cp.addLast(new XioIdleDisconnectHandler(20, 20, 20));
-          cp.addLast(new ChicagoClientCodec());
-          cp.addLast(new ChicagoClientHandler(listener));
-        }
-      });
+        .channel(NioSocketChannel.class)
+        .handler(new ChannelInitializer<SocketChannel>() {
+          @Override
+          protected void initChannel(SocketChannel channel) throws Exception {
+            ChannelPipeline cp = channel.pipeline();
+            cp.addLast(new XioSecurityHandlerImpl(true).getEncryptionHandler());
+            //cp.addLast(new XioIdleDisconnectHandler(20, 20, 20));
+            cp.addLast(new ChicagoClientCodec());
+            cp.addLast(new ChicagoClientHandler(futureMap));
+          }
+        });
 
     BoundedExponentialBackoffRetry retry = new BoundedExponentialBackoffRetry(50, 500, 4);
 

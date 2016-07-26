@@ -4,14 +4,18 @@ import com.google.common.hash.Funnels;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.SettableFuture;
 import com.xjeffrose.chicago.DefaultChicagoMessage;
 import com.xjeffrose.chicago.Op;
 import com.xjeffrose.chicago.ZkClient;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.CountDownLatch;
@@ -58,6 +62,10 @@ abstract public class BaseChicagoClient {
   protected final ConnectionPoolManager connectionPoolMgr;
   protected int quorum;
 
+  protected Map<UUID, SettableFuture<byte[]>> futureMap = new ConcurrentHashMap<>();
+  protected EventLoopGroup evg = new NioEventLoopGroup();
+
+
   public BaseChicagoClient(String address){
     this.single_server = true;
     this.zkClient = null;
@@ -78,7 +86,7 @@ abstract public class BaseChicagoClient {
     ArrayList<String> nodeList = new ArrayList<>();
     this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
     clientNodeWatcher = new ClientNodeWatcher(zkClient, rendezvousHash, listener);
-    this.connectionPoolMgr = new ConnectionPoolManager(zkClient);
+    this.connectionPoolMgr = new ConnectionPoolManager(zkClient, futureMap);
   }
 
   public void start() {

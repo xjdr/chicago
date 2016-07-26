@@ -84,13 +84,13 @@ public class ChicagoReplicationTSClientTest {
 	}
 	public void testValidResponse(List<String> nodes, int key) throws Exception{
 		ChicagoClient cc=new ChicagoClient(nodes.get(0));
-		String response1 = new String(cc.read(testKey.getBytes(), Ints.toByteArray(key)).get());
+		String response1 = new String(cc.read(testKey.getBytes(), Ints.toByteArray(key)).get().get(0));
 		cc.stop();
 		cc = new ChicagoClient(nodes.get(1));
-		String response2 = new String(cc.read(testKey.getBytes(), Ints.toByteArray(key)).get());
+		String response2 = new String(cc.read(testKey.getBytes(), Ints.toByteArray(key)).get().get(0));
 		cc.stop();
 		cc = new ChicagoClient(nodes.get(2));
-		String response3 = new String(cc.read(testKey.getBytes(), Ints.toByteArray(key)).get());
+		String response3 = new String(cc.read(testKey.getBytes(), Ints.toByteArray(key)).get().get(0));
 		cc.stop();
 		String expectedResponse="val"+key;
 		assertEquals(response1,(expectedResponse));
@@ -212,17 +212,17 @@ public class ChicagoReplicationTSClientTest {
 		ChicagoClient cc=new ChicagoClient(nodes.get(0));
 		int noOfGoodResponse=0;
 		String expectedResponse="val"+key;
-		if(expectedResponse.equals(new String(cc.read(testKey.getBytes(), Ints.toByteArray(key)).get()))){
+		if(expectedResponse.equals(new String(cc.read(testKey.getBytes(), Ints.toByteArray(key)).get().get(0)))){
 			noOfGoodResponse++;
 		}
 		cc.stop();
 		cc = new ChicagoClient(nodes.get(1));
-		if(expectedResponse.equals(new String(cc.read(testKey.getBytes(), Ints.toByteArray(key)).get()))){
+		if(expectedResponse.equals(new String(cc.read(testKey.getBytes(), Ints.toByteArray(key)).get().get(0)))){
 			noOfGoodResponse++;
 		}
 		cc.stop();
 		cc = new ChicagoClient(nodes.get(2));
-		if(expectedResponse.equals(new String(cc.read(testKey.getBytes(), Ints.toByteArray(key)).get()))){
+		if(expectedResponse.equals(new String(cc.read(testKey.getBytes(), Ints.toByteArray(key)).get().get(0)))){
 			noOfGoodResponse++;
 		}
 		cc.stop();

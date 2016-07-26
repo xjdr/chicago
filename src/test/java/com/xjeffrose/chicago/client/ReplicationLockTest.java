@@ -84,7 +84,7 @@ public class ReplicationLockTest {
     ChicagoClient cc = new ChicagoClient(removedServer);
     try {
       System.out.println("Trying to get the value from bad node");
-      String futureval = new String(cc.read(key.getBytes(), Ints.toByteArray(insertedKey)).get());
+      String futureval = new String(cc.read(key.getBytes(), Ints.toByteArray(insertedKey)).get().get(0));
       assertTrue(futureval.equals(""));
     }catch(Exception e){
       e.printStackTrace();
@@ -98,7 +98,7 @@ public class ReplicationLockTest {
       System.out.println("Checking node "+n);
       try {
         ChicagoClient cc = new ChicagoClient(n);
-        assertTrue(val.equals(new String(cc.read(colFam.getBytes(), Ints.toByteArray(key)).get())));
+        assertTrue(val.equals(new String(cc.read(colFam.getBytes(), Ints.toByteArray(key)).get().get(0))));
         cc.stop();
       }catch (Exception e){
         e.printStackTrace();

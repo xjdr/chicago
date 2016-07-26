@@ -39,7 +39,7 @@ public class SingleServerClient {
   public static void getValue(String host, String colFam, int key){
     try{
       ChicagoClient cc = new ChicagoClient(host);
-      System.out.println(new String(cc.read(colFam.getBytes(),Ints.toByteArray(key)).get()));
+      System.out.println(new String(cc.read(colFam.getBytes(),Ints.toByteArray(key)).get().get(0)));
     }catch (Exception e){
       e.printStackTrace();
     }
