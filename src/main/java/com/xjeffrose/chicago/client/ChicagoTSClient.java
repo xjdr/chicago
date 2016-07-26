@@ -12,7 +12,10 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
+import java.util.ArrayList;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,22 +109,8 @@ public class ChicagoTSClient extends BaseChicagoClient {
     });
   }
 
-  public byte[] write(byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException {
-    try {
-      if (TIMEOUT_ENABLED) {
-        return _write(key, value, 0).get(TIMEOUT, TimeUnit.MILLISECONDS);
-      } else {
-        return _write(key, value, 0).get();
-      }
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    } catch (ExecutionException e) {
-      e.printStackTrace();
-    } catch (TimeoutException e) {
-      throw new ChicagoClientTimeoutException();
-    }
-
-    return null;
+  public ListenableFuture<byte[]> write(byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException {
+    return _write(key, value, 0);
   }
 
   public  ListenableFuture<byte[]> _write(byte[] key, byte[] value, int _retries) throws ChicagoClientTimeoutException, ChicagoClientException {
@@ -141,10 +130,10 @@ public class ChicagoTSClient extends BaseChicagoClient {
 
     ListeningExecutorService executor = MoreExecutors.listeningDecorator(exe);
     return executor.submit(() -> {
-        int dquorum = quorum;
+        System.out.println("Writing value=" + new String(value));
         final long startTime = System.currentTimeMillis();
         List<String> hashList = getEffectiveNodes(key);
-        dquorum = hashList.size();
+        final int dquorum = hashList.size();
         CountDownLatch latch = new CountDownLatch(dquorum);
         log.debug("Writing to "+hashList.toString());
         hashList.stream().parallel().forEach(node -> {
@@ -166,6 +155,7 @@ public class ChicagoTSClient extends BaseChicagoClient {
                     idList.add(id);
                     listener.registerCallback(id, new ResponseListener() {
                        @Override public void onResponse(ChicagoMessage chicagoMessage, ChannelHandlerContext ctx) {
+                         System.out.println("Got response for value "+new String(value) + "from ctx "+ ctx);
                          responseList.add(chicagoMessage.getVal());
                          latch.countDown();
                        }
@@ -180,7 +170,7 @@ public class ChicagoTSClient extends BaseChicagoClient {
 
         try {
           //Wait for all the servers to respond
-          latch.await(TIMEOUT, TimeUnit.MILLISECONDS);
+          latch.await();
         }catch (InterruptedException e){
           log.error("Write failed. Expected number of response :"+dquorum +
             ". Number of response received :"+responseList.size());
@@ -189,10 +179,7 @@ public class ChicagoTSClient extends BaseChicagoClient {
         }
 
         if (responseList.stream().allMatch(b -> b != null)) {
-          for(byte[] response : responseList){
-            System.out.println("Responses :" + Longs.fromByteArray(response));
-          }
-          System.out.println("Total time for write : "+ (System.currentTimeMillis() - startTime) + "ms" );
+          log.debug("Total time for write : "+ (System.currentTimeMillis() - startTime) + "ms" );
           return responseList.getFirst();
         } else {
           System.out.println("Return value from different servers are not same. Trying to write again!!!");
