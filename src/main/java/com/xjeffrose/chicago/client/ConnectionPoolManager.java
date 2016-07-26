@@ -40,7 +40,7 @@ public class ConnectionPoolManager {
 
   private final Map<String, Listener> listenerMap = new ConcurrentHashMap<>();
   private final Map<String, ChannelFuture> connectionMap = new ConcurrentHashMap<>();
-  private final NioEventLoopGroup workerLoop = new NioEventLoopGroup(20,
+  private final NioEventLoopGroup workerLoop = new NioEventLoopGroup(5,
                                                                      new ThreadFactoryBuilder()
                                                                      .setNameFormat("chicago-nioEventLoopGroup-%d")
                                                                      .build()

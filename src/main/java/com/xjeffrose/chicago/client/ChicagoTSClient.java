@@ -189,10 +189,10 @@ public class ChicagoTSClient extends BaseChicagoClient {
         }
 
         if (responseList.stream().allMatch(b -> b != null)) {
-          for(byte[] response : responseList){
-            System.out.println("Responses :" + Longs.fromByteArray(response));
-          }
-          System.out.println("Total time for write : "+ (System.currentTimeMillis() - startTime) + "ms" );
+          //for(byte[] response : responseList){
+          //  System.out.println("Responses :" + Longs.fromByteArray(response));
+          //}
+          //System.out.println("Total time for write : "+ (System.currentTimeMillis() - startTime) + "ms" );
           return responseList.getFirst();
         } else {
           System.out.println("Return value from different servers are not same. Trying to write again!!!");
