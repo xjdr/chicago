@@ -13,7 +13,7 @@ libraryDependencies += "org.apache.curator" % "curator-test" % "2.9.1" % Test
 libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % Test
 libraryDependencies += "org.codehaus.groovy" % "groovy-all" % "2.4.1" % Test
 // http://mvnrepository.com/artifact/org.slf4j/log4j-over-slf4j
-libraryDependencies += "org.slf4j" % "log4j-over-slf4j" % "1.7.21"
+libraryDependencies += "org.slf4j" % "slf4j-log4j12" % "1.7.5"
 // http://mvnrepository.com/artifact/ch.qos.logback/logback-classic
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.1.7" % Test
 // http://mvnrepository.com/artifact/org.rocksdb/rocksdbjni
