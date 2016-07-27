@@ -112,9 +112,6 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
           status = true;
         }
         break;
-      case CANCEL:
-          //Todo: Canncel the request with UUID.
-          break;
 
       default:
         break;

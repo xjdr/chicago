@@ -70,7 +70,7 @@ public class TestChicago {
   public static HashMap<String,ChicagoServer> makeNamedServers(File tmp, int count, String zk_hosts) {
     HashMap<String,ChicagoServer> servers = new HashMap<>();
     for (int i = 1; i <= count; i++) {
-      servers.put("chicago"+i,new ChicagoServer(makeConfig(tmp, i, zk_hosts,true)));
+      servers.put("chicago"+i,new ChicagoServer(makeConfig(tmp, i*5, zk_hosts,true)));
     }
     return servers;
   }
