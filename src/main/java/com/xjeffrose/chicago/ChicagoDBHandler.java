@@ -83,6 +83,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
         case WRITE:
           status = dbManager.write(finalMsg.getColFam(), finalMsg.getKey(), finalMsg.getVal());
           //dbLog.addWrite(finalMsg.getColFam(), finalMsg.getKey(), finalMsg.getVal());
+          readResponse = new byte[]{(byte)(status?1:0)};
           log.debug("  ========================================================== Server wrote :" +
               status + " For UUID" + finalMsg.getId() + " and key " + new String(finalMsg.getKey()));
           break;
@@ -92,6 +93,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
           }else{
             status = dbManager.delete(finalMsg.getColFam(), finalMsg.getKey());
           }
+          readResponse = new byte[]{(byte)(status?1:0)};
           //dbLog.addDelete(finalMsg.getColFam(), finalMsg.getKey());
           break;
         case TS_WRITE:
@@ -109,20 +111,6 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
         if (readResponse != null) {
           status = true;
         }
-
-//        if (readResponse != null && readResponse.length > MAX_BUFFER_SIZE) {
-//          ByteBuf bb = Unpooled.buffer();
-//          bb.writeBytes(readResponse);
-//          log.info("Breaking into chunks");
-//          for (int i = 0; i < Math.ceil(bb.readableBytes() / MAX_BUFFER_SIZE) ; i++) {
-//            ByteBuf bbs = bb.slice(MAX_BUFFER_SIZE * i, MAX_BUFFER_SIZE);
-//            log.info("Sending value: "+ new String(bbs.array()));
-//            ctx.writeAndFlush(new DefaultChicagoMessage(finalMsg.getId(), Op.fromInt(3), finalMsg.getColFam(), Boolean.toString(status).getBytes(), bbs.array()));
-//          }
-//
-//          readResponse = new byte[]{};
-//        }
-
         break;
 
       default:
@@ -141,19 +129,4 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
       needsToWrite = true;
       ctx.writeAndFlush(new DefaultChicagoMessage(finalMsg.getId(), Op.fromInt(3), finalMsg.getColFam(), Boolean.toString(status).getBytes(), readResponse)).addListener(writeComplete);
   }
-
-//  @Override
-//  public void channelActive(ChannelHandlerContext ctx) {
-//    writeIfPossible(ctx.channel());
-//  }
-//  @Override
-//  public void channelWritabilityChanged(ChannelHandlerContext ctx) {
-//    writeIfPossible(ctx.channel());
-//  }
-//
-//  private void writeIfPossible(Channel channel) {
-//    while(needsToWrite && channel.isWritable()) {
-//      channel.writeAndFlush(createMessage());
-//    }
-//  }
 }

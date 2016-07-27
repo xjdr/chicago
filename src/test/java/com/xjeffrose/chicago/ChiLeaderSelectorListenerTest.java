@@ -53,7 +53,7 @@ public class ChiLeaderSelectorListenerTest {
    */
   @Test
   public void takeLeadership() throws Exception {
-    ZkClient zkClient = new ZkClient(zk);
+    ZkClient zkClient = new ZkClient(zk,false);
 
     List<String> nodes = zkClient.getChildren("/chicago/chicago-elect");
     assertEquals(nodes.size(), servers.size());

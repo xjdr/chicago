@@ -29,17 +29,24 @@ public class TestChicago {
       mapping.put("admin_port", 9000+server_num);
       mapping.put("stats_port", 8000+server_num);
       mapping.put("db_port", 12000+server_num);
+      mapping.put("e_port", 12001+server_num);
+      mapping.put("rpc_port", 12002+server_num);
     }else{
       mapping.put("admin_port",0);
       mapping.put("stats_port",0);
       mapping.put("db_port", 0);
+      mapping.put("e_port",0);
+      mapping.put("rpc_port", 0);
     }
     mapping.put("stats_bind_ip", "127.0.0.1");
     mapping.put("db_bind_ip", "127.0.0.1");
+    mapping.put("e_bind_ip", "127.0.0.1");
+    mapping.put("rpc_bind_ip", "127.0.0.1");
     mapping.put("X509_CERT", "certs/cert.pem");
     mapping.put("PRIVATE_KEY", "certs/privateKey.pem");
     mapping.put("compaction_size", 60);
     mapping.put("database_mode", false);
+    mapping.put("witness_list", "127.0.0.1:120010, 127.0.0.1:120011, 127.0.0.1:120012");
   
     return new ChiConfig(ConfigFactory.parseMap(mapping));
   }
@@ -63,7 +70,7 @@ public class TestChicago {
   public static HashMap<String,ChicagoServer> makeNamedServers(File tmp, int count, String zk_hosts) {
     HashMap<String,ChicagoServer> servers = new HashMap<>();
     for (int i = 1; i <= count; i++) {
-      servers.put("chicago"+i,new ChicagoServer(makeConfig(tmp, i, zk_hosts,true)));
+      servers.put("chicago"+i,new ChicagoServer(makeConfig(tmp, i*5, zk_hosts,true)));
     }
     return servers;
   }

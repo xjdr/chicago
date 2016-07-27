@@ -1,9 +1,9 @@
 package com.xjeffrose.chicago.client;
 
+import com.google.common.primitives.Longs;
 import com.xjeffrose.chicago.TestChicago;
 import com.xjeffrose.chicago.ZkClient;
 import com.xjeffrose.chicago.server.ChicagoServer;
-import com.google.common.primitives.Ints;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import org.apache.curator.test.TestingServer;
@@ -27,7 +27,7 @@ public class ChicagoReplicationTSClientTest {
 	@Rule
 	public TemporaryFolder tmp = new TemporaryFolder();
 	List<ChicagoServer> servers;
-	ChicagoTSClient chicagoTSClient;
+	ChicagoClient chicagoClient;
 	ZkClient zkClient;
 	File tmpDir = null;
 	String testKey="tsKey";
@@ -42,11 +42,11 @@ public class ChicagoReplicationTSClientTest {
 			server.start();
 		}
 
-		chicagoTSClient = new ChicagoTSClient(testingServer.getConnectString(),
+    chicagoClient = new ChicagoClient(testingServer.getConnectString(),
 				3);
-		zkClient = new ZkClient(testingServer.getConnectString());
+		zkClient = new ZkClient(testingServer.getConnectString(),false);
     zkClient.start();
-		chicagoTSClient.startAndWaitForNodes(4);
+		chicagoClient.startAndWaitForNodes(4);
 		System.out.println("Started all four nodes");
 
 		writeAndRead1000Values();
@@ -59,8 +59,8 @@ public class ChicagoReplicationTSClientTest {
 		}
     servers.clear();
     zkClient.stop();
-		chicagoTSClient.stop();
-    chicagoTSClient = null;
+		chicagoClient.stop();
+    chicagoClient = null;
     zkClient = null;
 		testingServer.stop();
 	}
@@ -70,27 +70,23 @@ public class ChicagoReplicationTSClientTest {
 		for (int i = 0; i < 1000; i++) {
 			String _v = "val" + i;
 			byte[] val = _v.getBytes();
-			assertNotNull(chicagoTSClient.write(testKey.getBytes(), val));
+			assertNotNull(chicagoClient.tsWrite(testKey.getBytes(), val).get().get(0));
 			System.out.println(i);
 		}
 
-		ListenableFuture<ChicagoStream> f = chicagoTSClient.stream(testKey
-				.getBytes());
-		ChicagoStream cs = f.get();
-		ListenableFuture<byte[]> resp = cs.getStream();
-		assertNotNull(resp.get());
-		cs.close();
-
+		byte[] resp = chicagoClient.stream(testKey
+      .getBytes(), Longs.toByteArray(0)).get().get(0);
+		assertNotNull(resp);
 	}
 	public void testValidResponse(List<String> nodes, int key) throws Exception{
 		ChicagoClient cc=new ChicagoClient(nodes.get(0));
-		String response1 = new String(cc.read(testKey.getBytes(), Ints.toByteArray(key)).get());
+		String response1 = new String(cc.read(testKey.getBytes(), Longs.toByteArray(key)).get().get(0));
 		cc.stop();
 		cc = new ChicagoClient(nodes.get(1));
-		String response2 = new String(cc.read(testKey.getBytes(), Ints.toByteArray(key)).get());
+		String response2 = new String(cc.read(testKey.getBytes(), Longs.toByteArray(key)).get().get(0));
 		cc.stop();
 		cc = new ChicagoClient(nodes.get(2));
-		String response3 = new String(cc.read(testKey.getBytes(), Ints.toByteArray(key)).get());
+		String response3 = new String(cc.read(testKey.getBytes(), Longs.toByteArray(key)).get().get(0));
 		cc.stop();
 		String expectedResponse="val"+key;
 		assertEquals(response1,(expectedResponse));
@@ -100,21 +96,21 @@ public class ChicagoReplicationTSClientTest {
 	}
 
 	@Test
-	public void testReplicationOnNodesAfterWait() throws Exception {
+	public void testReplicationOnNodesAfterWaitAA() throws Exception {
 
-		List<String> nodes = chicagoTSClient.getNodeList(testKey.getBytes());
+		List<String> nodes = chicagoClient.getNodeList(testKey.getBytes());
 		System.out.println("Querying old set of nodes" + nodes.toString());
 		testValidResponse(nodes,100);
 		testValidResponse(nodes,999);
-		
+
 		for (String node : nodes) {
 			System.out.println("Stopping server.. "
 					+ node);
-			zkClient.delete(ChicagoTSClient.NODE_LIST_PATH +"/"+ node);
+			zkClient.delete(ChicagoClient.NODE_LIST_PATH +"/"+ node);
 			break;
 		}
 
-		List<String> newNodes = chicagoTSClient.getNodeList(testKey.getBytes());
+		List<String> newNodes = chicagoClient.getNodeList(testKey.getBytes());
 		List<String> replicationList = null;
 		System.out.println("Waiting for replication lock to be created");
 		replicationList = zkClient.list(REPLICATION_LOCK_PATH + "/"
@@ -153,7 +149,7 @@ public class ChicagoReplicationTSClientTest {
 	@Test
 	public void testReplicationOnNodesWithDelayedWait() throws Exception {
 
-		List<String> nodes = chicagoTSClient.getNodeList(testKey.getBytes());
+		List<String> nodes = chicagoClient.getNodeList(testKey.getBytes());
 
 		System.out.println("Querying old set of nodes" + nodes.toString());
 		testValidResponse(nodes,100);
@@ -162,16 +158,16 @@ public class ChicagoReplicationTSClientTest {
 		for (String node : nodes) {
 			System.out.println("Test stopping a server.. "
 					+ node);
-			zkClient.delete(ChicagoTSClient.NODE_LIST_PATH +"/"+ node);
+			zkClient.delete(ChicagoClient.NODE_LIST_PATH +"/"+ node);
 			break;
 		}
 
-		List<String> newNodes = chicagoTSClient.getNodeList(testKey.getBytes());
+		List<String> newNodes = chicagoClient.getNodeList(testKey.getBytes());
 
 		for (int i = 0; i < 5; i++) {
 			System.out.println(i + "th iteration - Querying new set of nodes"
 					+ newNodes.toString());
-			
+
 			int noOfGoodResponses=getNoOfValidResponse(newNodes,999);
 
 			if (i == 0) {
@@ -200,7 +196,7 @@ public class ChicagoReplicationTSClientTest {
 
 
 				//Test after replication is completed
-				
+
 			} else {
 				assertEquals("Failed on read after Delayed wait: ", 3,
 						noOfGoodResponses);
@@ -212,22 +208,22 @@ public class ChicagoReplicationTSClientTest {
 		ChicagoClient cc=new ChicagoClient(nodes.get(0));
 		int noOfGoodResponse=0;
 		String expectedResponse="val"+key;
-		if(expectedResponse.equals(new String(cc.read(testKey.getBytes(), Ints.toByteArray(key)).get()))){
+		if(expectedResponse.equals(new String(cc.read(testKey.getBytes(), Longs.toByteArray(key)).get().get(0)))){
 			noOfGoodResponse++;
 		}
 		cc.stop();
 		cc = new ChicagoClient(nodes.get(1));
-		if(expectedResponse.equals(new String(cc.read(testKey.getBytes(), Ints.toByteArray(key)).get()))){
+		if(expectedResponse.equals(new String(cc.read(testKey.getBytes(), Longs.toByteArray(key)).get().get(0)))){
 			noOfGoodResponse++;
 		}
 		cc.stop();
 		cc = new ChicagoClient(nodes.get(2));
-		if(expectedResponse.equals(new String(cc.read(testKey.getBytes(), Ints.toByteArray(key)).get()))){
+		if(expectedResponse.equals(new String(cc.read(testKey.getBytes(), Longs.toByteArray(key)).get().get(0)))){
 			noOfGoodResponse++;
 		}
 		cc.stop();
 		return noOfGoodResponse;
-		
+
 	}
 
 }

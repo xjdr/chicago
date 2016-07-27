@@ -2,9 +2,13 @@ package com.xjeffrose.chicago.client;
 
 import com.xjeffrose.chicago.TreeCacheInstance;
 import com.xjeffrose.chicago.ZkClient;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
 import org.slf4j.Logger;
@@ -17,9 +21,11 @@ public class ClientNodeWatcher {
   }
   private static final Logger log = LoggerFactory.getLogger(ClientNodeWatcher.class);
   private final static String NODE_LIST_PATH = "/chicago/node-list";
+  public final static String REPLICATION_LOCK_PATH ="/chicago/replication-lock";
   private final CountDownLatch latch = new CountDownLatch(1);
   private final GenericListener genericListener = new GenericListener(NODE_LIST_PATH);
   private TreeCacheInstance nodeList;
+  private TreeCacheInstance replicationPathTree;
   private ZkClient zkClient;
   private RendezvousHash rendezvousHash;
   private final Listener listener;
@@ -30,12 +36,14 @@ public class ClientNodeWatcher {
     this.zkClient = zkClient;
     this.rendezvousHash = rendezvousHash;
     this.listener = listener;
+    this.replicationPathTree = new TreeCacheInstance(zkClient, REPLICATION_LOCK_PATH);
     nodeList.getCache().getListenable().addListener(new GenericListener(NODE_LIST_PATH));
   }
 
   public void start() {
     try {
       nodeList.start();
+      replicationPathTree.start();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -55,6 +63,7 @@ public class ClientNodeWatcher {
   public void stop() {
     nodeList.getCache().getListenable().removeListener(genericListener);
     nodeList.stop();
+    replicationPathTree.stop();
   }
 
   private void nodeAdded(String path) {
@@ -63,6 +72,15 @@ public class ClientNodeWatcher {
     if(connectionPoolManager != null){
       connectionPoolManager.checkConnection();
     }
+  }
+
+  public List<String> getReplicationPathData(String path){
+      Map<String,ChildData> children = replicationPathTree.getCache().getCurrentChildren(path);
+      if(children != null){
+        return new ArrayList<>(children.keySet());
+      }else{
+        return  new ArrayList<>();
+      }
   }
 
   private void nodeRemoved(String path) {
@@ -105,6 +123,8 @@ public class ClientNodeWatcher {
             }
           }
           break;
+        case CONNECTION_RECONNECTED:
+          connectionPoolManager.checkConnection();
         default: {
           log.info("Zk " + event.getType().name());
         }

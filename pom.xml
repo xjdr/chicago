@@ -120,12 +120,11 @@
         <artifactId>slf4j-log4j12</artifactId>
         <version>1.7.5</version>
       </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.1.7</version>
-            <scope>test</scope>
-        </dependency>
+      <dependency>
+        <groupId>com.beust</groupId>
+        <artifactId>jcommander</artifactId>
+        <version>1.48</version>
+      </dependency>
         <dependency>
             <groupId>org.rocksdb</groupId>
             <artifactId>rocksdbjni</artifactId>

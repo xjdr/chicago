@@ -1,7 +1,5 @@
 package com.xjeffrose.chicago;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

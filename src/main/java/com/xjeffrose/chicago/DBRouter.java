@@ -1,11 +1,9 @@
 package com.xjeffrose.chicago;
 
-import com.google.common.collect.ImmutableMap;
 import com.xjeffrose.xio.SSL.XioSecurityHandlerImpl;
 import com.xjeffrose.xio.core.XioAggregatorFactory;
 import com.xjeffrose.xio.core.XioCodecFactory;
 import com.xjeffrose.xio.core.XioNoOpHandler;
-import com.xjeffrose.xio.core.XioNoOpSecurityFactory;
 import com.xjeffrose.xio.core.XioRoutingFilterFactory;
 import com.xjeffrose.xio.core.XioSecurityFactory;
 import com.xjeffrose.xio.core.XioSecurityHandlers;
@@ -17,7 +15,6 @@ import com.xjeffrose.xio.server.XioServerDef;
 import com.xjeffrose.xio.server.XioServerDefBuilder;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInboundHandler;
-import io.netty.channel.ChannelOption;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -25,7 +22,6 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -42,11 +38,13 @@ public class DBRouter implements Closeable {
   private final DBManager dbManager;
   private XioBootstrap x;
   private final DBLog dbLog;
+  private final ChicagoMasterManager masterManager;
 
   public DBRouter(ChiConfig config, DBManager dbManager, DBLog dbLog) {
     this.config = config;
     this.dbManager = dbManager;
     this.dbLog = dbLog;
+    this.masterManager = new ChicagoMasterManager(config);
     config.setDbRouter(this);
   }
 
@@ -137,7 +135,6 @@ public class DBRouter implements Closeable {
 
     serverDefSet.add(statsServer);
   }
-
   private void configureDBServer() {
     XioServerDef dbServer = new XioServerDefBuilder()
         .name("Chicago DB Server")
@@ -183,10 +180,102 @@ public class DBRouter implements Closeable {
     serverDefSet.add(dbServer);
   }
 
+  private void configureElectionServer() {
+    XioServerDef eServer = new XioServerDefBuilder()
+        .name("Chicago Election Server")
+        .listen(new InetSocketAddress(config.getEBindIP(), config.getEPort()))
+//        .withSecurityFactory(new XioNoOpSecurityFactory())
+        .withSecurityFactory(new XioSecurityFactory() {
+          @Override
+          public XioSecurityHandlers getSecurityHandlers(XioServerDef xioServerDef, XioServerConfig xioServerConfig) {
+            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
+          }
+
+          @Override
+          public XioSecurityHandlers getSecurityHandlers() {
+            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
+          }
+        })
+        .withProcessorFactory(new XioProcessorFactory() {
+          @Override
+          public XioProcessor getProcessor() {
+            return new ChicagoProcessor();
+          }
+        })
+        .withCodecFactory(new XioCodecFactory() {
+          @Override
+          public ChannelHandler getCodec() {
+            return new XioNoOpHandler();
+          }
+        })
+        .withAggregator(new XioAggregatorFactory() {
+          @Override
+          public ChannelHandler getAggregator() {
+            return new XioNoOpHandler();
+          }
+        })
+        .withRoutingFilter(new XioRoutingFilterFactory() {
+          @Override
+          public ChannelInboundHandler getRoutingFilter() {
+            return new ChicagoElectionHandler(config, masterManager);
+          }
+        })
+        .build();
+
+    serverDefSet.add(eServer);
+  }
+
+  private void configureRPCServer() {
+    XioServerDef rpcServer = new XioServerDefBuilder()
+        .name("Chicago RPC Server")
+        .listen(new InetSocketAddress(config.getRPCBindIP(), config.getRPCPort()))
+//        .withSecurityFactory(new XioNoOpSecurityFactory())
+        .withSecurityFactory(new XioSecurityFactory() {
+          @Override
+          public XioSecurityHandlers getSecurityHandlers(XioServerDef xioServerDef, XioServerConfig xioServerConfig) {
+            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
+          }
+
+          @Override
+          public XioSecurityHandlers getSecurityHandlers() {
+            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
+          }
+        })
+        .withProcessorFactory(new XioProcessorFactory() {
+          @Override
+          public XioProcessor getProcessor() {
+            return new ChicagoProcessor();
+          }
+        })
+        .withCodecFactory(new XioCodecFactory() {
+          @Override
+          public ChannelHandler getCodec() {
+            return new ChicagoCodec();
+          }
+        })
+        .withAggregator(new XioAggregatorFactory() {
+          @Override
+          public ChannelHandler getAggregator() {
+            return new XioNoOpHandler();
+          }
+        })
+        .withRoutingFilter(new XioRoutingFilterFactory() {
+          @Override
+          public ChannelInboundHandler getRoutingFilter() {
+            return new ChicagoRPCHandler(config, masterManager);
+          }
+        })
+        .build();
+
+    serverDefSet.add(rpcServer);
+  }
+
   public void run() {
 
     configureAdminServer();
     configureStatsServer();
+    configureElectionServer();
+    configureRPCServer();
     configureDBServer();
 
     XioServerConfig serverConfig = XioServerConfig.newBuilder()

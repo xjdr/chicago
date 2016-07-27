@@ -6,7 +6,18 @@ public enum Op {
   DELETE(2),
   RESPONSE(3),
   TS_WRITE(4),
-  STREAM(5);
+  STREAM(5),
+  CHILD_NODE_ADDED(6),
+  CHILD_NODE_MODIFIED(7),
+  CHILD_NODE_REMOVED(8),
+  FILE_MODIFIED(9),
+  LOCK_ACQUIRED(10),
+  LOCK_CONFLICT(11),
+  MASTER_FAILED(12),
+  MASTER_BALLOT(13),
+  INVALIDATE_CACHE(14),
+  MARK_NODE_DIRTY(15),
+  REPLICATION_EVENT(16);
 
   private int i;
 
@@ -33,6 +44,28 @@ public enum Op {
         return TS_WRITE;
       case 5:
         return STREAM;
+      case 6:
+        return CHILD_NODE_ADDED;
+      case 7:
+        return CHILD_NODE_MODIFIED;
+      case 8:
+        return CHILD_NODE_REMOVED;
+      case 9:
+        return FILE_MODIFIED;
+      case 10:
+        return LOCK_ACQUIRED;
+      case 11:
+        return LOCK_CONFLICT;
+      case 12:
+        return MASTER_FAILED;
+      case 13:
+        return MASTER_BALLOT;
+      case 14:
+        return INVALIDATE_CACHE;
+      case 15:
+        return MARK_NODE_DIRTY;
+      case 16:
+        return REPLICATION_EVENT;
     }
     return null;
   }
