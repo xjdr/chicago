@@ -11,7 +11,7 @@ import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.RollingFileAppender;
 import org.apache.log4j.helpers.LogLog;
 import org.apache.log4j.spi.LoggingEvent;
-import com.xjeffrose.chicago.client.ChicagoTSClient;
+import com.xjeffrose.chicago.client.ChicagoClient;
 
 public class ChicagoAppender extends AppenderSkeleton{
     private String chicagoZk;
@@ -29,14 +29,14 @@ public class ChicagoAppender extends AppenderSkeleton{
     new ThreadFactoryBuilder()
       .setNameFormat("chicago-appender-worker-%d")
       .build());
-    private final ConcurrentLinkedDeque<ChicagoTSClient> clientQueue = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<ChicagoClient> clientQueue = new ConcurrentLinkedDeque<>();
     private final RollingFileAppender fileAppender = new RollingFileAppender();
 
     private class Write implements Runnable {
-        private ChicagoTSClient cts;
+        private ChicagoClient cts;
         private String message;
         private ChicagoAppender appender;
-        public Write(ChicagoTSClient cts, String message, ChicagoAppender appender) {
+        public Write(ChicagoClient cts, String message, ChicagoAppender appender) {
             this.cts = cts;
             this.message = message;
             this.appender = appender;
@@ -48,7 +48,7 @@ public class ChicagoAppender extends AppenderSkeleton{
                 if(message.contains("--------")){
                   System.out.println(message);
                 }
-                cts.write(key.getBytes(), message.getBytes());
+                cts.tsWrite(key.getBytes(), message.getBytes());
             } catch (Exception e) {
                 System.out.println(message);
                 e.printStackTrace();
@@ -88,7 +88,7 @@ public class ChicagoAppender extends AppenderSkeleton{
       try {
         for (int i = 0; i < pool; i++) {
           LogLog.debug("Attempting connection");
-          ChicagoTSClient cs = new ChicagoTSClient(chicagoZk, 3);
+          ChicagoClient cs = new ChicagoClient(chicagoZk, 3);
           cs.startAndWaitForNodes(3, 2000);
           clientQueue.add(cs);
           LogLog.debug("Chicago connected to " + chicagoZk);
@@ -128,8 +128,8 @@ public class ChicagoAppender extends AppenderSkeleton{
         buffer.add(message);
     }
 
-    private ChicagoTSClient getNext(){
-        ChicagoTSClient cts = clientQueue.removeFirst();
+    private ChicagoClient getNext(){
+        ChicagoClient cts = clientQueue.removeFirst();
         clientQueue.addLast(cts);
         return cts;
     }
@@ -143,7 +143,7 @@ public class ChicagoAppender extends AppenderSkeleton{
         schedulerExecutor.shutdownNow();
         try {
             while(clientQueue.peekFirst() != null){
-                ChicagoTSClient cts = clientQueue.removeFirst();
+                ChicagoClient cts = clientQueue.removeFirst();
                 cts.stop();
             }
         } catch (Exception e) {

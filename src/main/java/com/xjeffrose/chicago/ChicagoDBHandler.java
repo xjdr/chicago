@@ -83,6 +83,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
         case WRITE:
           status = dbManager.write(finalMsg.getColFam(), finalMsg.getKey(), finalMsg.getVal());
           //dbLog.addWrite(finalMsg.getColFam(), finalMsg.getKey(), finalMsg.getVal());
+          readResponse = new byte[]{(byte)(status?1:0)};
           log.debug("  ========================================================== Server wrote :" +
               status + " For UUID" + finalMsg.getId() + " and key " + new String(finalMsg.getKey()));
           break;
@@ -92,6 +93,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
           }else{
             status = dbManager.delete(finalMsg.getColFam(), finalMsg.getKey());
           }
+          readResponse = new byte[]{(byte)(status?1:0)};
           //dbLog.addDelete(finalMsg.getColFam(), finalMsg.getKey());
           break;
         case TS_WRITE:

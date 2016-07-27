@@ -39,7 +39,7 @@ public class SingleServerClient {
   public static void getValue(String host, String colFam, int key){
     try{
       ChicagoClient cc = new ChicagoClient(host);
-      System.out.println(new String(cc.read(colFam.getBytes(), Longs.toByteArray(key)).get()));
+      System.out.println(new String(cc.read(colFam.getBytes(),Longs.toByteArray(key)).get().get(0)));
     }catch (Exception e){
       e.printStackTrace();
     }
@@ -48,8 +48,8 @@ public class SingleServerClient {
 
   public static void printStream(String host, String colFam){
     try {
-      ChicagoTSClient cc = new ChicagoTSClient(host);
-      System.out.println(host +" : "+new String(cc.stream(colFam.getBytes(), null).get()));
+      ChicagoClient cc = new ChicagoClient(host);
+      System.out.println(host +" : "+new String(cc.stream(colFam.getBytes(), null).get().get(0)));
       cc.stop();
     }catch(Exception e){
       e.printStackTrace();
@@ -58,8 +58,8 @@ public class SingleServerClient {
 
   public static void write(String host,String cf, int key, String value){
     try {
-      ChicagoTSClient cc = new ChicagoTSClient(host);
-      System.out.println(host +" : "+ new String(cc._write(cf.getBytes(),Longs.toByteArray(key),value.getBytes()).get()));
+      ChicagoClient cc = new ChicagoClient(host);
+      System.out.println(host +" : "+ new String(cc.tsWrite(cf.getBytes(),Longs.toByteArray(key),value.getBytes()).get().get(0)));
     }catch(Exception e){
       e.printStackTrace();
     }
@@ -67,8 +67,8 @@ public class SingleServerClient {
 
   public static void write(String host,String cf, String value){
     try {
-      ChicagoTSClient cc = new ChicagoTSClient(host);
-      System.out.println(host +" : "+Longs.fromByteArray(cc.write(cf.getBytes(),value.getBytes())));
+      ChicagoClient cc = new ChicagoClient(host);
+      System.out.println(host +" : "+Longs.fromByteArray(cc.tsWrite(cf.getBytes(),value.getBytes()).get().get(0)));
     }catch(Exception e){
       e.printStackTrace();
     }

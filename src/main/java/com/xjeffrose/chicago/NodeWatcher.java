@@ -102,7 +102,7 @@ public class NodeWatcher {
               String lockPath = REPLICATION_LOCK_PATH + "/" + cf + "/" + s;
               try {
                 zkClient.createLockPath(lockPath , config.getDBBindEndpoint());
-                ChicagoTSClient c = new ChicagoTSClient((String) s);
+                ChicagoClient c = new ChicagoClient((String) s);
                 byte[] offset = new byte[]{};
                 List<byte[]> keys = dbManager.getKeys(cf.getBytes(), offset);
                 // Start replicating all the keys to the new server.
@@ -110,7 +110,7 @@ public class NodeWatcher {
                   for(byte[] k : keys){
                     log.debug("Writing key :"+ Longs.fromByteArray(k));
                     try {
-                      c._write(cf.getBytes(), k, dbManager.read(cf.getBytes(), k)).get();
+                      c.tsWrite(cf.getBytes(), k, dbManager.read(cf.getBytes(), k)).get().get(0);
                     } catch (Exception e) {
                       e.printStackTrace();
                       throw new ChicagoClientException(e.getCause().getMessage());

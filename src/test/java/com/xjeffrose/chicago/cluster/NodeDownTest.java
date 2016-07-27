@@ -4,7 +4,7 @@ import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.xjeffrose.chicago.TestChicago;
 import com.xjeffrose.chicago.ZkClient;
-import com.xjeffrose.chicago.client.ChicagoTSClient;
+import com.xjeffrose.chicago.client.ChicagoClient;
 import com.xjeffrose.chicago.server.ChicagoServer;
 
 import io.netty.util.internal.StringUtil;
@@ -13,13 +13,11 @@ import org.apache.curator.test.InstanceSpec;
 import org.apache.curator.test.TestingServer;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.util.HashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -36,7 +34,7 @@ public class NodeDownTest {
   @Rule
   public TemporaryFolder tmp = new TemporaryFolder();
   HashMap<String,ChicagoServer> servers;
-  ChicagoTSClient chicagoTSClient;
+  ChicagoClient chicagoClient;
 
   @Before
   public void setup() throws Exception {
@@ -47,8 +45,8 @@ public class NodeDownTest {
       servers.get(server).start();
     }
 
-    chicagoTSClient = new ChicagoTSClient(testingServer.getConnectString(), 3);
-    chicagoTSClient.startAndWaitForNodes(3);
+    chicagoClient = new ChicagoClient(testingServer.getConnectString(), 3);
+    chicagoClient.startAndWaitForNodes(3);
   }
 
   @After
@@ -56,10 +54,10 @@ public class NodeDownTest {
     for (String server : servers.keySet()) {
       servers.get(server).stop();
     }
-    chicagoTSClient.stop();
+    chicagoClient.stop();
     testingServer.stop();
     servers.clear();
-    chicagoTSClient=null;
+    chicagoClient =null;
   }
 
   @Test
@@ -67,15 +65,15 @@ public class NodeDownTest {
     byte[] offset = null;
     String key = "tskey";
 
-    System.out.println("Clients : " + chicagoTSClient.getNodeList(key.getBytes()).toString());
+    System.out.println("Clients : " + chicagoClient.getNodeList(key.getBytes()).toString());
 
     for (int i = 0; i < 30; i++) {
       String _v = "val" + i;
       byte[] val = _v.getBytes();
       if (i == 9) {
-        offset = chicagoTSClient.write(key.getBytes(), val);
+        offset = chicagoClient.tsWrite(key.getBytes(), val).get().get(0);
       }else {
-        assertNotNull(chicagoTSClient.write(key.getBytes(), val));
+        assertNotNull(chicagoClient.tsWrite(key.getBytes(), val).get().get(0));
       }
 
     }
@@ -125,10 +123,9 @@ public class NodeDownTest {
   }
 
   public void printStrem(String key, byte[] offset) throws Exception {
-    System.out.println("Clients : " + chicagoTSClient.getNodeList(key.getBytes()).toString());
-    ListenableFuture<byte[]> _resp = chicagoTSClient.stream(key.getBytes(), offset);
+    System.out.println("Clients : " + chicagoClient.getNodeList(key.getBytes()).toString());
 
-    String result = new String(_resp.get());
+    String result = new String(chicagoClient.stream(key.getBytes(), offset).get().get(0));
     assertEquals(true, !StringUtil.isNullOrEmpty(result));
     System.out.println(result);
   }

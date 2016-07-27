@@ -1,35 +1,29 @@
 package com.xjeffrose.chicago.client;
 
 import com.google.common.hash.Funnels;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.xjeffrose.chicago.DefaultChicagoMessage;
-import com.xjeffrose.chicago.Op;
+import com.google.common.util.concurrent.SettableFuture;
 import com.xjeffrose.chicago.ZkClient;
-import io.netty.channel.ChannelFuture;
-import java.net.InetSocketAddress;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Base class for Chicago clients
+ * Abstract base class for Chicago clients
  */
-public class BaseChicagoClient {
+abstract public class BaseChicagoClient {
   private static final Logger log = LoggerFactory.getLogger(BaseChicagoClient.class);
   protected final static String NODE_LIST_PATH = "/chicago/node-list";
   public final static String REPLICATION_LOCK_PATH ="/chicago/replication-lock";
@@ -62,6 +56,10 @@ public class BaseChicagoClient {
   protected final ConnectionPoolManager connectionPoolMgr;
   protected int quorum;
 
+  protected Map<UUID, SettableFuture<byte[]>> futureMap = new ConcurrentHashMap<>();
+  protected EventLoopGroup evg = new NioEventLoopGroup();
+
+
   public BaseChicagoClient(String address){
     this.single_server = true;
     this.zkClient = null;
@@ -70,7 +68,7 @@ public class BaseChicagoClient {
     nodeList.add(address);
     this.rendezvousHash =  new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
     clientNodeWatcher = null;
-    this.connectionPoolMgr = new ConnectionPoolManager(address);
+    this.connectionPoolMgr = new ConnectionPoolManager(address, futureMap);
   }
 
   public BaseChicagoClient(String zkConnectionString, int quorum) throws InterruptedException {
@@ -82,7 +80,7 @@ public class BaseChicagoClient {
     ArrayList<String> nodeList = new ArrayList<>();
     this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
     clientNodeWatcher = new ClientNodeWatcher(zkClient, rendezvousHash, listener);
-    this.connectionPoolMgr = new ConnectionPoolManager(zkClient);
+    this.connectionPoolMgr = new ConnectionPoolManager(zkClient, futureMap);
   }
 
   public void start() {
@@ -125,6 +123,7 @@ public class BaseChicagoClient {
       connectionPoolMgr.stop();
       zkClient.stop();
     }
+    evg.shutdownGracefully();
   }
 
   protected List<String> buildNodeList() {
