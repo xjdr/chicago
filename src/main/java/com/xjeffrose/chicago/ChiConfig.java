@@ -4,8 +4,11 @@ import com.typesafe.config.Config;
 import com.xjeffrose.xio.core.XioMetrics;
 import com.xjeffrose.xio.server.XioServerDef;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import org.rocksdb.util.SizeUnit;
 import org.slf4j.Logger;
@@ -36,6 +39,11 @@ public class ChiConfig {
   private boolean graceFullStart;
   private long compactionSize;
   private boolean databaseMode;
+  private String EBindIP;
+  private int EPort;
+  private String RPCBindIP;
+  private int RPCPort;
+  private List<String> witnessList;
 
   public ChiConfig(Config conf) {
 
@@ -63,6 +71,11 @@ public class ChiConfig {
     this.graceFullStart = false;
     this.compactionSize = (conf.getLong("compaction_size") * SizeUnit.GB);
     this.databaseMode = conf.getBoolean("database_mode");
+    this.EBindIP = conf.getString("e_bind_ip");
+    this.EPort = conf.getInt("e_port");
+    this.RPCBindIP = conf.getString("rpc_bind_ip");
+    this.RPCPort = conf.getInt("rpc_port");
+    this.witnessList = Arrays.asList(conf.getString("witness_list").split(","));
 
     if (System.getProperty("graceful") != null) {
       this.graceFullStart = Boolean.parseBoolean(System.getProperty("graceful"));
@@ -138,7 +151,6 @@ public class ChiConfig {
     return graceFullStart;
   }
 
-
   public long getCompactionSize() {
     return compactionSize;
   }
@@ -147,4 +159,23 @@ public class ChiConfig {
     return databaseMode;
   }
 
+  public String getEBindIP() {
+    return EBindIP;
+  }
+
+  public int getEPort() {
+    return EPort;
+  }
+
+  public String getRPCBindIP() {
+    return RPCBindIP;
+  }
+
+  public int getRPCPort() {
+    return RPCPort;
+  }
+
+  public List<String> getWitnessList() {
+    return witnessList;
+  }
 }

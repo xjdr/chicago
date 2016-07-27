@@ -1,22 +1,24 @@
 package com.xjeffrose.chicago;
 
-import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.ColumnFamilyOptions;
 import org.rocksdb.CompactionStyle;
-import org.rocksdb.CompressionType;
 import org.rocksdb.Env;
 import org.rocksdb.HashLinkedListMemTableConfig;
 import org.rocksdb.Options;
@@ -37,7 +39,7 @@ public class DBManager {
   private final WriteOptions writeOptions = new WriteOptions();
   private final Map<String, ColumnFamilyHandle> columnFamilies = new ConcurrentHashMap<>();
   private final ChiConfig config;
-  private final HashMap<String,AtomicInteger> counter = new HashMap<>();
+  private final HashMap<String,AtomicLong> counter = new HashMap<>();
   private final int MAX_ENTRIES = 500;
 
 
@@ -62,6 +64,7 @@ public class DBManager {
       log.error("Could not load DB: " + config.getDBPath() + " " + e.getMessage());
       System.exit(-1);
     }
+    //createColumnFamily(ChiUtil.defaultColFam.getBytes());
   }
 
   void removeDB(File file) {
@@ -134,6 +137,7 @@ public class DBManager {
     if (colFamilyExists(name)){
       return true;
     }
+
     ColumnFamilyOptions columnFamilyOptions = new ColumnFamilyOptions();
     if(!config.isDatabaseMode()){
       columnFamilyOptions.setCompactionStyle(CompactionStyle.FIFO)
@@ -149,7 +153,7 @@ public class DBManager {
 
     try {
       columnFamilies.put(new String(name), db.createColumnFamily(columnFamilyDescriptor));
-      counter.put(new String(name), new AtomicInteger(0));
+      counter.put(new String(name), new AtomicLong(0));
       return true;
     } catch (RocksDBException e) {
       log.error("Could not create Column Family: " + new String(name), e);
@@ -190,6 +194,12 @@ public class DBManager {
         log.error("Error getting record: " + new String(key), e);
         return null;
       }
+    }
+  }
+
+  public void resetIfOverflow(AtomicLong l, String colFam){
+    if(l.get() < 0 || l.get() == Long.MIN_VALUE){
+      l.set(0);
     }
   }
 
@@ -254,11 +264,12 @@ public class DBManager {
       //Insert Key/Value only if it does not exists.
       if (!db.keyMayExist(readOptions,columnFamilies.get(new String(colFam)),key, new StringBuffer())){
         //Set the AtomicInteger for the colFam if the key is bigger than the already set value.
-        if (Ints.fromByteArray(key) > counter.get(new String(colFam)).get()) {
-          counter.get(new String(colFam)).set(Ints.fromByteArray(key) + 1);
+        if (Longs.fromByteArray(key) > counter.get(new String(colFam)).get()) {
+          counter.get(new String(colFam)).set(Longs.fromByteArray(key) + 1);
+          resetIfOverflow(counter.get(new String(colFam)),new String(colFam));
         }
-        if(Ints.fromByteArray(key) %1000 == 0) {
-          log.info("colFam/key reached : " + new String(colFam) + " " + Ints.fromByteArray(key));
+        if(Longs.fromByteArray(key) %1000 == 0) {
+          log.info("colFam/key reached : " + new String(colFam) + " " + Longs.fromByteArray(key));
         }
         db.put(columnFamilies.get(new String(colFam)), writeOptions, key, value);
       }
@@ -269,6 +280,7 @@ public class DBManager {
     }
   }
 
+
   public byte[] tsWrite(byte[] colFam, byte[] value) {
     if (value == null) {
       log.error("Tried to ts write a null value");
@@ -277,10 +289,11 @@ public class DBManager {
       createColumnFamily(colFam);
     }
     try {
-      byte[] ts = Ints.toByteArray(counter.get(new String(colFam)).getAndIncrement());
-      if(Ints.fromByteArray(ts)%500 == 0) {
-        log.info("key reached " + Ints.fromByteArray(ts) + " for colFam "+ new String(colFam));
+      byte[] ts = Longs.toByteArray(counter.get(new String(colFam)).getAndIncrement());
+      if(Longs.fromByteArray(ts)%1000 == 0) {
+        log.info("key reached " + Longs.fromByteArray(ts) + " for colFam "+ new String(colFam));
       }
+      resetIfOverflow(counter.get(new String(colFam)),new String(colFam));
       db.put(columnFamilies.get(new String(colFam)), writeOptions, ts, value);
       return ts;
     } catch (RocksDBException e) {
@@ -304,7 +317,7 @@ public class DBManager {
       byte[] lastOffset=null;
 
       if (offset.length == 0) {
-        i.seekToFirst();
+        i.seekToLast();
       } else {
         lastOffset = offset;
         i.seek(offset);
@@ -324,7 +337,7 @@ public class DBManager {
 
       bb.writeBytes(ChiUtil.delimiter.getBytes());
       bb.writeBytes(lastOffset);
-      log.info("Stream response from DB : "+ (System.currentTimeMillis() - startTime)+ "ms with last offset as "+Ints.fromByteArray(lastOffset));
+      log.info("Stream response from DB : "+ (System.currentTimeMillis() - startTime)+ "ms with last offset as "+Longs.fromByteArray(lastOffset));
       return bb.array();
     } else {
       return null;

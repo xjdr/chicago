@@ -5,23 +5,24 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 
-import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ChiUtil {
   private static final Logger log = LoggerFactory.getLogger(ChiUtil.class.getName());
   public static final String delimiter = "@@@";
+  public static final String defaultColFam = "chicago";
   public static byte[] getTimeStamp() {
     return ZonedDateTime
         .now(ZoneId.of("UTC"))
         .format(DateTimeFormatter.RFC_1123_DATE_TIME).getBytes();
   }
 
-  public static int findOffset(byte[] input) {
+  public static long findOffset(byte[] input) {
     if (new String(input).contains(delimiter)) {
       int lastIndex = findLastOffsetIndex(input,delimiter.getBytes());
-      int offset = Ints.fromByteArray(Arrays.copyOfRange(input,lastIndex+1,input.length-1));
+      long offset = Longs.fromByteArray(Arrays.copyOfRange(input,lastIndex+1,input.length-1));
       //Incrementing by 1 because this offset is already processed.
       return offset;
     }else{

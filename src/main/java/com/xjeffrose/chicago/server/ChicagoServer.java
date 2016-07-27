@@ -29,7 +29,7 @@ public class ChicagoServer {
 
   public ChicagoServer(ChiConfig config) {
     this.config = config;
-    zkClient = new ZkClient(config.getZkHosts());
+    zkClient = new ZkClient(config.getZkHosts(),true);
     dbManager = new DBManager(config);
     nodeWatcher = new NodeWatcher(NODE_LIST_PATH,NODE_LOCK_PATH);
     dbRouter = new DBRouter(config, dbManager, dbLog);
@@ -37,11 +37,12 @@ public class ChicagoServer {
   public void start() throws Exception {
     dbRouter.run();
     if(!zkClient.getClient().getState().equals(CuratorFrameworkState.STARTED)) {
-      zkClient = new ZkClient(config.getZkHosts());
+      zkClient = new ZkClient(config.getZkHosts(), true);
       zkClient.start();
     }
     zkClient.register(NODE_LIST_PATH, config, dbRouter.getDBBoundInetAddress());
     zkClient.electLeader(ELECTION_PATH);
+    zkClient.createIfNotExist(NODE_LOCK_PATH,"");
     nodeWatcher.refresh(zkClient, dbManager, config);
   }
   public void stop() {
