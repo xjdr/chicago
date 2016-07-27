@@ -233,119 +233,102 @@ public class ChicagoTSClientTest {
 																		// interwoven
 
 	}
-//
-//	@Test
-//	public void transactRoundTripStream() throws Exception {
-//		long startTime=System.currentTimeMillis();
-//		for (int i = 0; (i < 1000); i++) {
-//			String _v = "val" + i;
-//			byte[] val = _v.getBytes();
-//			assertNotNull(chicagoTSClient.write("tskey".getBytes(), val));
-//			boolean gotResponse = false;
-//			while (!gotResponse) {
-//				ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream(
-//						"tskey".getBytes(), Longs.toByteArray(i));
-//				ChicagoStream cs = _f.get();
-//				ListenableFuture<byte[]> _resp = cs.getStream();
-//				assertNotNull(_resp.get());
-//				String response = new String(_resp.get());
-//				if (response.contains(_v)){
-//					gotResponse = true;
-//				}
-//				cs.close();
-//			}
-//		}
-//		long testTime=(System.currentTimeMillis()-startTime)/1000;
-//		System.out.println("Tiem taken for one round robin read/write on avergae is: "+testTime );
-//		Assert.assertTrue(testTime <10);
-//	}
-//
-//	@Test
-//	public void transactStream() throws Exception {
-//
-//		for (int i = 0; i < 1000; i++) {
-//			String _v = "val" + i + "                                                   " +
-//        "                                                                          " +
-//        "                                                                    end!!"+i;
-//			byte[] val = _v.getBytes();
-//			assertNotNull(chicagoTSClient.write("tskey".getBytes(), val));
-//			// System.out.println(i);
-//		}
-//
-//    String delimiter = ChiUtil.delimiter;
-//
-//
-//		ListenableFuture<ChicagoStream> f = chicagoTSClient.stream("tskey"
-//				.getBytes());
-//		ChicagoStream cs = f.get();
-//		ListenableFuture<byte[]> resp = cs.getStream();
-//
-//		assertNotNull(resp.get());
-//		byte[] resultArray = resp.get();
-//    int offset = ChiUtil.findOffset(resultArray);
-//    String result = new String(resultArray);
-//
-//		int old = -1;
-//		int count = 0;
-//		while (result.contains(delimiter)) {
-//
-//			if (count > 10) {
-//				break;
-//			}
-//			offset = ChiUtil.findOffset(resultArray);
-//			if (old != -1 && (old == offset)) {
-//				Thread.sleep(500);
-//			}
-//
-//      String output = result.split(ChiUtil.delimiter)[0];
-//			System.out.println(output);
-//			cs.close();
-//
-//      if(!output.isEmpty()){
-//        offset = offset +1;
-//      }
-//			ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream(
-//					"tskey".getBytes(), Longs.toByteArray(offset));
-//			cs = _f.get();
-//			resp = cs.getStream();
-//      resultArray = resp.get();
-//			result = new String(resp.get());
-//			old = offset;
-//			count++;
-//		}
-//
-//		ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream(
-//				"tskey".getBytes(), Longs.toByteArray(offset));
-//		cs = _f.get();
-//		ListenableFuture<byte[]> _resp = cs.getStream();
-//
-//		assertNotNull(_resp.get());
-//		System.out.println(new String(_resp.get()));
-//		cs.close();
-//	}
-//
-//	@Test
-//	public void transactLargeStream() throws Exception {
-//		byte[] offset = null;
-//		for (int i = 0; i < 10; i++) {
-//			byte[] val = new byte[10240];
-//			if (i == 12) {
-//				offset = chicagoTSClient.write("LargeTskey".getBytes(), val);
-//			}
-//			assertNotNull(chicagoTSClient.write("tskey".getBytes(), val));
-//		}
-//
-//		ListenableFuture<byte[]> f = chicagoTSClient.read("tskey".getBytes());
-//		byte[] resp = f.get();
-//
-//		System.out.println(new String(resp));
-//
-//		ListenableFuture<ChicagoStream> _f = chicagoTSClient.stream(
-//				"tskey".getBytes(), offset);
-//		ChicagoStream _cs = _f.get();
-//		ListenableFuture<byte[]> _resp = _cs.getStream();
-//
-//		System.out.println(new String(_resp.get()));
-//		_cs.close();
-//	}
+
+	@Test
+	public void transactRoundTripStream() throws Exception {
+		long startTime=System.currentTimeMillis();
+		for (int i = 0; (i < 1000); i++) {
+			String _v = "val" + i;
+			byte[] val = _v.getBytes();
+			assertNotNull(chicagoTSClient.tsWrite("tskey".getBytes(), val).get().get(0));
+			boolean gotResponse = false;
+			while (!gotResponse) {
+				byte[] _resp = chicagoTSClient.stream(
+          "tskey".getBytes(), Longs.toByteArray(i)).get().get(0);
+				assertNotNull(_resp);
+				String response = new String(_resp);
+				if (response.contains(_v)) {
+          gotResponse = true;
+        }
+			}
+		}
+		long testTime=(System.currentTimeMillis()-startTime)/1000;
+		System.out.println("Tiem taken for one round robin read/write on avergae is: "+testTime );
+		Assert.assertTrue(testTime <10);
+	}
+
+	@Test
+	public void transactStream() throws Exception {
+
+		for (int i = 0; i < 1000; i++) {
+			String _v = "val" + i + "                                                   " +
+        "                                                                          " +
+        "                                                                    end!!"+i;
+			byte[] val = _v.getBytes();
+			assertNotNull(chicagoTSClient.tsWrite("tskey".getBytes(), val));
+			// System.out.println(i);
+		}
+
+    String delimiter = ChiUtil.delimiter;
+
+		byte[] resp = chicagoTSClient.stream("tskey"
+      .getBytes()).get().get(0);
+
+		assertNotNull(resp);
+		byte[] resultArray = resp;
+    long offset = ChiUtil.findOffset(resultArray);
+    String result = new String(resultArray);
+
+		long old = -1;
+		int count = 0;
+		while (result.contains(delimiter)) {
+
+			if (count > 10) {
+				break;
+			}
+			offset = ChiUtil.findOffset(resultArray);
+			if (old != -1 && (old == offset)) {
+				Thread.sleep(500);
+			}
+
+      String output = result.split(ChiUtil.delimiter)[0];
+			System.out.println(output);
+
+      if(!output.isEmpty()){
+        offset = offset +1;
+      }
+			resp = chicagoTSClient.stream(
+        "tskey".getBytes(), Longs.toByteArray(offset)).get().get(0);
+      resultArray = resp;
+			result = new String(resp);
+			old = offset;
+			count++;
+		}
+
+		byte[] _resp = chicagoTSClient.stream(
+      "tskey".getBytes(), Longs.toByteArray(offset)).get().get(0);
+
+		assertNotNull(_resp);
+		System.out.println(new String(_resp));
+	}
+
+	@Test
+	public void transactLargeStream() throws Exception {
+		byte[] offset = null;
+		for (int i = 0; i < 10; i++) {
+			byte[] val = new byte[10240];
+			if (i == 12) {
+				offset = chicagoTSClient.tsWrite("LargeTskey".getBytes(), val).get().get(0);
+			}
+			assertNotNull(chicagoTSClient.tsWrite("LargeTskey".getBytes(), val).get().get(0));
+		}
+
+		byte[] resp = chicagoTSClient.stream("LargeTskey".getBytes()).get().get(0);
+
+		System.out.println(new String(resp));
+		byte[] _resp = chicagoTSClient.stream(
+      "tskey".getBytes(), offset).get().get(0);
+
+		System.out.println(new String(_resp));
+	}
 }
