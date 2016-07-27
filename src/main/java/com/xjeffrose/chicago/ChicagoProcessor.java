@@ -26,13 +26,13 @@ public class ChicagoProcessor implements XioSimpleProcessor {
       if (log.isDebugEnabled()) {
         ChicagoMessage msg = null;
 
-    if (req instanceof ChicagoMessage) {
-      msg = (ChicagoMessage) req;
-    }
+        if (req instanceof ChicagoMessage) {
+          msg = (ChicagoMessage) req;
 
-    ChicagoMessage finalMsg = msg;
-        log.debug("  ========================================================== Server wrote :" +
-            " For UUID" + finalMsg.getId() + " and key " + new String(finalMsg.getKey()));
+          ChicagoMessage finalMsg = msg;
+          log.debug("  ========================================================== Server wrote :" +
+              " For UUID" + finalMsg.getId() + " and key " + new String(finalMsg.getKey()));
+        }
       }
       return true;
     });
