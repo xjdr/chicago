@@ -73,6 +73,7 @@ public class ChicagoClient extends BaseChicagoClient {
       if (cf.channel().isWritable()) {
         UUID id = UUID.randomUUID();
         SettableFuture<byte[]> f = SettableFuture.create();
+        Futures.withTimeout(f, TIMEOUT, TimeUnit.MILLISECONDS, evg);
         Futures.addCallback(f, new FutureCallback<byte[]>() {
           @Override
           public void onSuccess(@Nullable byte[] bytes) {
@@ -103,6 +104,7 @@ public class ChicagoClient extends BaseChicagoClient {
             if (cf1.channel().isWritable()) {
               UUID id1 = UUID.randomUUID();
               SettableFuture<byte[]> f1 = SettableFuture.create();
+              Futures.withTimeout(f1, TIMEOUT, TimeUnit.MILLISECONDS, evg);
               Futures.addCallback(f1, new FutureCallback<byte[]>() {
                 @Override
                 public void onSuccess(@Nullable byte[] bytes) {
@@ -142,6 +144,7 @@ public class ChicagoClient extends BaseChicagoClient {
       if (cf.channel().isWritable()) {
         UUID id = UUID.randomUUID();
         SettableFuture<byte[]> f = SettableFuture.create();
+        Futures.withTimeout(f, TIMEOUT, TimeUnit.MILLISECONDS, evg);
         Futures.addCallback(f, new FutureCallback<byte[]>() {
           @Override
           public void onSuccess(@Nullable byte[] bytes) {
@@ -172,6 +175,7 @@ public class ChicagoClient extends BaseChicagoClient {
             if (cf1.channel().isWritable()) {
               UUID id1 = UUID.randomUUID();
               SettableFuture<byte[]> f1 = SettableFuture.create();
+              Futures.withTimeout(f1, TIMEOUT, TimeUnit.MILLISECONDS, evg);
               Futures.addCallback(f1, new FutureCallback<byte[]>() {
                 @Override
                 public void onSuccess(@Nullable byte[] bytes) {
@@ -216,6 +220,7 @@ public class ChicagoClient extends BaseChicagoClient {
         if (cf.channel().isWritable()) {
           UUID id = UUID.randomUUID();
           SettableFuture<byte[]> f = SettableFuture.create();
+          Futures.withTimeout(f, TIMEOUT, TimeUnit.MILLISECONDS, evg);
           Futures.addCallback(f, new FutureCallback<byte[]>() {
             @Override
             public void onSuccess(@Nullable byte[] bytes) {
@@ -257,6 +262,7 @@ public class ChicagoClient extends BaseChicagoClient {
         if (cf.channel().isWritable()) {
           UUID id = UUID.randomUUID();
           SettableFuture<byte[]> f = SettableFuture.create();
+          Futures.withTimeout(f, TIMEOUT, TimeUnit.MILLISECONDS, evg);
           Futures.addCallback(f, new FutureCallback<byte[]>() {
             @Override
             public void onSuccess(@Nullable byte[] bytes) {

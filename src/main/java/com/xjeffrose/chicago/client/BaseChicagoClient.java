@@ -5,6 +5,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.common.util.concurrent.SettableFuture;
 import com.xjeffrose.chicago.ZkClient;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.epoll.Epoll;
+import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -57,7 +59,7 @@ abstract public class BaseChicagoClient {
   protected int quorum;
 
   protected Map<UUID, SettableFuture<byte[]>> futureMap = new ConcurrentHashMap<>();
-  protected EventLoopGroup evg = new NioEventLoopGroup();
+  protected EventLoopGroup evg;
 
 
   public BaseChicagoClient(String address){
@@ -69,6 +71,11 @@ abstract public class BaseChicagoClient {
     this.rendezvousHash =  new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
     clientNodeWatcher = null;
     this.connectionPoolMgr = new ConnectionPoolManager(address, futureMap);
+    if (Epoll.isAvailable()) {
+      evg = new EpollEventLoopGroup(5);
+    } else {
+      evg = new NioEventLoopGroup(5);
+    }
   }
 
   public BaseChicagoClient(String zkConnectionString, int quorum) throws InterruptedException {
@@ -81,6 +88,11 @@ abstract public class BaseChicagoClient {
     this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
     clientNodeWatcher = new ClientNodeWatcher(zkClient, rendezvousHash, listener);
     this.connectionPoolMgr = new ConnectionPoolManager(zkClient, futureMap);
+    if (Epoll.isAvailable()) {
+      evg = new EpollEventLoopGroup(5);
+    } else {
+      evg = new NioEventLoopGroup(5);
+    }
   }
 
   public void start() {
