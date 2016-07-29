@@ -8,6 +8,7 @@ import com.xjeffrose.chicago.ChiUtil;
 import com.xjeffrose.chicago.DefaultChicagoMessage;
 import com.xjeffrose.chicago.Op;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +51,48 @@ public class ChicagoClient extends BaseChicagoClient {
 
   public ChicagoClient(String address) throws InterruptedException {
     super(address);
+  }
+
+  public ByteBuf aggregatedStream(byte[] offset) {
+    ByteBuf responseStream = Unpooled.directBuffer();
+
+    zkClient.getChildren(REPLICATION_LOCK_PATH).stream().forEach(xs -> {
+      if (offset == null) {
+        try {
+          Futures.addCallback(stream(xs.getBytes()), new FutureCallback<List<byte[]>>() {
+            @Override
+            public void onSuccess(@Nullable List<byte[]> bytes) {
+              responseStream.writeBytes(bytes.get(0));
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+
+            }
+          });
+        } catch (ChicagoClientTimeoutException e) {
+          e.printStackTrace();
+        }
+      } else {
+        try {
+          Futures.addCallback(stream(xs.getBytes(), offset), new FutureCallback<List<byte[]>>() {
+            @Override
+            public void onSuccess(@Nullable List<byte[]> bytes) {
+              responseStream.writeBytes(bytes.get(0));
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+
+            }
+          });
+        } catch (ChicagoClientTimeoutException e) {
+          e.printStackTrace();
+        }
+      }
+    });
+
+    return responseStream;
   }
 
   public ListenableFuture<List<byte[]>> stream(byte[] key) throws ChicagoClientTimeoutException {
