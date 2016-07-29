@@ -113,7 +113,12 @@ public class ConnectionPoolManager {
   }
 
   private List<String> buildNodeList() {
-    return zkClient.list(NODE_LIST_PATH);
+    List<String> l = zkClient.list(NODE_LIST_PATH);
+    if (l == null) {
+      return buildNodeList();
+    } else {
+      return l;
+    }
   }
 
   private InetSocketAddress address(String node) {
@@ -145,11 +150,11 @@ public class ConnectionPoolManager {
 
   private ChannelFuture _getNode(String node, long startTime) throws ChicagoClientTimeoutException {
     while (connectionMap.get(node) == null) {
-      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
-        Thread.currentThread().interrupt();
-        System.out.println("Cannot get connection for node "+ node +" connectionMap ="+ connectionMap.keySet().toString());
-        throw new ChicagoClientTimeoutException();
-      }
+//      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
+//        Thread.currentThread().interrupt();
+//        System.out.println("Cannot get connection for node "+ node +" connectionMap ="+ connectionMap.keySet().toString());
+//        throw new ChicagoClientTimeoutException();
+//      }
 //      try {
 //        Thread.sleep(1);
 //      } catch (InterruptedException e) {

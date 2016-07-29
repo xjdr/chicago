@@ -56,7 +56,7 @@ public class ChicagoClient extends BaseChicagoClient {
   public ByteBuf aggregatedStream(byte[] offset) {
     ByteBuf responseStream = Unpooled.directBuffer();
 
-    zkClient.getChildren(REPLICATION_LOCK_PATH).stream().forEach(xs -> {
+    zkClient.getChildren(REPLICATION_LOCK_PATH).stream().parallel().forEach(xs -> {
       if (offset == null) {
         try {
           Futures.addCallback(stream(xs.getBytes()), new FutureCallback<List<byte[]>>() {
