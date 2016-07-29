@@ -3832,3 +3832,970 @@ I 0729 20:41:07.9251469824867925 THREAD34 org.apache.zookeeper.server.NIOServerC
 I 0729 20:41:07.9251469824867925 THREAD34 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Refusing session request for client /127.0.0.1:49897 as it has seen zxid 0x2 our last zxid is 0x1 client must try another server
 I 0729 20:41:07.9251469824867925 THREAD34 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:49897 (no session established for client)
 I 0729 20:41:07.9251469824867925 THREAD30 org.apache.zookeeper.ClientCnxn$SendThread.run: Unable to read additional data from server sessionid 0x15638634f360001, likely server has closed socket, closing socket connection and attempting reconnect
+I 0729 20:56:05.9211469825765921 THREAD10 org.apache.zookeeper.server.ZooKeeperServerMain.runFromConfig: Starting server
+I 0729 20:56:06.0721469825766072 THREAD10 org.apache.zookeeper.Environment.logEnv: Server environment:zookeeper.version=3.4.6-1569965, built on 02/20/2014 09:09 GMT
+I 0729 20:56:06.0731469825766073 THREAD10 org.apache.zookeeper.Environment.logEnv: Server environment:host.name=10.184.22.17
+I 0729 20:56:06.0761469825766076 THREAD10 org.apache.zookeeper.Environment.logEnv: Server environment:java.version=1.8.0_40
+I 0729 20:56:06.0771469825766077 THREAD10 org.apache.zookeeper.Environment.logEnv: Server environment:java.vendor=Oracle Corporation
+I 0729 20:56:06.0791469825766079 THREAD10 org.apache.zookeeper.Environment.logEnv: Server environment:java.home=/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre
+I 0729 20:56:06.0801469825766080 THREAD10 org.apache.zookeeper.Environment.logEnv: Server environment:java.class.path=/Applications/IntelliJ IDEA.app/Contents/lib/idea_rt.jar:/Applications/IntelliJ IDEA.app/Contents/plugins/junit/lib/junit-rt.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/lib/ant-javafx.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/lib/dt.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/lib/javafx-mx.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/lib/jconsole.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/lib/packager.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/lib/sa-jdi.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/lib/tools.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/charsets.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/deploy.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/javaws.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/jce.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/jfr.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/jfxswt.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/jsse.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/management-agent.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/plugin.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/resources.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/rt.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/ext/cldrdata.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/ext/dnsns.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/ext/jfxrt.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/ext/localedata.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/ext/nashorn.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/ext/sunec.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/ext/sunjce_provider.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/ext/sunpkcs11.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/ext/zipfs.jar:/Users/jefrose/src/xjdr/chicago/target/test-classes:/Users/jefrose/src/xjdr/chicago/target/classes:/Users/jefrose/.m2/repository/com/xjeffrose/xio/0.11.0-SNAPSHOT/xio-0.11.0-SNAPSHOT.jar:/Users/jefrose/.m2/repository/com/typesafe/config/1.3.0/config-1.3.0.jar:/Users/jefrose/.m2/repository/org/apache/curator/curator-framework/2.9.1/curator-framework-2.9.1.jar:/Users/jefrose/.m2/repository/org/apache/curator/curator-client/2.9.1/curator-client-2.9.1.jar:/Users/jefrose/.m2/repository/org/apache/curator/curator-recipes/2.9.1/curator-recipes-2.9.1.jar:/Users/jefrose/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.7.3/jackson-databind-2.7.3.jar:/Users/jefrose/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.7.3/jackson-core-2.7.3.jar:/Users/jefrose/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.7.3/jackson-annotations-2.7.3.jar:/Users/jefrose/.m2/repository/junit/junit/4.12/junit-4.12.jar:/Users/jefrose/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar:/Users/jefrose/.m2/repository/org/apache/curator/curator-test/2.9.1/curator-test-2.9.1.jar:/Users/jefrose/.m2/repository/org/apache/zookeeper/zookeeper/3.4.6/zookeeper-3.4.6.jar:/Users/jefrose/.m2/repository/jline/jline/0.9.94/jline-0.9.94.jar:/Users/jefrose/.m2/repository/io/netty/netty/3.7.0.Final/netty-3.7.0.Final.jar:/Users/jefrose/.m2/repository/org/javassist/javassist/3.18.1-GA/javassist-3.18.1-GA.jar:/Users/jefrose/.m2/repository/org/apache/commons/commons-math/2.2/commons-math-2.2.jar:/Users/jefrose/.m2/repository/com/google/guava/guava/16.0.1/guava-16.0.1.jar:/Users/jefrose/.m2/repository/org/codehaus/groovy/groovy-all/2.4.1/groovy-all-2.4.1.jar:/Users/jefrose/.m2/repository/org/slf4j/slf4j-log4j12/1.7.5/slf4j-log4j12-1.7.5.jar:/Users/jefrose/.m2/repository/org/slf4j/slf4j-api/1.7.5/slf4j-api-1.7.5.jar:/Users/jefrose/.m2/repository/log4j/log4j/1.2.17/log4j-1.2.17.jar:/Users/jefrose/.m2/repository/com/beust/jcommander/1.48/jcommander-1.48.jar:/Users/jefrose/.m2/repository/org/rocksdb/rocksdbjni/4.5.1/rocksdbjni-4.5.1.jar
+I 0729 20:56:06.0811469825766081 THREAD10 org.apache.zookeeper.Environment.logEnv: Server environment:java.library.path=/Users/jefrose/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:.
+I 0729 20:56:06.0811469825766081 THREAD10 org.apache.zookeeper.Environment.logEnv: Server environment:java.io.tmpdir=/var/folders/7h/lkld2mbs31z1_7_158hdk5hc391fc7/T/
+I 0729 20:56:06.0811469825766081 THREAD10 org.apache.zookeeper.Environment.logEnv: Server environment:java.compiler=<NA>
+I 0729 20:56:06.0811469825766081 THREAD10 org.apache.zookeeper.Environment.logEnv: Server environment:os.name=Mac OS X
+I 0729 20:56:06.0821469825766082 THREAD10 org.apache.zookeeper.Environment.logEnv: Server environment:os.arch=x86_64
+I 0729 20:56:06.0821469825766082 THREAD10 org.apache.zookeeper.Environment.logEnv: Server environment:os.version=10.11.6
+I 0729 20:56:06.0821469825766082 THREAD10 org.apache.zookeeper.Environment.logEnv: Server environment:user.name=jefrose
+I 0729 20:56:06.0821469825766082 THREAD10 org.apache.zookeeper.Environment.logEnv: Server environment:user.home=/Users/jefrose
+I 0729 20:56:06.0831469825766083 THREAD10 org.apache.zookeeper.Environment.logEnv: Server environment:user.dir=/Users/jefrose/src/xjdr/chicago
+I 0729 20:56:06.0951469825766095 THREAD10 org.apache.zookeeper.server.ZooKeeperServer.setTickTime: tickTime set to 20
+I 0729 20:56:06.0951469825766095 THREAD10 org.apache.zookeeper.server.ZooKeeperServer.setMinSessionTimeout: minSessionTimeout set to -1
+I 0729 20:56:06.0951469825766095 THREAD10 org.apache.zookeeper.server.ZooKeeperServer.setMaxSessionTimeout: maxSessionTimeout set to -1
+I 0729 20:56:06.1181469825766118 THREAD10 org.apache.zookeeper.server.NIOServerCnxnFactory.configure: binding to port 0.0.0.0/0.0.0.0:2182
+I 0729 20:56:07.2271469825767227 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:07.2341469825767234 THREAD1 org.apache.zookeeper.Environment.logEnv: Client environment:zookeeper.version=3.4.6-1569965, built on 02/20/2014 09:09 GMT
+I 0729 20:56:07.2341469825767234 THREAD1 org.apache.zookeeper.Environment.logEnv: Client environment:host.name=10.184.22.17
+I 0729 20:56:07.2341469825767234 THREAD1 org.apache.zookeeper.Environment.logEnv: Client environment:java.version=1.8.0_40
+I 0729 20:56:07.2341469825767234 THREAD1 org.apache.zookeeper.Environment.logEnv: Client environment:java.vendor=Oracle Corporation
+I 0729 20:56:07.2341469825767234 THREAD1 org.apache.zookeeper.Environment.logEnv: Client environment:java.home=/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre
+I 0729 20:56:07.2351469825767235 THREAD1 org.apache.zookeeper.Environment.logEnv: Client environment:java.class.path=/Applications/IntelliJ IDEA.app/Contents/lib/idea_rt.jar:/Applications/IntelliJ IDEA.app/Contents/plugins/junit/lib/junit-rt.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/lib/ant-javafx.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/lib/dt.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/lib/javafx-mx.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/lib/jconsole.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/lib/packager.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/lib/sa-jdi.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/lib/tools.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/charsets.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/deploy.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/javaws.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/jce.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/jfr.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/jfxswt.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/jsse.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/management-agent.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/plugin.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/resources.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/rt.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/ext/cldrdata.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/ext/dnsns.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/ext/jfxrt.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/ext/localedata.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/ext/nashorn.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/ext/sunec.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/ext/sunjce_provider.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/ext/sunpkcs11.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/ext/zipfs.jar:/Users/jefrose/src/xjdr/chicago/target/test-classes:/Users/jefrose/src/xjdr/chicago/target/classes:/Users/jefrose/.m2/repository/com/xjeffrose/xio/0.11.0-SNAPSHOT/xio-0.11.0-SNAPSHOT.jar:/Users/jefrose/.m2/repository/com/typesafe/config/1.3.0/config-1.3.0.jar:/Users/jefrose/.m2/repository/org/apache/curator/curator-framework/2.9.1/curator-framework-2.9.1.jar:/Users/jefrose/.m2/repository/org/apache/curator/curator-client/2.9.1/curator-client-2.9.1.jar:/Users/jefrose/.m2/repository/org/apache/curator/curator-recipes/2.9.1/curator-recipes-2.9.1.jar:/Users/jefrose/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.7.3/jackson-databind-2.7.3.jar:/Users/jefrose/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.7.3/jackson-core-2.7.3.jar:/Users/jefrose/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.7.3/jackson-annotations-2.7.3.jar:/Users/jefrose/.m2/repository/junit/junit/4.12/junit-4.12.jar:/Users/jefrose/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar:/Users/jefrose/.m2/repository/org/apache/curator/curator-test/2.9.1/curator-test-2.9.1.jar:/Users/jefrose/.m2/repository/org/apache/zookeeper/zookeeper/3.4.6/zookeeper-3.4.6.jar:/Users/jefrose/.m2/repository/jline/jline/0.9.94/jline-0.9.94.jar:/Users/jefrose/.m2/repository/io/netty/netty/3.7.0.Final/netty-3.7.0.Final.jar:/Users/jefrose/.m2/repository/org/javassist/javassist/3.18.1-GA/javassist-3.18.1-GA.jar:/Users/jefrose/.m2/repository/org/apache/commons/commons-math/2.2/commons-math-2.2.jar:/Users/jefrose/.m2/repository/com/google/guava/guava/16.0.1/guava-16.0.1.jar:/Users/jefrose/.m2/repository/org/codehaus/groovy/groovy-all/2.4.1/groovy-all-2.4.1.jar:/Users/jefrose/.m2/repository/org/slf4j/slf4j-log4j12/1.7.5/slf4j-log4j12-1.7.5.jar:/Users/jefrose/.m2/repository/org/slf4j/slf4j-api/1.7.5/slf4j-api-1.7.5.jar:/Users/jefrose/.m2/repository/log4j/log4j/1.2.17/log4j-1.2.17.jar:/Users/jefrose/.m2/repository/com/beust/jcommander/1.48/jcommander-1.48.jar:/Users/jefrose/.m2/repository/org/rocksdb/rocksdbjni/4.5.1/rocksdbjni-4.5.1.jar
+I 0729 20:56:07.2351469825767235 THREAD1 org.apache.zookeeper.Environment.logEnv: Client environment:java.library.path=/Users/jefrose/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:.
+I 0729 20:56:07.2351469825767235 THREAD1 org.apache.zookeeper.Environment.logEnv: Client environment:java.io.tmpdir=/var/folders/7h/lkld2mbs31z1_7_158hdk5hc391fc7/T/
+I 0729 20:56:07.2351469825767235 THREAD1 org.apache.zookeeper.Environment.logEnv: Client environment:java.compiler=<NA>
+I 0729 20:56:07.2351469825767235 THREAD1 org.apache.zookeeper.Environment.logEnv: Client environment:os.name=Mac OS X
+I 0729 20:56:07.2351469825767235 THREAD1 org.apache.zookeeper.Environment.logEnv: Client environment:os.arch=x86_64
+I 0729 20:56:07.2361469825767236 THREAD1 org.apache.zookeeper.Environment.logEnv: Client environment:os.version=10.11.6
+I 0729 20:56:07.2361469825767236 THREAD1 org.apache.zookeeper.Environment.logEnv: Client environment:user.name=jefrose
+I 0729 20:56:07.2361469825767236 THREAD1 org.apache.zookeeper.Environment.logEnv: Client environment:user.home=/Users/jefrose
+I 0729 20:56:07.2361469825767236 THREAD1 org.apache.zookeeper.Environment.logEnv: Client environment:user.dir=/Users/jefrose/src/xjdr/chicago
+I 0729 20:56:07.2371469825767237 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@64485a47
+I 0729 20:56:07.2471469825767247 THREAD17 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:07.2521469825767252 THREAD17 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:07.2521469825767252 THREAD11 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50371
+I 0729 20:56:07.2581469825767258 THREAD11 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50371
+I 0729 20:56:07.2611469825767261 THREAD13 org.apache.zookeeper.server.persistence.FileTxnLog.append: Creating new log file: log.1
+I 0729 20:56:07.3251469825767325 THREAD13 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x156387152fb0000 with negotiated timeout 400 for client /127.0.0.1:50371
+I 0729 20:56:07.3261469825767326 THREAD17 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x156387152fb0000, negotiated timeout = 400
+I 0729 20:56:07.3321469825767332 THREAD18 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:07.5451469825767545 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago RPC Server:50372
+I 0729 20:56:07.5461469825767546 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago DB Server:50373
+I 0729 20:56:07.5471469825767547 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Stats Server:50374
+I 0729 20:56:07.5481469825767548 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Election Server:50375
+I 0729 20:56:07.5481469825767548 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Admin Server:50376
+I 0729 20:56:07.5481469825767548 THREAD1 com.xjeffrose.chicago.DBRouter.run: --------------- Chicago Server Started!!! ----------------------
+I 0729 20:56:07.5491469825767549 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:07.5491469825767549 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@73a1e9a9
+I 0729 20:56:07.5501469825767550 THREAD30 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:07.5501469825767550 THREAD30 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:07.5501469825767550 THREAD11 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50377
+I 0729 20:56:07.5511469825767551 THREAD11 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50377
+I 0729 20:56:07.5521469825767552 THREAD13 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x156387152fb0001 with negotiated timeout 400 for client /127.0.0.1:50377
+I 0729 20:56:07.5521469825767552 THREAD30 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x156387152fb0001, negotiated timeout = 400
+I 0729 20:56:07.5521469825767552 THREAD31 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:07.7701469825767770 THREAD14 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x156387152fb0001 type:create cxid:0x2 zxid:0x3 txntype:-1 reqpath:n/a Error Path:/chicago/node-list Error:KeeperErrorCode = NoNode for /chicago/node-list
+I 0729 20:56:07.8091469825767809 THREAD14 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x156387152fb0001 type:create cxid:0xa zxid:0x8 txntype:-1 reqpath:n/a Error Path:/chicago/chicago-elect Error:KeeperErrorCode = NoNode for /chicago/chicago-elect
+W 0729 20:56:07.8121469825767812 THREAD33 org.apache.curator.utils.ZKPaths$CreateModeHolder.<clinit>: The version of ZooKeeper being used doesn't support Container nodes. CreateMode.PERSISTENT will be used instead.
+I 0729 20:56:07.8231469825767823 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:07.8231469825767823 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@52f27fbd
+I 0729 20:56:07.8241469825767824 THREAD35 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:07.8241469825767824 THREAD35 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:07.8241469825767824 THREAD11 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50378
+I 0729 20:56:07.8251469825767825 THREAD11 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50378
+I 0729 20:56:07.8261469825767826 THREAD13 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x156387152fb0002 with negotiated timeout 400 for client /127.0.0.1:50378
+I 0729 20:56:07.8261469825767826 THREAD35 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x156387152fb0002, negotiated timeout = 400
+I 0729 20:56:07.8261469825767826 THREAD36 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:07.8481469825767848 THREAD1 com.xjeffrose.chicago.client.ClientNodeWatcher.start: ClientNodeWatcher initialization completed
+I 0729 20:56:07.8541469825767854 THREAD1 com.xjeffrose.chicago.NodeWatcher.refresh: NodeWatcher initialization completed
+I 0729 20:56:07.8581469825767858 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Admin Server:50379
+I 0729 20:56:07.8601469825767860 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Stats Server:50380
+I 0729 20:56:07.8621469825767862 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Election Server:50381
+I 0729 20:56:07.8631469825767863 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago DB Server:50382
+I 0729 20:56:07.8641469825767864 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago RPC Server:50383
+I 0729 20:56:07.8641469825767864 THREAD1 com.xjeffrose.chicago.DBRouter.run: --------------- Chicago Server Started!!! ----------------------
+I 0729 20:56:07.8651469825767865 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:07.8651469825767865 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@126253fd
+I 0729 20:56:07.8661469825767866 THREAD49 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:07.8671469825767867 THREAD49 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:07.8691469825767869 THREAD11 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50384
+I 0729 20:56:07.8691469825767869 THREAD11 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50384
+I 0729 20:56:07.8781469825767878 THREAD13 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x156387152fb0003 with negotiated timeout 400 for client /127.0.0.1:50384
+I 0729 20:56:07.8791469825767879 THREAD49 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x156387152fb0003, negotiated timeout = 400
+I 0729 20:56:07.8791469825767879 THREAD50 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:07.9041469825767904 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:07.9051469825767905 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@1f9e9475
+I 0729 20:56:07.9061469825767906 THREAD54 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:07.9061469825767906 THREAD54 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:07.9071469825767907 THREAD11 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50385
+I 0729 20:56:07.9071469825767907 THREAD11 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50385
+I 0729 20:56:07.9081469825767908 THREAD13 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x156387152fb0004 with negotiated timeout 400 for client /127.0.0.1:50385
+I 0729 20:56:07.9081469825767908 THREAD54 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x156387152fb0004, negotiated timeout = 400
+I 0729 20:56:07.9081469825767908 THREAD57 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:07.9081469825767908 THREAD55 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:07.9141469825767914 THREAD1 com.xjeffrose.chicago.client.ClientNodeWatcher.start: ClientNodeWatcher initialization completed
+I 0729 20:56:07.9171469825767917 THREAD1 com.xjeffrose.chicago.NodeWatcher.refresh: NodeWatcher initialization completed
+I 0729 20:56:07.9201469825767920 THREAD57 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 12ms
+I 0729 20:56:07.9221469825767922 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Stats Server:50386
+I 0729 20:56:07.9241469825767924 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago RPC Server:50387
+I 0729 20:56:07.9251469825767925 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago DB Server:50388
+I 0729 20:56:07.9261469825767926 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Election Server:50389
+I 0729 20:56:07.9271469825767927 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Admin Server:50390
+I 0729 20:56:07.9271469825767927 THREAD1 com.xjeffrose.chicago.DBRouter.run: --------------- Chicago Server Started!!! ----------------------
+I 0729 20:56:07.9271469825767927 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:07.9281469825767928 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@7d322cad
+I 0729 20:56:07.9281469825767928 THREAD72 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:07.9291469825767929 THREAD72 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:07.9291469825767929 THREAD11 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50391
+I 0729 20:56:07.9291469825767929 THREAD11 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50391
+I 0729 20:56:07.9301469825767930 THREAD13 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x156387152fb0005 with negotiated timeout 400 for client /127.0.0.1:50391
+I 0729 20:56:07.9301469825767930 THREAD72 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x156387152fb0005, negotiated timeout = 400
+I 0729 20:56:07.9301469825767930 THREAD73 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:07.9371469825767937 THREAD75 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:07.9371469825767937 THREAD76 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:07.9401469825767940 THREAD75 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 3ms
+I 0729 20:56:07.9401469825767940 THREAD76 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 2ms
+I 0729 20:56:07.9421469825767942 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:07.9431469825767943 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@5c86dbc5
+I 0729 20:56:07.9441469825767944 THREAD84 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:07.9441469825767944 THREAD84 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:07.9441469825767944 THREAD11 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50392
+I 0729 20:56:07.9451469825767945 THREAD11 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50392
+I 0729 20:56:07.9451469825767945 THREAD13 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x156387152fb0006 with negotiated timeout 400 for client /127.0.0.1:50392
+I 0729 20:56:07.9451469825767945 THREAD84 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x156387152fb0006, negotiated timeout = 400
+I 0729 20:56:07.9461469825767946 THREAD85 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:07.9561469825767956 THREAD1 com.xjeffrose.chicago.client.ClientNodeWatcher.start: ClientNodeWatcher initialization completed
+I 0729 20:56:07.9601469825767960 THREAD1 com.xjeffrose.chicago.NodeWatcher.refresh: NodeWatcher initialization completed
+I 0729 20:56:07.9641469825767964 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago DB Server:50393
+I 0729 20:56:07.9651469825767965 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Election Server:50394
+I 0729 20:56:07.9661469825767966 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago RPC Server:50395
+I 0729 20:56:07.9681469825767968 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Admin Server:50396
+I 0729 20:56:07.9691469825767969 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Stats Server:50397
+I 0729 20:56:07.9691469825767969 THREAD1 com.xjeffrose.chicago.DBRouter.run: --------------- Chicago Server Started!!! ----------------------
+I 0729 20:56:07.9701469825767970 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:07.9701469825767970 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@62656be4
+I 0729 20:56:07.9711469825767971 THREAD100 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:07.9711469825767971 THREAD100 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:07.9711469825767971 THREAD11 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50398
+I 0729 20:56:07.9721469825767972 THREAD11 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50398
+I 0729 20:56:07.9731469825767973 THREAD13 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x156387152fb0007 with negotiated timeout 400 for client /127.0.0.1:50398
+I 0729 20:56:07.9731469825767973 THREAD100 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x156387152fb0007, negotiated timeout = 400
+I 0729 20:56:07.9741469825767974 THREAD101 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:07.9981469825767998 THREAD103 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:08.0001469825768000 THREAD104 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:08.0001469825768000 THREAD105 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:08.0061469825768006 THREAD103 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 8ms
+I 0729 20:56:08.0061469825768006 THREAD104 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 6ms
+I 0729 20:56:08.0061469825768006 THREAD105 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 5ms
+I 0729 20:56:08.0091469825768009 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:08.0101469825768010 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@3cce57c7
+I 0729 20:56:08.0111469825768011 THREAD110 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:08.0111469825768011 THREAD110 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:08.0111469825768011 THREAD11 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50399
+I 0729 20:56:08.0111469825768011 THREAD11 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50399
+I 0729 20:56:08.0121469825768012 THREAD13 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x156387152fb0008 with negotiated timeout 400 for client /127.0.0.1:50399
+I 0729 20:56:08.0131469825768013 THREAD110 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x156387152fb0008, negotiated timeout = 400
+I 0729 20:56:08.0131469825768013 THREAD111 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:08.0281469825768028 THREAD1 com.xjeffrose.chicago.client.ClientNodeWatcher.start: ClientNodeWatcher initialization completed
+I 0729 20:56:08.0891469825768089 THREAD1 com.xjeffrose.chicago.NodeWatcher.refresh: NodeWatcher initialization completed
+I 0729 20:56:08.0911469825768091 THREAD1 com.xjeffrose.chicago.server.ChicagoServer.stop: Stopping Chicago!
+I 0729 20:56:08.0921469825768092 THREAD1 com.xjeffrose.chicago.NodeWatcher.stop: Nodewatcher stopping
+I 0729 20:56:08.0921469825768092 THREAD1 com.xjeffrose.chicago.client.BaseChicagoClient.stop: ChicagoClient stopping
+I 0729 20:56:08.1001469825768100 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: ConnectionPoolManager stopping
+I 0729 20:56:08.1011469825768101 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Closing channels
+I 0729 20:56:08.1101469825768110 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Stopping workerLoop
+I 0729 20:56:08.1131469825768113 THREAD14 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x156387152fb0002
+I 0729 20:56:08.1161469825768116 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x156387152fb0002 closed
+I 0729 20:56:08.1161469825768116 THREAD36 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:08.1161469825768116 THREAD11 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50378 which had sessionid 0x156387152fb0002
+I 0729 20:56:08.1201469825768120 THREAD14 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x156387152fb0001
+I 0729 20:56:08.1231469825768123 THREAD11 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50377 which had sessionid 0x156387152fb0001
+I 0729 20:56:08.1231469825768123 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x156387152fb0001 closed
+I 0729 20:56:08.1251469825768125 THREAD31 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:08.1261469825768126 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago RPC Server:50372
+I 0729 20:56:08.1261469825768126 THREAD126 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:08.1271469825768127 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago DB Server:50373
+I 0729 20:56:08.1271469825768127 THREAD127 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:08.1281469825768128 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Stats Server:50374
+I 0729 20:56:08.1281469825768128 THREAD128 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:08.1281469825768128 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Election Server:50375
+I 0729 20:56:08.1291469825768129 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Admin Server:50376
+I 0729 20:56:08.1311469825768131 THREAD126 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 5ms
+I 0729 20:56:08.1321469825768132 THREAD127 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 5ms
+I 0729 20:56:08.1321469825768132 THREAD128 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 4ms
+I 0729 20:56:08.1341469825768134 THREAD1 com.xjeffrose.chicago.server.ChicagoServer.stop: Stopping Chicago!
+I 0729 20:56:08.1351469825768135 THREAD1 com.xjeffrose.chicago.NodeWatcher.stop: Nodewatcher stopping
+I 0729 20:56:08.1351469825768135 THREAD1 com.xjeffrose.chicago.client.BaseChicagoClient.stop: ChicagoClient stopping
+I 0729 20:56:08.1351469825768135 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: ConnectionPoolManager stopping
+I 0729 20:56:08.1361469825768136 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Closing channels
+I 0729 20:56:08.1361469825768136 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Stopping workerLoop
+I 0729 20:56:08.1381469825768138 THREAD14 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x156387152fb0004
+I 0729 20:56:08.1391469825768139 THREAD11 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50385 which had sessionid 0x156387152fb0004
+I 0729 20:56:08.1401469825768140 THREAD55 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:08.1401469825768140 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x156387152fb0004 closed
+I 0729 20:56:08.1421469825768142 THREAD14 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x156387152fb0003
+I 0729 20:56:08.1431469825768143 THREAD11 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50384 which had sessionid 0x156387152fb0003
+I 0729 20:56:08.1441469825768144 THREAD154 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:08.1441469825768144 THREAD155 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:08.1461469825768146 THREAD154 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 2ms
+I 0729 20:56:08.1461469825768146 THREAD155 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 2ms
+I 0729 20:56:08.1461469825768146 THREAD50 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:08.1461469825768146 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x156387152fb0003 closed
+I 0729 20:56:08.1471469825768147 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Admin Server:50379
+I 0729 20:56:08.1471469825768147 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Stats Server:50380
+I 0729 20:56:08.1481469825768148 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Election Server:50381
+I 0729 20:56:08.1481469825768148 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago DB Server:50382
+I 0729 20:56:08.1491469825768149 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago RPC Server:50383
+I 0729 20:56:08.1561469825768156 THREAD1 com.xjeffrose.chicago.server.ChicagoServer.stop: Stopping Chicago!
+I 0729 20:56:08.1571469825768157 THREAD1 com.xjeffrose.chicago.NodeWatcher.stop: Nodewatcher stopping
+I 0729 20:56:08.1601469825768160 THREAD1 com.xjeffrose.chicago.client.BaseChicagoClient.stop: ChicagoClient stopping
+I 0729 20:56:08.1601469825768160 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: ConnectionPoolManager stopping
+I 0729 20:56:08.1601469825768160 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Closing channels
+I 0729 20:56:08.1601469825768160 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Stopping workerLoop
+I 0729 20:56:08.1611469825768161 THREAD14 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x156387152fb0006
+I 0729 20:56:08.1621469825768162 THREAD11 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50392 which had sessionid 0x156387152fb0006
+I 0729 20:56:08.1621469825768162 THREAD85 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:08.1631469825768163 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x156387152fb0006 closed
+I 0729 20:56:08.1651469825768165 THREAD14 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x156387152fb0005
+I 0729 20:56:08.1671469825768167 THREAD11 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50391 which had sessionid 0x156387152fb0005
+I 0729 20:56:08.1681469825768168 THREAD181 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:08.1691469825768169 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x156387152fb0005 closed
+I 0729 20:56:08.1691469825768169 THREAD73 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:08.1691469825768169 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Stats Server:50386
+I 0729 20:56:08.1691469825768169 THREAD181 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 1ms
+I 0729 20:56:08.1701469825768170 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago RPC Server:50387
+I 0729 20:56:08.1701469825768170 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago DB Server:50388
+I 0729 20:56:08.1711469825768171 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Election Server:50389
+I 0729 20:56:08.1721469825768172 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Admin Server:50390
+I 0729 20:56:08.1741469825768174 THREAD1 com.xjeffrose.chicago.server.ChicagoServer.stop: Stopping Chicago!
+I 0729 20:56:08.1741469825768174 THREAD1 com.xjeffrose.chicago.NodeWatcher.stop: Nodewatcher stopping
+I 0729 20:56:08.1751469825768175 THREAD1 com.xjeffrose.chicago.client.BaseChicagoClient.stop: ChicagoClient stopping
+I 0729 20:56:08.1751469825768175 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: ConnectionPoolManager stopping
+I 0729 20:56:08.1751469825768175 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Closing channels
+I 0729 20:56:08.1751469825768175 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Stopping workerLoop
+I 0729 20:56:08.1771469825768177 THREAD14 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x156387152fb0008
+I 0729 20:56:08.1781469825768178 THREAD11 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50399 which had sessionid 0x156387152fb0008
+I 0729 20:56:08.1781469825768178 THREAD111 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:08.1781469825768178 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x156387152fb0008 closed
+I 0729 20:56:08.1801469825768180 THREAD14 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x156387152fb0007
+I 0729 20:56:08.1811469825768181 THREAD11 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50398 which had sessionid 0x156387152fb0007
+I 0729 20:56:08.1811469825768181 THREAD101 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:08.1811469825768181 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x156387152fb0007 closed
+I 0729 20:56:08.1821469825768182 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago DB Server:50393
+I 0729 20:56:08.1831469825768183 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Election Server:50394
+I 0729 20:56:08.1831469825768183 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago RPC Server:50395
+I 0729 20:56:08.1841469825768184 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Admin Server:50396
+I 0729 20:56:08.1841469825768184 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Stats Server:50397
+I 0729 20:56:08.1911469825768191 THREAD14 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x156387152fb0000
+I 0729 20:56:08.1931469825768193 THREAD11 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50371 which had sessionid 0x156387152fb0000
+I 0729 20:56:08.1931469825768193 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x156387152fb0000 closed
+I 0729 20:56:08.1931469825768193 THREAD18 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:08.1941469825768194 THREAD11 org.apache.zookeeper.server.NIOServerCnxnFactory.run: NIOServerCnxn factory exited run method
+I 0729 20:56:08.1941469825768194 THREAD10 org.apache.zookeeper.server.ZooKeeperServer.shutdown: shutting down
+I 0729 20:56:08.1951469825768195 THREAD10 org.apache.zookeeper.server.SessionTrackerImpl.shutdown: Shutting down
+I 0729 20:56:08.1951469825768195 THREAD10 org.apache.zookeeper.server.PrepRequestProcessor.shutdown: Shutting down
+I 0729 20:56:08.1951469825768195 THREAD10 org.apache.zookeeper.server.SyncRequestProcessor.shutdown: Shutting down
+I 0729 20:56:08.1941469825768194 THREAD1 org.apache.zookeeper.server.ZooKeeperServer.shutdown: shutting down
+I 0729 20:56:08.1951469825768195 THREAD1 org.apache.zookeeper.server.SessionTrackerImpl.shutdown: Shutting down
+I 0729 20:56:08.1961469825768196 THREAD1 org.apache.zookeeper.server.PrepRequestProcessor.shutdown: Shutting down
+I 0729 20:56:08.1961469825768196 THREAD1 org.apache.zookeeper.server.SyncRequestProcessor.shutdown: Shutting down
+I 0729 20:56:08.1951469825768195 THREAD13 org.apache.zookeeper.server.SyncRequestProcessor.run: SyncRequestProcessor exited!
+I 0729 20:56:08.1951469825768195 THREAD14 org.apache.zookeeper.server.PrepRequestProcessor.run: PrepRequestProcessor exited loop!
+I 0729 20:56:08.1971469825768197 THREAD10 org.apache.zookeeper.server.FinalRequestProcessor.shutdown: shutdown of request processor complete
+I 0729 20:56:08.1971469825768197 THREAD1 org.apache.zookeeper.server.FinalRequestProcessor.shutdown: shutdown of request processor complete
+I 0729 20:56:08.2031469825768203 THREAD12 org.apache.zookeeper.server.SessionTrackerImpl.run: SessionTrackerImpl exited loop!
+I 0729 20:56:08.4321469825768432 THREAD228 org.apache.zookeeper.server.ZooKeeperServerMain.runFromConfig: Starting server
+I 0729 20:56:08.4331469825768433 THREAD228 org.apache.zookeeper.server.ZooKeeperServer.setTickTime: tickTime set to 2000
+I 0729 20:56:08.4331469825768433 THREAD228 org.apache.zookeeper.server.ZooKeeperServer.setMinSessionTimeout: minSessionTimeout set to -1
+I 0729 20:56:08.4331469825768433 THREAD228 org.apache.zookeeper.server.ZooKeeperServer.setMaxSessionTimeout: maxSessionTimeout set to -1
+I 0729 20:56:08.4341469825768434 THREAD228 org.apache.zookeeper.server.NIOServerCnxnFactory.configure: binding to port 0.0.0.0/0.0.0.0:2182
+I 0729 20:56:09.4991469825769499 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago DB Server:50420
+I 0729 20:56:09.5021469825769502 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Admin Server:50421
+I 0729 20:56:09.5051469825769505 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Election Server:50422
+I 0729 20:56:09.5081469825769508 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago RPC Server:50423
+I 0729 20:56:09.5101469825769510 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Stats Server:50424
+I 0729 20:56:09.5111469825769511 THREAD1 com.xjeffrose.chicago.DBRouter.run: --------------- Chicago Server Started!!! ----------------------
+I 0729 20:56:09.5121469825769512 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:09.5131469825769513 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@4bf48f6
+I 0729 20:56:09.5141469825769514 THREAD243 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:09.5171469825769517 THREAD243 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:09.5171469825769517 THREAD229 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50425
+I 0729 20:56:09.5181469825769518 THREAD229 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50425
+I 0729 20:56:09.5181469825769518 THREAD231 org.apache.zookeeper.server.persistence.FileTxnLog.append: Creating new log file: log.1
+I 0729 20:56:09.5341469825769534 THREAD231 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638715bfa0000 with negotiated timeout 40000 for client /127.0.0.1:50425
+I 0729 20:56:09.5341469825769534 THREAD243 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638715bfa0000, negotiated timeout = 40000
+I 0729 20:56:09.5351469825769535 THREAD244 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:09.5401469825769540 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638715bfa0000 type:create cxid:0x2 zxid:0x2 txntype:-1 reqpath:n/a Error Path:/chicago/node-list Error:KeeperErrorCode = NoNode for /chicago/node-list
+I 0729 20:56:09.5541469825769554 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638715bfa0000 type:create cxid:0x9 zxid:0x6 txntype:-1 reqpath:n/a Error Path:/chicago/chicago-elect Error:KeeperErrorCode = NoNode for /chicago/chicago-elect
+I 0729 20:56:09.5631469825769563 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:09.5631469825769563 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@48c76607
+I 0729 20:56:09.5651469825769565 THREAD248 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:09.5651469825769565 THREAD248 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:09.5651469825769565 THREAD229 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50426
+I 0729 20:56:09.5661469825769566 THREAD229 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50426
+I 0729 20:56:09.5671469825769567 THREAD231 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638715bfa0001 with negotiated timeout 40000 for client /127.0.0.1:50426
+I 0729 20:56:09.5671469825769567 THREAD248 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638715bfa0001, negotiated timeout = 40000
+I 0729 20:56:09.5671469825769567 THREAD249 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:09.5801469825769580 THREAD1 com.xjeffrose.chicago.client.ClientNodeWatcher.start: ClientNodeWatcher initialization completed
+I 0729 20:56:09.5841469825769584 THREAD1 com.xjeffrose.chicago.NodeWatcher.refresh: NodeWatcher initialization completed
+I 0729 20:56:09.5941469825769594 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago DB Server:50427
+I 0729 20:56:09.6001469825769600 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Admin Server:50428
+I 0729 20:56:09.6071469825769607 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Election Server:50430
+I 0729 20:56:09.6131469825769613 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Stats Server:50431
+I 0729 20:56:09.6171469825769617 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago RPC Server:50432
+I 0729 20:56:09.6181469825769618 THREAD1 com.xjeffrose.chicago.DBRouter.run: --------------- Chicago Server Started!!! ----------------------
+I 0729 20:56:09.6201469825769620 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:09.6241469825769624 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@4167d97b
+I 0729 20:56:09.6261469825769626 THREAD263 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:09.6271469825769627 THREAD263 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:09.6281469825769628 THREAD229 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50433
+I 0729 20:56:09.6291469825769629 THREAD229 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50433
+I 0729 20:56:09.6321469825769632 THREAD231 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638715bfa0002 with negotiated timeout 40000 for client /127.0.0.1:50433
+I 0729 20:56:09.6321469825769632 THREAD263 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638715bfa0002, negotiated timeout = 40000
+I 0729 20:56:09.6331469825769633 THREAD264 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:09.6501469825769650 THREAD267 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:09.6591469825769659 THREAD267 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 5ms
+I 0729 20:56:09.6721469825769672 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:09.6751469825769675 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@5495333e
+I 0729 20:56:09.6791469825769679 THREAD271 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:09.6801469825769680 THREAD271 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:09.6801469825769680 THREAD229 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50434
+I 0729 20:56:09.6821469825769682 THREAD229 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50434
+I 0729 20:56:09.6841469825769684 THREAD231 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638715bfa0003 with negotiated timeout 40000 for client /127.0.0.1:50434
+I 0729 20:56:09.6841469825769684 THREAD271 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638715bfa0003, negotiated timeout = 40000
+I 0729 20:56:09.6841469825769684 THREAD272 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:09.7051469825769705 THREAD1 com.xjeffrose.chicago.client.ClientNodeWatcher.start: ClientNodeWatcher initialization completed
+I 0729 20:56:09.7081469825769708 THREAD1 com.xjeffrose.chicago.NodeWatcher.refresh: NodeWatcher initialization completed
+I 0729 20:56:09.7351469825769735 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Stats Server:50436
+I 0729 20:56:09.7371469825769737 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Election Server:50437
+I 0729 20:56:09.7391469825769739 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago DB Server:50438
+I 0729 20:56:09.7401469825769740 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Admin Server:50439
+I 0729 20:56:09.7431469825769743 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago RPC Server:50440
+I 0729 20:56:09.7431469825769743 THREAD1 com.xjeffrose.chicago.DBRouter.run: --------------- Chicago Server Started!!! ----------------------
+I 0729 20:56:09.7441469825769744 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:09.7831469825769783 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@3e6f3f28
+I 0729 20:56:09.7861469825769786 THREAD286 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:09.7881469825769788 THREAD286 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:09.7881469825769788 THREAD229 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50441
+I 0729 20:56:09.7891469825769789 THREAD229 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50441
+I 0729 20:56:09.7911469825769791 THREAD231 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638715bfa0004 with negotiated timeout 40000 for client /127.0.0.1:50441
+I 0729 20:56:09.7911469825769791 THREAD286 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638715bfa0004, negotiated timeout = 40000
+I 0729 20:56:09.7921469825769792 THREAD287 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:09.8101469825769810 THREAD289 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:09.8101469825769810 THREAD290 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:09.8321469825769832 THREAD290 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 22ms
+I 0729 20:56:09.8321469825769832 THREAD289 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 22ms
+I 0729 20:56:09.8381469825769838 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:09.8391469825769839 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@6676f6a0
+I 0729 20:56:09.8411469825769841 THREAD299 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:09.8421469825769842 THREAD299 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:09.8421469825769842 THREAD229 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50443
+I 0729 20:56:09.8431469825769843 THREAD229 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50443
+I 0729 20:56:09.8521469825769852 THREAD231 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638715bfa0005 with negotiated timeout 40000 for client /127.0.0.1:50443
+I 0729 20:56:09.8531469825769853 THREAD299 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638715bfa0005, negotiated timeout = 40000
+I 0729 20:56:09.8531469825769853 THREAD300 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:09.8941469825769894 THREAD1 com.xjeffrose.chicago.client.ClientNodeWatcher.start: ClientNodeWatcher initialization completed
+I 0729 20:56:09.9171469825769917 THREAD1 com.xjeffrose.chicago.NodeWatcher.refresh: NodeWatcher initialization completed
+I 0729 20:56:09.9241469825769924 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Stats Server:50446
+I 0729 20:56:09.9261469825769926 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Admin Server:50447
+I 0729 20:56:09.9301469825769930 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago RPC Server:50449
+I 0729 20:56:09.9341469825769934 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Election Server:50450
+I 0729 20:56:09.9371469825769937 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago DB Server:50451
+I 0729 20:56:09.9371469825769937 THREAD1 com.xjeffrose.chicago.DBRouter.run: --------------- Chicago Server Started!!! ----------------------
+I 0729 20:56:09.9381469825769938 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:09.9391469825769939 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@573906eb
+I 0729 20:56:09.9411469825769941 THREAD318 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:09.9431469825769943 THREAD318 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:09.9431469825769943 THREAD229 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50452
+I 0729 20:56:09.9441469825769944 THREAD229 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50452
+I 0729 20:56:09.9461469825769946 THREAD231 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638715bfa0006 with negotiated timeout 40000 for client /127.0.0.1:50452
+I 0729 20:56:09.9461469825769946 THREAD318 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638715bfa0006, negotiated timeout = 40000
+I 0729 20:56:09.9461469825769946 THREAD319 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:09.9571469825769957 THREAD326 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:09.9571469825769957 THREAD327 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:09.9571469825769957 THREAD325 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:09.9591469825769959 THREAD326 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 2ms
+I 0729 20:56:09.9591469825769959 THREAD325 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 1ms
+I 0729 20:56:09.9591469825769959 THREAD327 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 2ms
+I 0729 20:56:09.9671469825769967 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:09.9701469825769970 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@609db546
+I 0729 20:56:09.9801469825769980 THREAD331 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:09.9811469825769981 THREAD331 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:09.9811469825769981 THREAD229 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50455
+I 0729 20:56:09.9821469825769982 THREAD229 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50455
+I 0729 20:56:09.9861469825769986 THREAD231 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638715bfa0007 with negotiated timeout 40000 for client /127.0.0.1:50455
+I 0729 20:56:09.9861469825769986 THREAD331 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638715bfa0007, negotiated timeout = 40000
+I 0729 20:56:09.9871469825769987 THREAD332 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:10.0101469825770010 THREAD1 com.xjeffrose.chicago.client.ClientNodeWatcher.start: ClientNodeWatcher initialization completed
+I 0729 20:56:10.0151469825770015 THREAD1 com.xjeffrose.chicago.NodeWatcher.refresh: NodeWatcher initialization completed
+I 0729 20:56:10.0171469825770017 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:10.0171469825770017 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@59e505b2
+I 0729 20:56:10.0191469825770019 THREAD344 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:10.0191469825770019 THREAD344 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:10.0191469825770019 THREAD229 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50457
+I 0729 20:56:10.0201469825770020 THREAD229 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50457
+I 0729 20:56:10.0221469825770022 THREAD231 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638715bfa0008 with negotiated timeout 40000 for client /127.0.0.1:50457
+I 0729 20:56:10.0221469825770022 THREAD344 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638715bfa0008, negotiated timeout = 40000
+I 0729 20:56:10.0251469825770025 THREAD345 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:10.0491469825770049 THREAD1 com.xjeffrose.chicago.client.ClientNodeWatcher.start: ClientNodeWatcher initialization completed
+I 0729 20:56:15.9411469825775941 THREAD1 com.xjeffrose.chicago.server.ChicagoServer.stop: Stopping Chicago!
+I 0729 20:56:15.9421469825775942 THREAD1 com.xjeffrose.chicago.NodeWatcher.stop: Nodewatcher stopping
+I 0729 20:56:15.9431469825775943 THREAD1 com.xjeffrose.chicago.client.BaseChicagoClient.stop: ChicagoClient stopping
+I 0729 20:56:15.9431469825775943 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: ConnectionPoolManager stopping
+I 0729 20:56:15.9431469825775943 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Closing channels
+I 0729 20:56:15.9521469825775952 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Stopping workerLoop
+I 0729 20:56:15.9541469825775954 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x15638715bfa0001
+I 0729 20:56:15.9561469825775956 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x15638715bfa0001 closed
+I 0729 20:56:15.9561469825775956 THREAD229 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50426 which had sessionid 0x15638715bfa0001
+I 0729 20:56:15.9561469825775956 THREAD249 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:15.9611469825775961 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x15638715bfa0000
+I 0729 20:56:15.9641469825775964 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x15638715bfa0000 closed
+I 0729 20:56:15.9641469825775964 THREAD244 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:15.9641469825775964 THREAD389 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:15.9641469825775964 THREAD229 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50425 which had sessionid 0x15638715bfa0000
+I 0729 20:56:15.9651469825775965 THREAD390 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:15.9651469825775965 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago DB Server:50420
+I 0729 20:56:15.9641469825775964 THREAD388 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:15.9661469825775966 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Admin Server:50421
+I 0729 20:56:15.9661469825775966 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Election Server:50422
+I 0729 20:56:15.9661469825775966 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago RPC Server:50423
+I 0729 20:56:15.9671469825775967 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Stats Server:50424
+I 0729 20:56:15.9681469825775968 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638715bfa0006 type:create cxid:0x17 zxid:0x1a txntype:-1 reqpath:n/a Error Path:/chicago/replication-lock/ycolfam/127.0.0.1:50420 Error:KeeperErrorCode = NoNode for /chicago/replication-lock/ycolfam/127.0.0.1:50420
+I 0729 20:56:15.9681469825775968 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638715bfa0002 type:create cxid:0x22 zxid:0x1b txntype:-1 reqpath:n/a Error Path:/chicago/replication-lock/xcolfam/127.0.0.1:50420 Error:KeeperErrorCode = NoNode for /chicago/replication-lock/xcolfam/127.0.0.1:50420
+I 0729 20:56:15.9691469825775969 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638715bfa0004 type:create cxid:0x1d zxid:0x1c txntype:-1 reqpath:n/a Error Path:/chicago/replication-lock/ycolfam/127.0.0.1:50420 Error:KeeperErrorCode = NoNode for /chicago/replication-lock/ycolfam/127.0.0.1:50420
+I 0729 20:56:15.9701469825775970 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638715bfa0004 type:create cxid:0x1e zxid:0x1d txntype:-1 reqpath:n/a Error Path:/chicago/replication-lock/xcolfam/127.0.0.1:50420 Error:KeeperErrorCode = NoNode for /chicago/replication-lock/xcolfam/127.0.0.1:50420
+I 0729 20:56:15.9751469825775975 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638715bfa0004 type:create cxid:0x27 zxid:0x22 txntype:-1 reqpath:n/a Error Path:/chicago/replication-lock/ycolfam/127.0.0.1:50420 Error:KeeperErrorCode = NodeExists for /chicago/replication-lock/ycolfam/127.0.0.1:50420
+I 0729 20:56:15.9761469825775976 THREAD1 com.xjeffrose.chicago.server.ChicagoServer.stop: Stopping Chicago!
+I 0729 20:56:15.9761469825775976 THREAD1 com.xjeffrose.chicago.NodeWatcher.stop: Nodewatcher stopping
+I 0729 20:56:15.9761469825775976 THREAD1 com.xjeffrose.chicago.client.BaseChicagoClient.stop: ChicagoClient stopping
+I 0729 20:56:15.9761469825775976 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638715bfa0004 type:create cxid:0x28 zxid:0x24 txntype:-1 reqpath:n/a Error Path:/chicago/replication-lock/xcolfam/127.0.0.1:50420 Error:KeeperErrorCode = NodeExists for /chicago/replication-lock/xcolfam/127.0.0.1:50420
+I 0729 20:56:15.9771469825775977 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: ConnectionPoolManager stopping
+I 0729 20:56:15.9781469825775978 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638715bfa0004 type:create cxid:0x29 zxid:0x26 txntype:-1 reqpath:n/a Error Path:/chicago/replication-lock/ycolfam/127.0.0.1:50420/127.0.0.1:0 Error:KeeperErrorCode = NodeExists for /chicago/replication-lock/ycolfam/127.0.0.1:50420/127.0.0.1:0
+I 0729 20:56:15.9781469825775978 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Closing channels
+I 0729 20:56:15.9791469825775979 THREAD390 com.xjeffrose.chicago.NodeWatcher.lambda$null$5: Replicatng colFam xcolfam to 127.0.0.1:50451
+I 0729 20:56:15.9801469825775980 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638715bfa0004 type:create cxid:0x2a zxid:0x27 txntype:-1 reqpath:n/a Error Path:/chicago/replication-lock/xcolfam/127.0.0.1:50420/127.0.0.1:0 Error:KeeperErrorCode = NodeExists for /chicago/replication-lock/xcolfam/127.0.0.1:50420/127.0.0.1:0
+I 0729 20:56:15.9811469825775981 THREAD388 com.xjeffrose.chicago.NodeWatcher.lambda$null$5: Replicatng colFam ycolfam to 127.0.0.1:50427
+I 0729 20:56:15.9811469825775981 THREAD389 com.xjeffrose.chicago.NodeWatcher.lambda$null$5: Replicatng colFam ycolfam to 127.0.0.1:50427
+I 0729 20:56:15.9821469825775982 THREAD394 com.xjeffrose.chicago.NodeWatcher.lambda$null$5: Replicatng colFam xcolfam to 127.0.0.1:50451
+I 0729 20:56:15.9831469825775983 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638715bfa0002 type:create cxid:0x2b zxid:0x28 txntype:-1 reqpath:n/a Error Path:/chicago/replication-lock/xcolfam/127.0.0.1:50451 Error:KeeperErrorCode = NoNode for /chicago/replication-lock/xcolfam/127.0.0.1:50451
+I 0729 20:56:15.9831469825775983 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Stopping workerLoop
+I 0729 20:56:15.9831469825775983 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638715bfa0006 type:create cxid:0x20 zxid:0x29 txntype:-1 reqpath:n/a Error Path:/chicago/replication-lock/ycolfam/127.0.0.1:50427 Error:KeeperErrorCode = NoNode for /chicago/replication-lock/ycolfam/127.0.0.1:50427
+I 0729 20:56:15.9841469825775984 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638715bfa0004 type:create cxid:0x2d zxid:0x2a txntype:-1 reqpath:n/a Error Path:/chicago/replication-lock/ycolfam/127.0.0.1:50427 Error:KeeperErrorCode = NoNode for /chicago/replication-lock/ycolfam/127.0.0.1:50427
+I 0729 20:56:15.9851469825775985 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638715bfa0004 type:create cxid:0x2e zxid:0x2b txntype:-1 reqpath:n/a Error Path:/chicago/replication-lock/xcolfam/127.0.0.1:50451 Error:KeeperErrorCode = NoNode for /chicago/replication-lock/xcolfam/127.0.0.1:50451
+I 0729 20:56:15.9861469825775986 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x15638715bfa0003
+I 0729 20:56:15.9871469825775987 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x15638715bfa0003 closed
+I 0729 20:56:15.9871469825775987 THREAD272 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:15.9871469825775987 THREAD229 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50434 which had sessionid 0x15638715bfa0003
+I 0729 20:56:15.9911469825775991 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x15638715bfa0002
+I 0729 20:56:15.9921469825775992 THREAD229 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50433 which had sessionid 0x15638715bfa0002
+I 0729 20:56:15.9931469825775993 THREAD264 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:15.9921469825775992 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x15638715bfa0002 closed
+I 0729 20:56:15.9951469825775995 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago DB Server:50427
+I 0729 20:56:15.9971469825775997 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638715bfa0004 type:create cxid:0x39 zxid:0x30 txntype:-1 reqpath:n/a Error Path:/chicago/replication-lock/ycolfam/127.0.0.1:50427/127.0.0.1:0 Error:KeeperErrorCode = NodeExists for /chicago/replication-lock/ycolfam/127.0.0.1:50427/127.0.0.1:0
+I 0729 20:56:15.9971469825775997 THREAD411 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:16.0101469825776010 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Admin Server:50428
+I 0729 20:56:16.0101469825776010 THREAD412 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:16.0121469825776012 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Election Server:50430
+I 0729 20:56:16.0141469825776014 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Stats Server:50431
+I 0729 20:56:16.0151469825776015 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago RPC Server:50432
+I 0729 20:56:16.0351469825776035 THREAD1 com.xjeffrose.chicago.server.ChicagoServer.stop: Stopping Chicago!
+I 0729 20:56:16.0351469825776035 THREAD1 com.xjeffrose.chicago.NodeWatcher.stop: Nodewatcher stopping
+I 0729 20:56:16.0351469825776035 THREAD1 com.xjeffrose.chicago.client.BaseChicagoClient.stop: ChicagoClient stopping
+I 0729 20:56:16.0361469825776036 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: ConnectionPoolManager stopping
+I 0729 20:56:16.0711469825776071 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638715bfa0004 type:delete cxid:0x43 zxid:0x34 txntype:-1 reqpath:n/a Error Path:/chicago/replication-lock/ycolfam/127.0.0.1:50427/127.0.0.1:0 Error:KeeperErrorCode = NoNode for /chicago/replication-lock/ycolfam/127.0.0.1:50427/127.0.0.1:0
+I 0729 20:56:16.1531469825776153 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Closing channels
+I 0729 20:56:16.1531469825776153 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638715bfa0004 type:delete cxid:0x47 zxid:0x37 txntype:-1 reqpath:n/a Error Path:/chicago/replication-lock/ycolfam/127.0.0.1:50427 Error:KeeperErrorCode = NoNode for /chicago/replication-lock/ycolfam/127.0.0.1:50427
+I 0729 20:56:16.1561469825776156 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Stopping workerLoop
+I 0729 20:56:16.1571469825776157 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x15638715bfa0005
+I 0729 20:56:16.1711469825776171 THREAD229 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50443 which had sessionid 0x15638715bfa0005
+I 0729 20:56:16.1711469825776171 THREAD300 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:16.1711469825776171 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x15638715bfa0005 closed
+I 0729 20:56:16.1911469825776191 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x15638715bfa0004
+E 0729 20:56:16.1921469825776192 THREAD296 org.apache.curator.framework.imps.CuratorFrameworkImpl.logError: Background exception was not retry-able or retry gave up
+  java.lang.IllegalStateException: Client is not started
+    at com.google.common.base.Preconditions.checkState(Preconditions.java:174)
+    at org.apache.curator.CuratorZookeeperClient.getZooKeeper(CuratorZookeeperClient.java:113)
+    at org.apache.curator.framework.imps.CuratorFrameworkImpl.getZooKeeper(CuratorFrameworkImpl.java:487)
+    at org.apache.curator.framework.imps.DeleteBuilderImpl.performBackgroundOperation(DeleteBuilderImpl.java:146)
+    at org.apache.curator.framework.imps.OperationAndData.callPerformBackgroundOperation(OperationAndData.java:65)
+    at org.apache.curator.framework.imps.CuratorFrameworkImpl.performBackgroundOperation(CuratorFrameworkImpl.java:817)
+    at org.apache.curator.framework.imps.CuratorFrameworkImpl.processBackgroundOperation(CuratorFrameworkImpl.java:505)
+    at org.apache.curator.framework.imps.DeleteBuilderImpl.forPath(DeleteBuilderImpl.java:213)
+    at org.apache.curator.framework.imps.DeleteBuilderImpl.forPath(DeleteBuilderImpl.java:41)
+    at org.apache.curator.framework.imps.FailedDeleteManager.addFailedDelete(FailedDeleteManager.java:55)
+    at org.apache.curator.framework.imps.DeleteBuilderImpl.pathInForeground(DeleteBuilderImpl.java:265)
+    at org.apache.curator.framework.imps.DeleteBuilderImpl.forPath(DeleteBuilderImpl.java:217)
+    at org.apache.curator.framework.imps.DeleteBuilderImpl.forPath(DeleteBuilderImpl.java:41)
+    at org.apache.curator.framework.recipes.locks.LockInternals.deleteOurPath(LockInternals.java:337)
+    at org.apache.curator.framework.recipes.locks.LockInternals.releaseLock(LockInternals.java:122)
+    at org.apache.curator.framework.recipes.locks.InterProcessMutex.release(InterProcessMutex.java:154)
+    at org.apache.curator.framework.recipes.leader.LeaderSelector.doWork(LeaderSelector.java:429)
+    at org.apache.curator.framework.recipes.leader.LeaderSelector.doWorkLoop(LeaderSelector.java:443)
+    at org.apache.curator.framework.recipes.leader.LeaderSelector.access$100(LeaderSelector.java:64)
+    at org.apache.curator.framework.recipes.leader.LeaderSelector$2.call(LeaderSelector.java:245)
+    at org.apache.curator.framework.recipes.leader.LeaderSelector$2.call(LeaderSelector.java:239)
+    at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+    at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+    at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+    at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
+    at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+    at java.lang.Thread.run(Thread.java:745)
+I 0729 20:56:16.1931469825776193 THREAD436 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:16.1931469825776193 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x15638715bfa0004 closed
+I 0729 20:56:16.1931469825776193 THREAD287 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+W 0729 20:56:16.1931469825776193 THREAD229 org.apache.zookeeper.server.NIOServerCnxn.doIO: caught end of stream exception
+  org.apache.zookeeper.server.ServerCnxn.EndOfStreamException: Unable to read additional data from client sessionid 0x15638715bfa0004, likely client has closed socket
+    at org.apache.zookeeper.server.NIOServerCnxn.doIO(NIOServerCnxn.java:228)
+    at org.apache.zookeeper.server.NIOServerCnxnFactory.run(NIOServerCnxnFactory.java:208)
+    at java.lang.Thread.run(Thread.java:745)
+I 0729 20:56:16.1941469825776194 THREAD229 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50441 which had sessionid 0x15638715bfa0004
+I 0729 20:56:16.2211469825776221 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Stats Server:50436
+I 0729 20:56:16.2211469825776221 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Election Server:50437
+I 0729 20:56:16.2211469825776221 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago DB Server:50438
+I 0729 20:56:16.2221469825776222 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Admin Server:50439
+I 0729 20:56:16.2221469825776222 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago RPC Server:50440
+I 0729 20:56:16.2341469825776234 THREAD1 com.xjeffrose.chicago.server.ChicagoServer.stop: Stopping Chicago!
+I 0729 20:56:16.2341469825776234 THREAD1 com.xjeffrose.chicago.NodeWatcher.stop: Nodewatcher stopping
+I 0729 20:56:16.2351469825776235 THREAD1 com.xjeffrose.chicago.client.BaseChicagoClient.stop: ChicagoClient stopping
+I 0729 20:56:16.2351469825776235 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: ConnectionPoolManager stopping
+I 0729 20:56:16.2361469825776236 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Closing channels
+I 0729 20:56:16.2381469825776238 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Stopping workerLoop
+I 0729 20:56:16.2491469825776249 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x15638715bfa0007
+I 0729 20:56:16.2521469825776252 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x15638715bfa0007 closed
+I 0729 20:56:16.2521469825776252 THREAD229 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50455 which had sessionid 0x15638715bfa0007
+I 0729 20:56:16.2521469825776252 THREAD332 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:16.2561469825776256 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x15638715bfa0006
+I 0729 20:56:16.2571469825776257 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x15638715bfa0006 closed
+I 0729 20:56:16.2571469825776257 THREAD229 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50452 which had sessionid 0x15638715bfa0006
+I 0729 20:56:16.2571469825776257 THREAD319 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:16.2571469825776257 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Stats Server:50446
+I 0729 20:56:16.2581469825776258 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Admin Server:50447
+I 0729 20:56:16.2591469825776259 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago RPC Server:50449
+I 0729 20:56:16.2591469825776259 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Election Server:50450
+I 0729 20:56:16.2681469825776268 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago DB Server:50451
+I 0729 20:56:16.2741469825776274 THREAD1 com.xjeffrose.chicago.client.BaseChicagoClient.stop: ChicagoClient stopping
+I 0729 20:56:16.2741469825776274 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: ConnectionPoolManager stopping
+I 0729 20:56:16.2781469825776278 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Closing channels
+I 0729 20:56:16.2791469825776279 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Stopping workerLoop
+I 0729 20:56:16.2901469825776290 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x15638715bfa0008
+I 0729 20:56:16.2921469825776292 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x15638715bfa0008 closed
+W 0729 20:56:16.2921469825776292 THREAD229 org.apache.zookeeper.server.NIOServerCnxn.doIO: caught end of stream exception
+  org.apache.zookeeper.server.ServerCnxn.EndOfStreamException: Unable to read additional data from client sessionid 0x15638715bfa0008, likely client has closed socket
+    at org.apache.zookeeper.server.NIOServerCnxn.doIO(NIOServerCnxn.java:228)
+    at org.apache.zookeeper.server.NIOServerCnxnFactory.run(NIOServerCnxnFactory.java:208)
+    at java.lang.Thread.run(Thread.java:745)
+I 0729 20:56:16.2921469825776292 THREAD345 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:16.2941469825776294 THREAD1 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50457 which had sessionid 0x15638715bfa0008
+I 0729 20:56:16.3051469825776305 THREAD229 org.apache.zookeeper.server.NIOServerCnxnFactory.run: NIOServerCnxn factory exited run method
+I 0729 20:56:16.3061469825776306 THREAD1 org.apache.zookeeper.server.ZooKeeperServer.shutdown: shutting down
+I 0729 20:56:16.3061469825776306 THREAD1 org.apache.zookeeper.server.SessionTrackerImpl.shutdown: Shutting down
+I 0729 20:56:16.3071469825776307 THREAD1 org.apache.zookeeper.server.PrepRequestProcessor.shutdown: Shutting down
+I 0729 20:56:16.3071469825776307 THREAD1 org.apache.zookeeper.server.SyncRequestProcessor.shutdown: Shutting down
+I 0729 20:56:16.3071469825776307 THREAD232 org.apache.zookeeper.server.PrepRequestProcessor.run: PrepRequestProcessor exited loop!
+I 0729 20:56:16.3071469825776307 THREAD228 org.apache.zookeeper.server.ZooKeeperServer.shutdown: shutting down
+I 0729 20:56:16.3101469825776310 THREAD228 org.apache.zookeeper.server.SessionTrackerImpl.shutdown: Shutting down
+I 0729 20:56:16.3101469825776310 THREAD228 org.apache.zookeeper.server.PrepRequestProcessor.shutdown: Shutting down
+I 0729 20:56:16.3101469825776310 THREAD228 org.apache.zookeeper.server.SyncRequestProcessor.shutdown: Shutting down
+I 0729 20:56:16.3091469825776309 THREAD231 org.apache.zookeeper.server.SyncRequestProcessor.run: SyncRequestProcessor exited!
+I 0729 20:56:16.3101469825776310 THREAD228 org.apache.zookeeper.server.FinalRequestProcessor.shutdown: shutdown of request processor complete
+I 0729 20:56:16.3101469825776310 THREAD1 org.apache.zookeeper.server.FinalRequestProcessor.shutdown: shutdown of request processor complete
+I 0729 20:56:16.3921469825776392 THREAD470 org.apache.zookeeper.server.ZooKeeperServerMain.runFromConfig: Starting server
+I 0729 20:56:16.3921469825776392 THREAD470 org.apache.zookeeper.server.ZooKeeperServer.setTickTime: tickTime set to 2000
+I 0729 20:56:16.3921469825776392 THREAD470 org.apache.zookeeper.server.ZooKeeperServer.setMinSessionTimeout: minSessionTimeout set to -1
+I 0729 20:56:16.3921469825776392 THREAD470 org.apache.zookeeper.server.ZooKeeperServer.setMaxSessionTimeout: maxSessionTimeout set to -1
+I 0729 20:56:16.3931469825776393 THREAD470 org.apache.zookeeper.server.NIOServerCnxnFactory.configure: binding to port 0.0.0.0/0.0.0.0:2182
+I 0729 20:56:17.5431469825777543 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Stats Server:50486
+I 0729 20:56:17.5441469825777544 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago DB Server:50487
+I 0729 20:56:17.5451469825777545 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Admin Server:50488
+I 0729 20:56:17.5451469825777545 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Election Server:50489
+I 0729 20:56:17.5461469825777546 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago RPC Server:50490
+I 0729 20:56:17.5461469825777546 THREAD1 com.xjeffrose.chicago.DBRouter.run: --------------- Chicago Server Started!!! ----------------------
+I 0729 20:56:17.5471469825777547 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:17.5471469825777547 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@327bcebd
+I 0729 20:56:17.5481469825777548 THREAD485 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:17.5491469825777549 THREAD485 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:17.5491469825777549 THREAD471 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50491
+I 0729 20:56:17.5491469825777549 THREAD471 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50491
+I 0729 20:56:17.5501469825777550 THREAD473 org.apache.zookeeper.server.persistence.FileTxnLog.append: Creating new log file: log.1
+I 0729 20:56:17.5721469825777572 THREAD485 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638717b5a0000, negotiated timeout = 40000
+I 0729 20:56:17.5721469825777572 THREAD486 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:17.5731469825777573 THREAD473 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638717b5a0000 with negotiated timeout 40000 for client /127.0.0.1:50491
+I 0729 20:56:17.5781469825777578 THREAD474 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638717b5a0000 type:create cxid:0x2 zxid:0x2 txntype:-1 reqpath:n/a Error Path:/chicago/node-list Error:KeeperErrorCode = NoNode for /chicago/node-list
+I 0729 20:56:17.5911469825777591 THREAD474 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638717b5a0000 type:create cxid:0x9 zxid:0x6 txntype:-1 reqpath:n/a Error Path:/chicago/chicago-elect Error:KeeperErrorCode = NoNode for /chicago/chicago-elect
+I 0729 20:56:17.5931469825777593 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:17.5961469825777596 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@30c93896
+I 0729 20:56:17.5971469825777597 THREAD490 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:17.5981469825777598 THREAD490 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:17.5981469825777598 THREAD471 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50492
+I 0729 20:56:17.5981469825777598 THREAD471 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50492
+I 0729 20:56:17.5991469825777599 THREAD473 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638717b5a0001 with negotiated timeout 40000 for client /127.0.0.1:50492
+I 0729 20:56:17.5991469825777599 THREAD490 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638717b5a0001, negotiated timeout = 40000
+I 0729 20:56:17.5991469825777599 THREAD491 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:17.6271469825777627 THREAD1 com.xjeffrose.chicago.client.ClientNodeWatcher.start: ClientNodeWatcher initialization completed
+I 0729 20:56:17.6281469825777628 THREAD1 com.xjeffrose.chicago.NodeWatcher.refresh: NodeWatcher initialization completed
+I 0729 20:56:17.6311469825777631 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Admin Server:50494
+I 0729 20:56:17.6311469825777631 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Stats Server:50495
+I 0729 20:56:17.6321469825777632 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago RPC Server:50496
+I 0729 20:56:17.6331469825777633 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago DB Server:50497
+I 0729 20:56:17.6331469825777633 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Election Server:50498
+I 0729 20:56:17.6331469825777633 THREAD1 com.xjeffrose.chicago.DBRouter.run: --------------- Chicago Server Started!!! ----------------------
+I 0729 20:56:17.6341469825777634 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:17.6341469825777634 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@21337f7b
+I 0729 20:56:17.6351469825777635 THREAD505 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:17.6361469825777636 THREAD505 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:17.6361469825777636 THREAD471 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50499
+I 0729 20:56:17.6661469825777666 THREAD471 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50499
+I 0729 20:56:17.6681469825777668 THREAD473 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638717b5a0002 with negotiated timeout 40000 for client /127.0.0.1:50499
+I 0729 20:56:17.6681469825777668 THREAD505 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638717b5a0002, negotiated timeout = 40000
+I 0729 20:56:17.6681469825777668 THREAD506 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:17.6771469825777677 THREAD509 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:17.6861469825777686 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:17.6861469825777686 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@141e5bef
+I 0729 20:56:17.6921469825777692 THREAD512 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:17.6931469825777693 THREAD512 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:17.6931469825777693 THREAD471 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50500
+I 0729 20:56:17.6931469825777693 THREAD471 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50500
+I 0729 20:56:17.6951469825777695 THREAD473 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638717b5a0003 with negotiated timeout 40000 for client /127.0.0.1:50500
+I 0729 20:56:17.6951469825777695 THREAD512 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638717b5a0003, negotiated timeout = 40000
+I 0729 20:56:17.6961469825777696 THREAD513 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:17.6801469825777680 THREAD509 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 2ms
+I 0729 20:56:17.7471469825777747 THREAD1 com.xjeffrose.chicago.client.ClientNodeWatcher.start: ClientNodeWatcher initialization completed
+I 0729 20:56:17.7531469825777753 THREAD1 com.xjeffrose.chicago.NodeWatcher.refresh: NodeWatcher initialization completed
+I 0729 20:56:17.7561469825777756 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago DB Server:50503
+I 0729 20:56:17.7571469825777757 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago RPC Server:50504
+I 0729 20:56:17.7581469825777758 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Election Server:50505
+I 0729 20:56:17.7581469825777758 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Admin Server:50506
+I 0729 20:56:17.7591469825777759 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Stats Server:50507
+I 0729 20:56:17.7591469825777759 THREAD1 com.xjeffrose.chicago.DBRouter.run: --------------- Chicago Server Started!!! ----------------------
+I 0729 20:56:17.7591469825777759 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:17.7601469825777760 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@7f0d96f2
+I 0729 20:56:17.7621469825777762 THREAD529 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:17.7631469825777763 THREAD529 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:17.7631469825777763 THREAD471 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50508
+I 0729 20:56:17.7631469825777763 THREAD471 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50508
+I 0729 20:56:17.7651469825777765 THREAD473 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638717b5a0004 with negotiated timeout 40000 for client /127.0.0.1:50508
+I 0729 20:56:17.7651469825777765 THREAD529 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638717b5a0004, negotiated timeout = 40000
+I 0729 20:56:17.7651469825777765 THREAD530 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:17.7761469825777776 THREAD533 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:17.7881469825777788 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:17.7881469825777788 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@4b40f651
+I 0729 20:56:17.7921469825777792 THREAD534 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:17.7931469825777793 THREAD539 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:17.7931469825777793 THREAD539 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:17.7931469825777793 THREAD471 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50510
+I 0729 20:56:17.7941469825777794 THREAD471 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50510
+I 0729 20:56:17.7951469825777795 THREAD533 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 19ms
+I 0729 20:56:17.7951469825777795 THREAD539 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638717b5a0005, negotiated timeout = 40000
+I 0729 20:56:17.7951469825777795 THREAD473 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638717b5a0005 with negotiated timeout 40000 for client /127.0.0.1:50510
+I 0729 20:56:17.7951469825777795 THREAD540 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:17.7991469825777799 THREAD534 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 7ms
+I 0729 20:56:17.8311469825777831 THREAD1 com.xjeffrose.chicago.client.ClientNodeWatcher.start: ClientNodeWatcher initialization completed
+I 0729 20:56:17.8421469825777842 THREAD1 com.xjeffrose.chicago.NodeWatcher.refresh: NodeWatcher initialization completed
+I 0729 20:56:17.8441469825777844 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago RPC Server:50513
+I 0729 20:56:17.8451469825777845 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago DB Server:50514
+I 0729 20:56:17.8461469825777846 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Admin Server:50515
+I 0729 20:56:17.8481469825777848 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Stats Server:50516
+I 0729 20:56:17.8491469825777849 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Election Server:50517
+I 0729 20:56:17.8501469825777850 THREAD1 com.xjeffrose.chicago.DBRouter.run: --------------- Chicago Server Started!!! ----------------------
+I 0729 20:56:17.8501469825777850 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:17.8521469825777852 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@335b5620
+I 0729 20:56:17.8721469825777872 THREAD557 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:17.8721469825777872 THREAD557 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:17.8731469825777873 THREAD471 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50519
+I 0729 20:56:17.8731469825777873 THREAD471 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50519
+I 0729 20:56:17.8751469825777875 THREAD473 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638717b5a0006 with negotiated timeout 40000 for client /127.0.0.1:50519
+I 0729 20:56:17.8751469825777875 THREAD557 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638717b5a0006, negotiated timeout = 40000
+I 0729 20:56:17.8751469825777875 THREAD558 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:17.8981469825777898 THREAD562 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:17.9091469825777909 THREAD567 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:17.9241469825777924 THREAD563 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:17.9341469825777934 THREAD562 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 36ms
+I 0729 20:56:17.9361469825777936 THREAD563 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 12ms
+I 0729 20:56:17.9371469825777937 THREAD567 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 26ms
+I 0729 20:56:17.9451469825777945 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:17.9451469825777945 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@2631f68c
+I 0729 20:56:17.9471469825777947 THREAD572 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:17.9481469825777948 THREAD572 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:17.9481469825777948 THREAD471 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50522
+I 0729 20:56:17.9481469825777948 THREAD471 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50522
+I 0729 20:56:17.9491469825777949 THREAD473 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638717b5a0007 with negotiated timeout 40000 for client /127.0.0.1:50522
+I 0729 20:56:17.9491469825777949 THREAD572 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638717b5a0007, negotiated timeout = 40000
+I 0729 20:56:17.9571469825777957 THREAD573 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:18.0041469825778004 THREAD230 org.apache.zookeeper.server.SessionTrackerImpl.run: SessionTrackerImpl exited loop!
+I 0729 20:56:18.0071469825778007 THREAD1 com.xjeffrose.chicago.client.ClientNodeWatcher.start: ClientNodeWatcher initialization completed
+I 0729 20:56:18.0101469825778010 THREAD1 com.xjeffrose.chicago.NodeWatcher.refresh: NodeWatcher initialization completed
+I 0729 20:56:18.0111469825778011 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:18.0111469825778011 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@6e4566f1
+I 0729 20:56:18.0131469825778013 THREAD586 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:18.0131469825778013 THREAD586 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:18.0131469825778013 THREAD471 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50525
+I 0729 20:56:18.0141469825778014 THREAD471 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50525
+I 0729 20:56:18.0161469825778016 THREAD473 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638717b5a0008 with negotiated timeout 40000 for client /127.0.0.1:50525
+I 0729 20:56:18.0161469825778016 THREAD586 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638717b5a0008, negotiated timeout = 40000
+I 0729 20:56:18.0171469825778017 THREAD587 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:18.0471469825778047 THREAD1 com.xjeffrose.chicago.client.ClientNodeWatcher.start: ClientNodeWatcher initialization completed
+I 0729 20:56:21.0341469825781034 THREAD1 com.xjeffrose.chicago.server.ChicagoServer.stop: Stopping Chicago!
+I 0729 20:56:21.0341469825781034 THREAD1 com.xjeffrose.chicago.NodeWatcher.stop: Nodewatcher stopping
+I 0729 20:56:21.0341469825781034 THREAD1 com.xjeffrose.chicago.client.BaseChicagoClient.stop: ChicagoClient stopping
+I 0729 20:56:21.0341469825781034 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: ConnectionPoolManager stopping
+I 0729 20:56:21.0351469825781035 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Closing channels
+I 0729 20:56:21.1071469825781107 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Stopping workerLoop
+I 0729 20:56:21.1561469825781156 THREAD474 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x15638717b5a0001
+I 0729 20:56:21.1581469825781158 THREAD491 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:21.1601469825781160 THREAD471 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50492 which had sessionid 0x15638717b5a0001
+I 0729 20:56:21.1581469825781158 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x15638717b5a0001 closed
+I 0729 20:56:21.1931469825781193 THREAD474 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x15638717b5a0000
+I 0729 20:56:21.1961469825781196 THREAD471 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50491 which had sessionid 0x15638717b5a0000
+I 0729 20:56:21.1971469825781197 THREAD619 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:21.1971469825781197 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x15638717b5a0000 closed
+I 0729 20:56:21.1971469825781197 THREAD486 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:21.2091469825781209 THREAD621 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:21.2091469825781209 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Stats Server:50486
+I 0729 20:56:21.2091469825781209 THREAD620 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:21.2101469825781210 THREAD474 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638717b5a0004 type:create cxid:0x1c zxid:0x1a txntype:-1 reqpath:n/a Error Path:/chicago/replication-lock/colfam/127.0.0.1:50487 Error:KeeperErrorCode = NoNode for /chicago/replication-lock/colfam/127.0.0.1:50487
+I 0729 20:56:21.2101469825781210 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago DB Server:50487
+I 0729 20:56:21.2111469825781211 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Admin Server:50488
+I 0729 20:56:21.2111469825781211 THREAD474 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638717b5a0002 type:create cxid:0x22 zxid:0x1b txntype:-1 reqpath:n/a Error Path:/chicago/replication-lock/colfam/127.0.0.1:50487 Error:KeeperErrorCode = NoNode for /chicago/replication-lock/colfam/127.0.0.1:50487
+I 0729 20:56:21.2111469825781211 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Election Server:50489
+I 0729 20:56:21.2191469825781219 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago RPC Server:50490
+I 0729 20:56:21.2221469825781222 THREAD1 com.xjeffrose.chicago.server.ChicagoServer.stop: Stopping Chicago!
+I 0729 20:56:21.2221469825781222 THREAD1 com.xjeffrose.chicago.NodeWatcher.stop: Nodewatcher stopping
+I 0729 20:56:21.2231469825781223 THREAD1 com.xjeffrose.chicago.client.BaseChicagoClient.stop: ChicagoClient stopping
+I 0729 20:56:21.2231469825781223 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: ConnectionPoolManager stopping
+I 0729 20:56:21.2241469825781224 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Closing channels
+I 0729 20:56:21.2501469825781250 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Stopping workerLoop
+I 0729 20:56:21.2531469825781253 THREAD474 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638717b5a0006 type:create cxid:0x17 zxid:0x1d txntype:-1 reqpath:n/a Error Path:/chicago/replication-lock/colfam/127.0.0.1:50487 Error:KeeperErrorCode = NoNode for /chicago/replication-lock/colfam/127.0.0.1:50487
+I 0729 20:56:21.2571469825781257 THREAD474 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638717b5a0002 type:create cxid:0x27 zxid:0x20 txntype:-1 reqpath:n/a Error Path:/chicago/replication-lock/colfam/127.0.0.1:50487/127.0.0.1:0 Error:KeeperErrorCode = NodeExists for /chicago/replication-lock/colfam/127.0.0.1:50487/127.0.0.1:0
+I 0729 20:56:21.2581469825781258 THREAD474 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x15638717b5a0003
+I 0729 20:56:21.2591469825781259 THREAD471 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50500 which had sessionid 0x15638717b5a0003
+I 0729 20:56:21.2591469825781259 THREAD513 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:21.2591469825781259 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x15638717b5a0003 closed
+I 0729 20:56:21.2601469825781260 THREAD474 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638717b5a0004 type:delete cxid:0x28 zxid:0x24 txntype:-1 reqpath:n/a Error Path:/chicago/replication-lock/colfam/127.0.0.1:50487 Error:KeeperErrorCode = Directory not empty for /chicago/replication-lock/colfam/127.0.0.1:50487
+I 0729 20:56:21.2621469825781262 THREAD474 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638717b5a0002 type:delete cxid:0x2b zxid:0x25 txntype:-1 reqpath:n/a Error Path:/chicago/replication-lock/colfam/127.0.0.1:50487 Error:KeeperErrorCode = Directory not empty for /chicago/replication-lock/colfam/127.0.0.1:50487
+I 0729 20:56:21.2621469825781262 THREAD619 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 65ms
+I 0729 20:56:21.2631469825781263 THREAD621 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 54ms
+I 0729 20:56:21.3151469825781315 THREAD474 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x15638717b5a0002
+I 0729 20:56:21.3341469825781334 THREAD471 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50499 which had sessionid 0x15638717b5a0002
+I 0729 20:56:21.3351469825781335 THREAD620 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 125ms
+I 0729 20:56:21.3351469825781335 THREAD643 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:21.3351469825781335 THREAD644 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:21.3351469825781335 THREAD506 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:21.3351469825781335 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x15638717b5a0002 closed
+I 0729 20:56:21.3501469825781350 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Admin Server:50494
+I 0729 20:56:21.3511469825781351 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Stats Server:50495
+I 0729 20:56:21.3511469825781351 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago RPC Server:50496
+I 0729 20:56:21.3521469825781352 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago DB Server:50497
+I 0729 20:56:21.3521469825781352 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Election Server:50498
+I 0729 20:56:21.3581469825781358 THREAD1 com.xjeffrose.chicago.server.ChicagoServer.stop: Stopping Chicago!
+I 0729 20:56:21.3581469825781358 THREAD1 com.xjeffrose.chicago.NodeWatcher.stop: Nodewatcher stopping
+I 0729 20:56:21.3591469825781359 THREAD1 com.xjeffrose.chicago.client.BaseChicagoClient.stop: ChicagoClient stopping
+I 0729 20:56:21.3591469825781359 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: ConnectionPoolManager stopping
+I 0729 20:56:21.3611469825781361 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Closing channels
+I 0729 20:56:21.3621469825781362 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Stopping workerLoop
+I 0729 20:56:21.3631469825781363 THREAD474 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x15638717b5a0005
+I 0729 20:56:21.3661469825781366 THREAD471 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50510 which had sessionid 0x15638717b5a0005
+I 0729 20:56:21.3671469825781367 THREAD540 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:21.3671469825781367 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x15638717b5a0005 closed
+I 0729 20:56:21.3701469825781370 THREAD474 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638717b5a0004 type:delete cxid:0x30 zxid:0x2b txntype:-1 reqpath:n/a Error Path:/chicago/chicago-elect/_c_7d992215-e11b-4d95-973f-af107f308307-lock-0000000002 Error:KeeperErrorCode = NoNode for /chicago/chicago-elect/_c_7d992215-e11b-4d95-973f-af107f308307-lock-0000000002
+I 0729 20:56:21.3831469825781383 THREAD474 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x15638717b5a0004
+I 0729 20:56:21.3861469825781386 THREAD665 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:21.3871469825781387 THREAD471 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50508 which had sessionid 0x15638717b5a0004
+I 0729 20:56:21.3881469825781388 THREAD530 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:21.3881469825781388 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x15638717b5a0004 closed
+I 0729 20:56:21.3891469825781389 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago DB Server:50503
+I 0729 20:56:21.3901469825781390 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago RPC Server:50504
+I 0729 20:56:21.3901469825781390 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Election Server:50505
+I 0729 20:56:21.3911469825781391 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Admin Server:50506
+I 0729 20:56:21.3911469825781391 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Stats Server:50507
+I 0729 20:56:21.4021469825781402 THREAD1 com.xjeffrose.chicago.server.ChicagoServer.stop: Stopping Chicago!
+I 0729 20:56:21.4031469825781403 THREAD1 com.xjeffrose.chicago.NodeWatcher.stop: Nodewatcher stopping
+I 0729 20:56:21.4031469825781403 THREAD1 com.xjeffrose.chicago.client.BaseChicagoClient.stop: ChicagoClient stopping
+I 0729 20:56:21.4031469825781403 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: ConnectionPoolManager stopping
+I 0729 20:56:21.4051469825781405 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Closing channels
+I 0729 20:56:21.4071469825781407 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Stopping workerLoop
+I 0729 20:56:21.4111469825781411 THREAD474 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x15638717b5a0007
+I 0729 20:56:21.4131469825781413 THREAD471 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50522 which had sessionid 0x15638717b5a0007
+I 0729 20:56:21.4131469825781413 THREAD573 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:21.4131469825781413 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x15638717b5a0007 closed
+I 0729 20:56:21.4201469825781420 THREAD474 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x15638717b5a0006
+I 0729 20:56:21.4221469825781422 THREAD471 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50519 which had sessionid 0x15638717b5a0006
+I 0729 20:56:21.4221469825781422 THREAD558 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:21.4221469825781422 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x15638717b5a0006 closed
+I 0729 20:56:21.4231469825781423 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago RPC Server:50513
+I 0729 20:56:21.4241469825781424 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago DB Server:50514
+I 0729 20:56:21.4241469825781424 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Admin Server:50515
+I 0729 20:56:21.4241469825781424 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Stats Server:50516
+I 0729 20:56:21.4241469825781424 THREAD1 com.xjeffrose.xio.server.XioServerTransport.stop: stopped transport Chicago Election Server:50517
+I 0729 20:56:21.4291469825781429 THREAD1 com.xjeffrose.chicago.client.BaseChicagoClient.stop: ChicagoClient stopping
+I 0729 20:56:21.4291469825781429 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: ConnectionPoolManager stopping
+I 0729 20:56:21.4321469825781432 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Closing channels
+I 0729 20:56:21.4351469825781435 THREAD1 com.xjeffrose.chicago.client.ConnectionPoolManager.stop: Stopping workerLoop
+I 0729 20:56:21.4361469825781436 THREAD474 org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn: Processed session termination for sessionid: 0x15638717b5a0008
+I 0729 20:56:21.4371469825781437 THREAD471 org.apache.zookeeper.server.NIOServerCnxn.closeSock: Closed socket connection for client /127.0.0.1:50525 which had sessionid 0x15638717b5a0008
+I 0729 20:56:21.4371469825781437 THREAD1 org.apache.zookeeper.ZooKeeper.close: Session: 0x15638717b5a0008 closed
+I 0729 20:56:21.4371469825781437 THREAD587 org.apache.zookeeper.ClientCnxn$EventThread.run: EventThread shut down
+I 0729 20:56:21.4411469825781441 THREAD471 org.apache.zookeeper.server.NIOServerCnxnFactory.run: NIOServerCnxn factory exited run method
+I 0729 20:56:21.4421469825781442 THREAD470 org.apache.zookeeper.server.ZooKeeperServer.shutdown: shutting down
+I 0729 20:56:21.4921469825781492 THREAD470 org.apache.zookeeper.server.SessionTrackerImpl.shutdown: Shutting down
+I 0729 20:56:21.4921469825781492 THREAD470 org.apache.zookeeper.server.PrepRequestProcessor.shutdown: Shutting down
+I 0729 20:56:21.4921469825781492 THREAD470 org.apache.zookeeper.server.SyncRequestProcessor.shutdown: Shutting down
+I 0729 20:56:21.4921469825781492 THREAD473 org.apache.zookeeper.server.SyncRequestProcessor.run: SyncRequestProcessor exited!
+I 0729 20:56:21.4931469825781493 THREAD470 org.apache.zookeeper.server.FinalRequestProcessor.shutdown: shutdown of request processor complete
+I 0729 20:56:21.4431469825781443 THREAD1 org.apache.zookeeper.server.ZooKeeperServer.shutdown: shutting down
+I 0729 20:56:21.4931469825781493 THREAD1 org.apache.zookeeper.server.SessionTrackerImpl.shutdown: Shutting down
+I 0729 20:56:21.5871469825781587 THREAD1 org.apache.zookeeper.server.PrepRequestProcessor.shutdown: Shutting down
+I 0729 20:56:21.4921469825781492 THREAD474 org.apache.zookeeper.server.PrepRequestProcessor.run: PrepRequestProcessor exited loop!
+I 0729 20:56:21.5881469825781588 THREAD1 org.apache.zookeeper.server.SyncRequestProcessor.shutdown: Shutting down
+I 0729 20:56:21.5891469825781589 THREAD1 org.apache.zookeeper.server.FinalRequestProcessor.shutdown: shutdown of request processor complete
+I 0729 20:56:21.5961469825781596 THREAD702 org.apache.zookeeper.server.ZooKeeperServerMain.runFromConfig: Starting server
+I 0729 20:56:21.5961469825781596 THREAD702 org.apache.zookeeper.server.ZooKeeperServer.setTickTime: tickTime set to 2000
+I 0729 20:56:21.5961469825781596 THREAD702 org.apache.zookeeper.server.ZooKeeperServer.setMinSessionTimeout: minSessionTimeout set to -1
+I 0729 20:56:21.5961469825781596 THREAD702 org.apache.zookeeper.server.ZooKeeperServer.setMaxSessionTimeout: maxSessionTimeout set to -1
+I 0729 20:56:21.5971469825781597 THREAD702 org.apache.zookeeper.server.NIOServerCnxnFactory.configure: binding to port 0.0.0.0/0.0.0.0:2182
+I 0729 20:56:22.0031469825782003 THREAD472 org.apache.zookeeper.server.SessionTrackerImpl.run: SessionTrackerImpl exited loop!
+I 0729 20:56:22.6931469825782693 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Stats Server:50542
+I 0729 20:56:22.6931469825782693 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago DB Server:50543
+I 0729 20:56:22.6941469825782694 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Election Server:50544
+I 0729 20:56:22.6951469825782695 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Admin Server:50545
+I 0729 20:56:22.6961469825782696 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago RPC Server:50546
+I 0729 20:56:22.6961469825782696 THREAD1 com.xjeffrose.chicago.DBRouter.run: --------------- Chicago Server Started!!! ----------------------
+I 0729 20:56:22.6961469825782696 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:22.6971469825782697 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@78383390
+I 0729 20:56:22.6981469825782698 THREAD717 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:22.6991469825782699 THREAD717 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:22.6991469825782699 THREAD703 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50547
+I 0729 20:56:22.6991469825782699 THREAD703 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50547
+I 0729 20:56:22.6991469825782699 THREAD705 org.apache.zookeeper.server.persistence.FileTxnLog.append: Creating new log file: log.1
+I 0729 20:56:22.7231469825782723 THREAD705 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638718f8d0000 with negotiated timeout 40000 for client /127.0.0.1:50547
+I 0729 20:56:22.7231469825782723 THREAD717 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638718f8d0000, negotiated timeout = 40000
+I 0729 20:56:22.7451469825782745 THREAD718 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:22.7511469825782751 THREAD706 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638718f8d0000 type:create cxid:0x2 zxid:0x2 txntype:-1 reqpath:n/a Error Path:/chicago/node-list Error:KeeperErrorCode = NoNode for /chicago/node-list
+I 0729 20:56:22.7621469825782762 THREAD706 org.apache.zookeeper.server.PrepRequestProcessor.pRequest: Got user-level KeeperException when processing sessionid:0x15638718f8d0000 type:create cxid:0x9 zxid:0x6 txntype:-1 reqpath:n/a Error Path:/chicago/chicago-elect Error:KeeperErrorCode = NoNode for /chicago/chicago-elect
+I 0729 20:56:22.7661469825782766 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:22.7691469825782769 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@4b3ed2f0
+I 0729 20:56:22.7891469825782789 THREAD722 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:22.7901469825782790 THREAD722 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:22.8161469825782816 THREAD703 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50548
+I 0729 20:56:22.8161469825782816 THREAD703 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50548
+I 0729 20:56:22.8171469825782817 THREAD705 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638718f8d0001 with negotiated timeout 40000 for client /127.0.0.1:50548
+I 0729 20:56:22.8171469825782817 THREAD722 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638718f8d0001, negotiated timeout = 40000
+I 0729 20:56:22.8181469825782818 THREAD723 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:22.8261469825782826 THREAD1 com.xjeffrose.chicago.client.ClientNodeWatcher.start: ClientNodeWatcher initialization completed
+I 0729 20:56:22.8271469825782827 THREAD1 com.xjeffrose.chicago.NodeWatcher.refresh: NodeWatcher initialization completed
+I 0729 20:56:22.8301469825782830 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago RPC Server:50549
+I 0729 20:56:22.8301469825782830 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Election Server:50550
+I 0729 20:56:22.8311469825782831 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Admin Server:50551
+I 0729 20:56:22.8321469825782832 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Stats Server:50552
+I 0729 20:56:22.8321469825782832 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago DB Server:50553
+I 0729 20:56:22.8321469825782832 THREAD1 com.xjeffrose.chicago.DBRouter.run: --------------- Chicago Server Started!!! ----------------------
+I 0729 20:56:22.8331469825782833 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:22.8331469825782833 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@530712d
+I 0729 20:56:22.8361469825782836 THREAD736 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:22.8361469825782836 THREAD736 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:22.8361469825782836 THREAD703 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50554
+I 0729 20:56:22.8371469825782837 THREAD703 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50554
+I 0729 20:56:22.8371469825782837 THREAD705 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638718f8d0002 with negotiated timeout 40000 for client /127.0.0.1:50554
+I 0729 20:56:22.8371469825782837 THREAD736 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638718f8d0002, negotiated timeout = 40000
+I 0729 20:56:22.8381469825782838 THREAD737 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:22.8471469825782847 THREAD740 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:22.8491469825782849 THREAD740 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 2ms
+I 0729 20:56:22.8531469825782853 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:22.8541469825782854 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@4758820d
+I 0729 20:56:22.8601469825782860 THREAD744 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:22.8611469825782861 THREAD744 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:22.8611469825782861 THREAD703 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50556
+I 0729 20:56:22.8611469825782861 THREAD703 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50556
+I 0729 20:56:22.8641469825782864 THREAD705 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638718f8d0003 with negotiated timeout 40000 for client /127.0.0.1:50556
+I 0729 20:56:22.8641469825782864 THREAD744 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638718f8d0003, negotiated timeout = 40000
+I 0729 20:56:22.8641469825782864 THREAD745 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:22.8701469825782870 THREAD1 com.xjeffrose.chicago.client.ClientNodeWatcher.start: ClientNodeWatcher initialization completed
+I 0729 20:56:22.8711469825782871 THREAD1 com.xjeffrose.chicago.NodeWatcher.refresh: NodeWatcher initialization completed
+I 0729 20:56:22.8761469825782876 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago DB Server:50557
+I 0729 20:56:22.8771469825782877 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Admin Server:50558
+I 0729 20:56:22.8781469825782878 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Stats Server:50559
+I 0729 20:56:22.8791469825782879 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Election Server:50560
+I 0729 20:56:22.8801469825782880 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago RPC Server:50561
+I 0729 20:56:22.8801469825782880 THREAD1 com.xjeffrose.chicago.DBRouter.run: --------------- Chicago Server Started!!! ----------------------
+I 0729 20:56:22.8801469825782880 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:22.8821469825782882 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@13d73fa
+I 0729 20:56:22.9051469825782905 THREAD759 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:22.9061469825782906 THREAD759 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:22.9061469825782906 THREAD703 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50563
+I 0729 20:56:22.9061469825782906 THREAD703 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50563
+I 0729 20:56:22.9061469825782906 THREAD705 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638718f8d0004 with negotiated timeout 40000 for client /127.0.0.1:50563
+I 0729 20:56:22.9071469825782907 THREAD759 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638718f8d0004, negotiated timeout = 40000
+I 0729 20:56:22.9071469825782907 THREAD760 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:22.9141469825782914 THREAD763 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:22.9151469825782915 THREAD764 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:22.9191469825782919 THREAD763 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 5ms
+I 0729 20:56:22.9191469825782919 THREAD764 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 4ms
+I 0729 20:56:22.9241469825782924 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:22.9251469825782925 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@68be8808
+I 0729 20:56:22.9271469825782927 THREAD768 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:22.9271469825782927 THREAD768 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:22.9271469825782927 THREAD703 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50565
+I 0729 20:56:22.9281469825782928 THREAD703 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50565
+I 0729 20:56:22.9281469825782928 THREAD705 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638718f8d0005 with negotiated timeout 40000 for client /127.0.0.1:50565
+I 0729 20:56:22.9281469825782928 THREAD768 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638718f8d0005, negotiated timeout = 40000
+I 0729 20:56:22.9281469825782928 THREAD769 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+E 0729 20:56:23.0481469825783048 THREAD770 com.xjeffrose.xio.core.XioExceptionLogger.exceptionCaught: Exception caught: Connection reset by peer
+  java.io.IOException: Connection reset by peer
+    at sun.nio.ch.FileDispatcherImpl.read0(FileDispatcherImpl.java:-2)
+    at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:39)
+    at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:223)
+    at sun.nio.ch.IOUtil.read(IOUtil.java:192)
+    at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:380)
+    at io.netty.buffer.PooledUnsafeDirectByteBuf.setBytes(PooledUnsafeDirectByteBuf.java:288)
+    at io.netty.buffer.AbstractByteBuf.writeBytes(AbstractByteBuf.java:1098)
+    at io.netty.channel.socket.nio.NioSocketChannel.doReadBytes(NioSocketChannel.java:350)
+    at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:112)
+    at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:563)
+    at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:504)
+    at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:418)
+    at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:390)
+    at io.netty.util.concurrent.SingleThreadEventExecutor$5.run(SingleThreadEventExecutor.java:742)
+    at io.netty.util.concurrent.DefaultThreadFactory$DefaultRunnableDecorator.run(DefaultThreadFactory.java:145)
+    at java.lang.Thread.run(Thread.java:745)
+I 0729 20:56:23.0541469825783054 THREAD1 com.xjeffrose.chicago.client.ClientNodeWatcher.start: ClientNodeWatcher initialization completed
+I 0729 20:56:23.0571469825783057 THREAD1 com.xjeffrose.chicago.NodeWatcher.refresh: NodeWatcher initialization completed
+I 0729 20:56:23.0601469825783060 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Admin Server:50569
+I 0729 20:56:23.0621469825783062 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Stats Server:50570
+I 0729 20:56:23.0631469825783063 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago RPC Server:50571
+I 0729 20:56:23.0641469825783064 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago Election Server:50572
+I 0729 20:56:23.0641469825783064 THREAD1 com.xjeffrose.xio.server.XioServerTransport.start: started transport Chicago DB Server:50573
+I 0729 20:56:23.0641469825783064 THREAD1 com.xjeffrose.chicago.DBRouter.run: --------------- Chicago Server Started!!! ----------------------
+I 0729 20:56:23.0651469825783065 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:23.0661469825783066 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@22ffa91a
+I 0729 20:56:23.0701469825783070 THREAD790 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:23.0711469825783071 THREAD790 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:23.0711469825783071 THREAD703 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50574
+I 0729 20:56:23.0711469825783071 THREAD703 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50574
+I 0729 20:56:23.0731469825783073 THREAD705 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638718f8d0006 with negotiated timeout 40000 for client /127.0.0.1:50574
+I 0729 20:56:23.0731469825783073 THREAD790 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638718f8d0006, negotiated timeout = 40000
+I 0729 20:56:23.0731469825783073 THREAD791 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:23.0861469825783086 THREAD794 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:23.0871469825783087 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:23.0871469825783087 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@3b00856b
+I 0729 20:56:23.0881469825783088 THREAD799 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:23.0941469825783094 THREAD796 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:23.0951469825783095 THREAD796 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:23.0951469825783095 THREAD703 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50575
+I 0729 20:56:23.0961469825783096 THREAD703 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50575
+I 0729 20:56:23.1721469825783172 THREAD803 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Starting replication...
+I 0729 20:56:23.1731469825783173 THREAD705 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638718f8d0007 with negotiated timeout 40000 for client /127.0.0.1:50575
+I 0729 20:56:23.1731469825783173 THREAD796 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638718f8d0007, negotiated timeout = 40000
+I 0729 20:56:23.1761469825783176 THREAD797 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:23.1771469825783177 THREAD794 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 91ms
+I 0729 20:56:23.1781469825783178 THREAD799 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 89ms
+I 0729 20:56:23.1791469825783179 THREAD803 com.xjeffrose.chicago.NodeWatcher.redistributeKeys: Replication ended in 7ms
+I 0729 20:56:23.1871469825783187 THREAD1 com.xjeffrose.chicago.client.ClientNodeWatcher.start: ClientNodeWatcher initialization completed
+I 0729 20:56:23.1891469825783189 THREAD1 com.xjeffrose.chicago.NodeWatcher.refresh: NodeWatcher initialization completed
+I 0729 20:56:23.1901469825783190 THREAD1 org.apache.curator.framework.imps.CuratorFrameworkImpl.start: Starting
+I 0729 20:56:23.1911469825783191 THREAD1 org.apache.zookeeper.ZooKeeper.<init>: Initiating client connection, connectString=127.0.0.1:2182 sessionTimeout=60000 watcher=org.apache.curator.ConnectionState@72c28d64
+I 0729 20:56:23.1931469825783193 THREAD818 org.apache.zookeeper.ClientCnxn$SendThread.logStartConnect: Opening socket connection to server 127.0.0.1/127.0.0.1:2182. Will not attempt to authenticate using SASL (unknown error)
+I 0729 20:56:23.1941469825783194 THREAD818 org.apache.zookeeper.ClientCnxn$SendThread.primeConnection: Socket connection established to 127.0.0.1/127.0.0.1:2182, initiating session
+I 0729 20:56:23.1941469825783194 THREAD703 org.apache.zookeeper.server.NIOServerCnxnFactory.run: Accepted socket connection from /127.0.0.1:50580
+I 0729 20:56:23.1951469825783195 THREAD703 org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest: Client attempting to establish new session at /127.0.0.1:50580
+I 0729 20:56:23.2001469825783200 THREAD705 org.apache.zookeeper.server.ZooKeeperServer.finishSessionInit: Established session 0x15638718f8d0008 with negotiated timeout 40000 for client /127.0.0.1:50580
+I 0729 20:56:23.2001469825783200 THREAD818 org.apache.zookeeper.ClientCnxn$SendThread.onConnected: Session establishment complete on server 127.0.0.1/127.0.0.1:2182, sessionid = 0x15638718f8d0008, negotiated timeout = 40000
+I 0729 20:56:23.2111469825783211 THREAD819 org.apache.curator.framework.state.ConnectionStateManager.postState: State change: CONNECTED
+I 0729 20:56:23.2211469825783221 THREAD1 com.xjeffrose.chicago.client.ClientNodeWatcher.start: ClientNodeWatcher initialization completed
+E 0729 20:56:26.8811469825786881 THREAD838 io.netty.util.internal.logging.Slf4JLogger.error: LEAK: ByteBuf.release() was not called before it's garbage-collected. Enable advanced leak reporting to find out where the leak occurred. To enable advanced leak reporting, specify the JVM option '-Dio.netty.leakDetection.level=advanced' or call ResourceLeakDetector.setLevel() See http://netty.io/wiki/reference-counted-objects.html for more information.
