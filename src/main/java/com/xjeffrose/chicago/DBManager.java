@@ -152,7 +152,9 @@ public class DBManager {
     try {
       columnFamilies.put(new String(name), db.createColumnFamily(columnFamilyDescriptor));
       counter.put(new String(name), new AtomicLong(0));
-      zkClient.set("/chicago/replication-lock/" + new String(name), null);
+      if (zkClient != null) {
+        zkClient.set("/chicago/replication-lock/" + new String(name), null);
+      }
       return true;
     } catch (RocksDBException e) {
       log.error("Could not create Column Family: " + new String(name), e);
