@@ -81,6 +81,7 @@ public class NodeWatcher {
                            break;
       }
 
+      //todo: Need to do faster replication with multi threading and future listeners.
       //For all the column family present on this server.
       dbManager.getColFams().parallelStream().forEach(cf -> {
         List<String> newS = rendezvousHash.get(cf.getBytes());
@@ -91,7 +92,7 @@ public class NodeWatcher {
 
         if(type == TreeCacheEvent.Type.NODE_REMOVED){
           bounceLockPath = REPLICATION_LOCK_PATH + "/" + cf + "/" + node;
-          zkClient.createBounceLockPath(bounceLockPath);
+          zkClient.createLockPath(bounceLockPath,config.getDBBindEndpoint(), "BOUNCE_LOCK");
           bounceLock=true;
         }
 
@@ -101,7 +102,7 @@ public class NodeWatcher {
               log.info("Replicatng colFam " + cf + " to " + s);
               String lockPath = REPLICATION_LOCK_PATH + "/" + cf + "/" + s;
               try {
-                zkClient.createLockPath(lockPath , config.getDBBindEndpoint());
+                zkClient.createLockPath(lockPath , config.getDBBindEndpoint(), "REPLICATION_LOCK");
                 ChicagoClient c = new ChicagoClient((String) s);
                 byte[] offset = new byte[]{};
                 List<byte[]> keys = dbManager.getKeys(cf.getBytes(), offset);
@@ -131,7 +132,7 @@ public class NodeWatcher {
 
           //Remove the bounce lock.
           if(bounceLock){
-            zkClient.delete(bounceLockPath);
+            zkClient.deleteLockPath(bounceLockPath, config.getDBBindEndpoint());
           }
         });
       log.info("Replication ended in " + (System.currentTimeMillis() - startTime) + "ms");

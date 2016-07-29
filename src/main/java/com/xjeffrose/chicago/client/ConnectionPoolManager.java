@@ -14,6 +14,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -82,6 +83,10 @@ public class ConnectionPoolManager {
     log.info("Stopping workerLoop");
     workerLoop.shutdownGracefully();
     connectCheck.shutdownNow();
+  }
+
+  public EventLoopGroup getWorkerGroup() {
+    return workerLoop;
   }
 
   public synchronized void checkConnection(){

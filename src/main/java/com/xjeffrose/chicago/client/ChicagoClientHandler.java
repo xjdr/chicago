@@ -40,6 +40,7 @@ class ChicagoClientHandler extends SimpleChannelInboundHandler<ChicagoMessage> {
       } else {
         futureMap.get(chicagoMessage.getId()).setException(new ChicagoClientException("Request Failed"));
       }
+      futureMap.remove(chicagoMessage.getId());
     } else {
       //TODO(JR): What to do with a request without map
     }
