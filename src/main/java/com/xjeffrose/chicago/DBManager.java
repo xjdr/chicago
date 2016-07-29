@@ -4,15 +4,11 @@ import com.google.common.primitives.Longs;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import java.io.File;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.rocksdb.ColumnFamilyDescriptor;
@@ -39,14 +35,16 @@ public class DBManager {
   private final WriteOptions writeOptions = new WriteOptions();
   private final Map<String, ColumnFamilyHandle> columnFamilies = new ConcurrentHashMap<>();
   private final ChiConfig config;
+  private ZkClient zkClient;
   private final HashMap<String,AtomicLong> counter = new HashMap<>();
   private final int MAX_ENTRIES = 500;
 
 
   private RocksDB db;
 
-  public DBManager(ChiConfig config) {
+  public DBManager(ChiConfig config, ZkClient zkClient) {
     this.config = config;
+    this.zkClient = zkClient;
     RocksDB.loadLibrary();
     configOptions();
     configReadOptions();
@@ -154,6 +152,9 @@ public class DBManager {
     try {
       columnFamilies.put(new String(name), db.createColumnFamily(columnFamilyDescriptor));
       counter.put(new String(name), new AtomicLong(0));
+      if (zkClient != null) {
+        zkClient.set("/chicago/replication-lock/" + new String(name), null);
+      }
       return true;
     } catch (RocksDBException e) {
       log.error("Could not create Column Family: " + new String(name), e);

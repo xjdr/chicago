@@ -150,11 +150,11 @@ public class ConnectionPoolManager {
         System.out.println("Cannot get connection for node "+ node +" connectionMap ="+ connectionMap.keySet().toString());
         throw new ChicagoClientTimeoutException();
       }
-      try {
-        Thread.sleep(1);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
+//      try {
+//        Thread.sleep(1);
+//      } catch (InterruptedException e) {
+//        e.printStackTrace();
+//      }
     }
 
     ChannelFuture cf = connectionMap.get(node);

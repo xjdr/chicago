@@ -42,11 +42,11 @@ public class RendezvousHash<N> {
 
   public List<N> get(byte[] key) {
     while (nodeList.size() < quorum) {
-      try {
-        Thread.sleep(1);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
+//      try {
+//        Thread.sleep(1);
+//      } catch (InterruptedException e) {
+//        e.printStackTrace();
+//      }
     }
     Map<Long, N> hashMap = new ConcurrentHashMap<>();
     List<N> _nodeList = new ArrayList<>();
