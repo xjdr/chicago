@@ -44,6 +44,7 @@ public class ChiConfig {
   private String RPCBindIP;
   private int RPCPort;
   private List<String> witnessList;
+  private ZkClient zkClient;
 
   public ChiConfig(Config conf) {
 
@@ -177,5 +178,13 @@ public class ChiConfig {
 
   public List<String> getWitnessList() {
     return witnessList;
+  }
+
+  public void setZkClient(ZkClient zkClient) {
+    this.zkClient = zkClient;
+  }
+
+  public ZkClient getZkClient() {
+    return zkClient;
   }
 }
