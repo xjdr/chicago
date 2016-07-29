@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.RollingFileAppender;
@@ -19,16 +20,14 @@ public class ChicagoAppender extends AppenderSkeleton{
     private int pool;
     private String fileName;
     private ChicagoAppender self;
+    private int workerCount;
     private final static ConcurrentLinkedQueue<String> buffer = new ConcurrentLinkedQueue<>();
-    private final static ExecutorService schedulerExecutor = Executors.newSingleThreadExecutor(
+    private final static ScheduledExecutorService schedulerExecutor = Executors.newSingleThreadScheduledExecutor(
       new ThreadFactoryBuilder()
-        .setNameFormat("chicago-appender-scheduler")
+        .setNameFormat("chicago-scheduled-executor")
         .build());
 
-    private final static ExecutorService executor = Executors.newFixedThreadPool(5,
-    new ThreadFactoryBuilder()
-      .setNameFormat("chicago-appender-worker-%d")
-      .build());
+    private static ExecutorService executor;
     private final ConcurrentLinkedDeque<ChicagoClient> clientQueue = new ConcurrentLinkedDeque<>();
     private final RollingFileAppender fileAppender = new RollingFileAppender();
 
@@ -82,7 +81,11 @@ public class ChicagoAppender extends AppenderSkeleton{
         throw new RuntimeException("Chicago Log4j Appender: chicago key not configured!");
       }
       if (pool == 0) {
-        pool = 4;
+        pool = 1;
+      }
+
+      if(workerCount == 0){
+        workerCount = 10;
       }
 
       try {
@@ -98,26 +101,32 @@ public class ChicagoAppender extends AppenderSkeleton{
         LogLog.debug("Chicago Appender failed to initialize!!!");
       }
 
-      schedulerExecutor.submit(new Runnable() {
+      executor = Executors.newFixedThreadPool(workerCount,
+        new ThreadFactoryBuilder()
+          .setNameFormat("chicago-appender-worker-%d")
+          .build());
+
+      schedulerExecutor.scheduleAtFixedRate(new Runnable() {
         @Override
         public void run() {
           pushToChicago(self);
         }
-      });
+      },0,10,TimeUnit.MILLISECONDS);
     }
 
     public void pushToChicago(ChicagoAppender appender){
-      while(true) {
-        if (!buffer.isEmpty()) {
-          executor.submit(new Write(getNext(), buffer.poll(), appender));
-        } else {
-          try {
-            Thread.sleep(10);
-          } catch (InterruptedException e) {
-            e.printStackTrace();
-            break;
+      while(!buffer.isEmpty()){
+        StringBuilder sb = new StringBuilder();
+        if(buffer.size() > 50) {
+          for (int i = 0; i < 50; i++) {
+            sb.append(buffer.poll());
+          }
+        }else{
+          while(!buffer.isEmpty()) {
+            sb.append(buffer.poll());
           }
         }
+        executor.submit(new Write(getNext(), sb.toString(), appender));
       }
     }
 
@@ -170,4 +179,13 @@ public class ChicagoAppender extends AppenderSkeleton{
     public void setPool(int pool) {
         this.pool = pool;
     }
+
+    public int getWorkerCount() {
+      return workerCount;
+    }
+
+    public void setWorkerCount(int workerCount) {
+      this.workerCount = workerCount;
+    }
+
 }

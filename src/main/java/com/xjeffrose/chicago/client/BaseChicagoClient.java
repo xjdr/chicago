@@ -5,6 +5,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.common.util.concurrent.SettableFuture;
 import com.xjeffrose.chicago.ZkClient;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.epoll.Epoll;
+import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -27,15 +29,10 @@ abstract public class BaseChicagoClient {
   private static final Logger log = LoggerFactory.getLogger(BaseChicagoClient.class);
   protected final static String NODE_LIST_PATH = "/chicago/node-list";
   public final static String REPLICATION_LOCK_PATH ="/chicago/replication-lock";
-  protected static final long TIMEOUT = 4000;
+  protected static final long TIMEOUT = 1000;
   protected static boolean TIMEOUT_ENABLED = true;
   protected static int MAX_RETRY = 3;
   protected final AtomicInteger nodesAvailable = new AtomicInteger(0);
-
-  protected final ExecutorService exe = Executors.newFixedThreadPool(20,
-    new ThreadFactoryBuilder()
-      .setNameFormat("chicago-client-worker-%d")
-      .build());
 
   protected final boolean single_server;
   protected final RendezvousHash rendezvousHash;
@@ -57,7 +54,7 @@ abstract public class BaseChicagoClient {
   protected int quorum;
 
   protected Map<UUID, SettableFuture<byte[]>> futureMap = new ConcurrentHashMap<>();
-  protected EventLoopGroup evg = new NioEventLoopGroup();
+  protected EventLoopGroup evg;
 
 
   public BaseChicagoClient(String address){
@@ -69,6 +66,11 @@ abstract public class BaseChicagoClient {
     this.rendezvousHash =  new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
     clientNodeWatcher = null;
     this.connectionPoolMgr = new ConnectionPoolManager(address, futureMap);
+    if (Epoll.isAvailable()) {
+      evg = new EpollEventLoopGroup(5);
+    } else {
+      evg = new NioEventLoopGroup(5);
+    }
   }
 
   public BaseChicagoClient(String zkConnectionString, int quorum) throws InterruptedException {
@@ -81,6 +83,11 @@ abstract public class BaseChicagoClient {
     this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
     clientNodeWatcher = new ClientNodeWatcher(zkClient, rendezvousHash, listener);
     this.connectionPoolMgr = new ConnectionPoolManager(zkClient, futureMap);
+    if (Epoll.isAvailable()) {
+      evg = new EpollEventLoopGroup(5);
+    } else {
+      evg = new NioEventLoopGroup(5);
+    }
   }
 
   public void start() {

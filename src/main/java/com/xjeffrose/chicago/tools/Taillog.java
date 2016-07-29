@@ -26,6 +26,9 @@ public class Taillog {
   @Parameter(names={"--zkstring", "-z"}, description = "zookeeper connection string for chicago servers")
   String zkString="10.22.100.183:2181,10.25.180.234:2181,10.22.103.86:2181,10.25.180.247:2181,10.25.69.226:2181";
 
+  @Parameter(names={"--singleclient", "-sc"}, description = "Single client DB IP:port")
+  String sc;
+
   @Parameter(names = {"--debug","-d"}, description = "Debug mode")
   private boolean debug = false;
 
@@ -57,8 +60,12 @@ public class Taillog {
       return;
     }
 
-    chicagoClient = new ChicagoClient(zkString,3);
-    chicagoClient.startAndWaitForNodes(3);
+    if(sc == null) {
+      chicagoClient = new ChicagoClient(zkString, 3);
+      chicagoClient.startAndWaitForNodes(3);
+    }else{
+      chicagoClient = new ChicagoClient(sc);
+    }
     if(startTime != null){
       long startOffset = getNearestOffset(topic, startTime);
       printStream(topic,startOffset,endTime);
@@ -119,17 +126,6 @@ public class Taillog {
         Thread.sleep(500);
       }
 
-      //while(true) {
-      //  try {
-      //    ListenableFuture<com.xjeffrose.chicago.client.ChicagoStream> _f =
-      //      chicagoTSClient.stream(key.getBytes(), Longs.toByteArray(offset));
-      //    newcs = _f.get();
-      //    break;
-      //  } catch (Exception e) {
-      //    e.printStackTrace();
-      //    Thread.sleep(100);
-      //  }
-      //}
       resultArray = chicagoClient.stream(key.getBytes(), Longs.toByteArray(offset)).get().get(0);
       result = new String(resultArray);
       old = offset;
@@ -239,6 +235,9 @@ public class Taillog {
 
   public void printLine(String line){
     String responseCode ="";
+    if(line.charAt(line.length()-1) == '\n'){
+      line = line.substring(0,line.length()-1);
+    }
     try{
        responseCode =line.split("ResponseCode:")[1].split(" ")[2];
     } catch (Exception e){
