@@ -32,17 +32,21 @@ class ChicagoClientHandler extends SimpleChannelInboundHandler<ChicagoMessage> {
 
   @Override
   protected void channelRead0(ChannelHandlerContext ctx, ChicagoMessage chicagoMessage) throws Exception {
-    if (futureMap.containsKey(chicagoMessage.getId())) {
-      //System.out.println("Got response for ID: "+ chicagoMessage.getId() + " response ="+ Longs.fromByteArray(
+    if (chicagoMessage != null) {
+      if (futureMap.containsKey(chicagoMessage.getId())) {
+        //System.out.println("Got response for ID: "+ chicagoMessage.getId() + " response ="+ Longs.fromByteArray(
         //chicagoMessage.getVal()) + "ctx "+ ctx.toString());
-      if (chicagoMessage.getSuccess()) {
-        futureMap.get(chicagoMessage.getId()).set(chicagoMessage.getVal());
+        if (chicagoMessage.getSuccess()) {
+          futureMap.get(chicagoMessage.getId()).set(chicagoMessage.getVal());
+        } else {
+          futureMap.get(chicagoMessage.getId()).setException(new ChicagoClientException("Request Failed"));
+        }
+        futureMap.remove(chicagoMessage.getId());
       } else {
-        futureMap.get(chicagoMessage.getId()).setException(new ChicagoClientException("Request Failed"));
+        //TODO(JR): What to do with a request without map
       }
-      futureMap.remove(chicagoMessage.getId());
     } else {
-      //TODO(JR): What to do with a request without map
+      log.error("Recieved Null response from server for: " + ctx);
     }
   }
 }
