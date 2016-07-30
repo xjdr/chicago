@@ -20,6 +20,7 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.internal.PlatformDependent;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +41,7 @@ public class ConnectionPoolManager {
   private static final long TIMEOUT = 1000;
   private static boolean TIMEOUT_ENABLED = true;
 
-  private final Map<String, ChannelFuture> connectionMap = new ConcurrentHashMap<>();
+  private final Map<String, ChannelFuture> connectionMap = PlatformDependent.newConcurrentHashMap();
   private final NioEventLoopGroup workerLoop = new NioEventLoopGroup(5,
       new ThreadFactoryBuilder()
           .setNameFormat("chicago-nioEventLoopGroup-%d")

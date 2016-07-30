@@ -8,6 +8,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.util.internal.PlatformDependent;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +54,7 @@ abstract public class BaseChicagoClient {
   protected final ConnectionPoolManager connectionPoolMgr;
   protected int quorum;
 
-  protected Map<UUID, SettableFuture<byte[]>> futureMap = new ConcurrentHashMap<>();
+  protected Map<UUID, SettableFuture<byte[]>> futureMap = PlatformDependent.newConcurrentHashMap();
   protected EventLoopGroup evg;
 
 
