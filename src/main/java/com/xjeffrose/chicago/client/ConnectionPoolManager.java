@@ -138,7 +138,7 @@ public class ConnectionPoolManager {
         public void run() {
           checkConnection();
         }
-      }, 3000, 7000, TimeUnit.MILLISECONDS);
+      }, 1000, 5000, TimeUnit.MILLISECONDS);
     } catch (Exception e){
       e.printStackTrace();
     }
@@ -247,5 +247,9 @@ public class ConnectionPoolManager {
     };
 
     bootstrap.connect(server).addListener(listener);
+  }
+
+  public void releaseChannel(String node, ChannelFuture cf1) {
+
   }
 }

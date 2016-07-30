@@ -3,6 +3,7 @@ package com.xjeffrose.chicago;
 import com.google.common.primitives.Longs;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.util.internal.PlatformDependent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,7 +34,7 @@ public class DBManager {
   private final Options options = new Options();
   private final ReadOptions readOptions = new ReadOptions();
   private final WriteOptions writeOptions = new WriteOptions();
-  private final Map<String, ColumnFamilyHandle> columnFamilies = new ConcurrentHashMap<>();
+  private final Map<String, ColumnFamilyHandle> columnFamilies = PlatformDependent.newConcurrentHashMap();
   private final ChiConfig config;
   private ZkClient zkClient;
   private final HashMap<String,AtomicLong> counter = new HashMap<>();
