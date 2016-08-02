@@ -50,7 +50,6 @@ public class AsyncChicagoAppender extends AppenderSkeleton {
     } catch (InterruptedException e) {
     }
 
-    cs.startAndWaitForNodes(3, 2000);
     LogLog.debug("Chicago connected to " + chicagoZk);
   }
 
