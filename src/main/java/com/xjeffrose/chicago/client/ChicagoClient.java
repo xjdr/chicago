@@ -56,7 +56,7 @@ public class ChicagoClient extends BaseChicagoClient {
   public ChicagoClient(String address) throws InterruptedException {
     super(address);
   }
-
+  
   public ByteBuf aggregatedStream(byte[] key, byte[] offset){
     ByteBuf responseStream = Unpooled.directBuffer();
     aggregatedStream(key,offset,responseStream);
