@@ -62,7 +62,6 @@ public class Taillog {
 
     if(sc == null) {
       chicagoClient = new ChicagoClient(zkString, 3);
-      chicagoClient.startAndWaitForNodes(3);
     }else{
       chicagoClient = new ChicagoClient(sc);
     }
