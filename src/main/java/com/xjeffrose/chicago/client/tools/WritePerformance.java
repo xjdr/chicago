@@ -37,7 +37,7 @@ public class WritePerformance{
   private static Long[] keys;
   int valCount;
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) {
 
     final int loop = Integer.parseInt(args[0]);
     final int workerSize = Integer.parseInt(args[1]);
@@ -51,10 +51,18 @@ public class WritePerformance{
       if(connectionString.contains("2181")){
         //Jeff servers = 10.22.100.183:2181,10.25.180.234:2181,10.22.103.86:2181,10.25.180.247:2181,10.25.69.226:2181
         //smadan server = 10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181
-        ctsa[i] = new ChicagoClient(connectionString,3);
+        try {
+          ctsa[i] = new ChicagoClient(connectionString,3);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
         //ctsa[i].startAndWaitForNodes(3);
       }else {
-        ctsa[i] = new ChicagoClient(connectionString);
+        try {
+          ctsa[i] = new ChicagoClient(connectionString);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
       }
     }
     //Thread.sleep(500);
@@ -67,20 +75,35 @@ public class WritePerformance{
       long sendStart = System.currentTimeMillis();
       String v = "val" +i + "TTE-cc";
       Callback cb = stats.nextCompletion(sendStart, v.getBytes().length, stats);
-      ListenableFuture<List<byte[]>> future = ctsa[i%clients].tsWrite(key.getBytes(),v.getBytes());
-      Futures.addCallback(future,cb);
+      ListenableFuture<List<byte[]>> future = null;
+      try {
+        future = ctsa[i%clients].tsWrite(key.getBytes(),v.getBytes());
+        Futures.addCallback(future,cb);
+      } catch (ChicagoClientTimeoutException e) {
+        e.printStackTrace();
+      } catch (ChicagoClientException e) {
+        e.printStackTrace();
+      }
       if (throughput > 0) {
         sleepDeficitNs += sleepTime;
         if (sleepDeficitNs >= MIN_SLEEP_NS) {
           long sleepMs = sleepDeficitNs / 1000000;
           long sleepNs = sleepDeficitNs - sleepMs * 1000000;
-          Thread.sleep(sleepMs, (int) sleepNs);
+          try {
+            Thread.sleep(sleepMs, (int) sleepNs);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
           sleepDeficitNs = 0;
         }
       }
     }
 
-    latch.await();
+    try {
+      latch.await();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
     stats.printTotal();
     Long totalTime = (System.currentTimeMillis() - startTime);
     System.out.println("Total time taken for "+loop+ " writes ="+ totalTime + "ms" +  " average ="+ (totalTime/(float)loop)+"ms");
