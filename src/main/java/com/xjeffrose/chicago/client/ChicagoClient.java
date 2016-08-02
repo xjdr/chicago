@@ -110,17 +110,10 @@ public class ChicagoClient extends BaseChicagoClient {
 
               @Override
               public void onFailure(Throwable throwable) {
-<<<<<<< HEAD
 
               }
             };
 
-=======
-
-              }
-            };
-
->>>>>>> smarth/development
             if (offset != null) {
               Futures.addCallback(stream(xs.getBytes(), offset), cb);
             } else {
