@@ -46,7 +46,6 @@ public class ChicagoReplicationTSClientTest {
 				3);
 		zkClient = new ZkClient(testingServer.getConnectString(),false);
     zkClient.start();
-		chicagoClient.startAndWaitForNodes(4);
 		System.out.println("Started all four nodes");
 
 		writeAndRead1000Values();

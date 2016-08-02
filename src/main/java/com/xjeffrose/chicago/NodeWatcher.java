@@ -46,7 +46,7 @@ public class NodeWatcher {
     nodeList.getCache().getListenable().addListener(genericListener);
     try {
       this.chicagoClient = new ChicagoClient(zkClient.getConnectionString(), config.getQuorum());
-      chicagoClient.start();
+      //chicagoClient.start();
       nodeList.start();
     } catch (Exception e) {
       throw new RuntimeException(e);

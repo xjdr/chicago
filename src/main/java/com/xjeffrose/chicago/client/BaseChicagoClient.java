@@ -8,6 +8,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.util.internal.PlatformDependent;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +34,7 @@ abstract public class BaseChicagoClient {
   protected static boolean TIMEOUT_ENABLED = true;
   protected static int MAX_RETRY = 3;
   protected final AtomicInteger nodesAvailable = new AtomicInteger(0);
-
+  protected static final ConcurrentHashMap<String, Long> lastOffsetMap = new ConcurrentHashMap<>();
   protected final boolean single_server;
   protected final RendezvousHash rendezvousHash;
   protected final ClientNodeWatcher clientNodeWatcher;
@@ -53,7 +54,7 @@ abstract public class BaseChicagoClient {
   protected final ConnectionPoolManager connectionPoolMgr;
   protected int quorum;
 
-  protected Map<UUID, SettableFuture<byte[]>> futureMap = new ConcurrentHashMap<>();
+  protected Map<UUID, SettableFuture<byte[]>> futureMap = PlatformDependent.newConcurrentHashMap();
   protected EventLoopGroup evg;
 
 
@@ -88,6 +89,7 @@ abstract public class BaseChicagoClient {
     } else {
       evg = new NioEventLoopGroup(5);
     }
+    startAndWaitForNodes(quorum);
   }
 
   public void start() {

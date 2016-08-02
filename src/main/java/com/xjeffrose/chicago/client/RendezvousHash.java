@@ -4,6 +4,7 @@ import com.google.common.hash.Funnel;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import com.google.common.primitives.Longs;
+import io.netty.util.internal.PlatformDependent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -41,14 +42,14 @@ public class RendezvousHash<N> {
   }
 
   public List<N> get(byte[] key) {
-    while (nodeList.size() < quorum) {
+//    while (nodeList.size() < quorum) {
 //      try {
-//        Thread.sleep(1);
+//        Thread.sleep(0, 50);
 //      } catch (InterruptedException e) {
 //        e.printStackTrace();
 //      }
-    }
-    Map<Long, N> hashMap = new ConcurrentHashMap<>();
+//    }
+    Map<Long, N> hashMap = PlatformDependent.newConcurrentHashMap();
     List<N> _nodeList = new ArrayList<>();
 
       nodeList.stream()
@@ -68,25 +69,4 @@ public class RendezvousHash<N> {
     return _nodeList;
   }
 
-  public List<N> this_is_why_i_pay_chris(byte[] key) {
-    Map<Long, N> sortedMap = new TreeMap<>(Comparator.reverseOrder());
-    nodeList.stream().forEach(xs -> {
-      sortedMap.put(hasher.newHasher().putBytes(key).putObject(xs, nodeFunnel).hash().asLong(), xs);
-    });
-
-    List<N> first_three = new ArrayList<>();
-    int count = 0;
-    for(N node : sortedMap.values()) {
-      first_three.add(node);
-      count++;
-      if (count == 3) {
-        break;
-      }
-    }
-    return first_three;
-  }
-
-  public void refresh(List<N> list) {
-    nodeList = new ConcurrentSkipListSet<>(list);
-  }
 }

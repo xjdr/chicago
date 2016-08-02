@@ -42,7 +42,6 @@ public class ChicagoClientTest {
     }
 
     chicagoClientDHT = new ChicagoClient(testingServer.getConnectString(), 3);
-    chicagoClientDHT.startAndWaitForNodes(3);
   }
 
   @After

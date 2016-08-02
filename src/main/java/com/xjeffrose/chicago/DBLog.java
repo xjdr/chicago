@@ -1,5 +1,7 @@
 package com.xjeffrose.chicago;
 
+import io.netty.util.internal.PlatformDependent;
+import java.util.Deque;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +26,7 @@ public class DBLog {
     }
   }
 
-  public ConcurrentLinkedDeque<Entry> entries = new ConcurrentLinkedDeque<>();
+  public Deque<Entry> entries = PlatformDependent.newConcurrentDeque();
   private static final Logger log = LoggerFactory.getLogger(DBLog.class.getName());
 
   public void addRead(byte[] colFam, byte[] key) {

@@ -20,6 +20,7 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.internal.PlatformDependent;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +41,7 @@ public class ConnectionPoolManager {
   private static final long TIMEOUT = 1000;
   private static boolean TIMEOUT_ENABLED = true;
 
-  private final Map<String, ChannelFuture> connectionMap = new ConcurrentHashMap<>();
+  private final Map<String, ChannelFuture> connectionMap = PlatformDependent.newConcurrentHashMap();
   private final NioEventLoopGroup workerLoop = new NioEventLoopGroup(5,
       new ThreadFactoryBuilder()
           .setNameFormat("chicago-nioEventLoopGroup-%d")
@@ -113,7 +114,12 @@ public class ConnectionPoolManager {
   }
 
   private List<String> buildNodeList() {
-    return zkClient.list(NODE_LIST_PATH);
+    List<String> l = zkClient.list(NODE_LIST_PATH);
+    if (l == null) {
+      return buildNodeList();
+    } else {
+      return l;
+    }
   }
 
   private InetSocketAddress address(String node) {
@@ -132,7 +138,7 @@ public class ConnectionPoolManager {
         public void run() {
           checkConnection();
         }
-      }, 3000, 7000, TimeUnit.MILLISECONDS);
+      }, 1000, 5000, TimeUnit.MILLISECONDS);
     } catch (Exception e){
       e.printStackTrace();
     }
@@ -145,11 +151,11 @@ public class ConnectionPoolManager {
 
   private ChannelFuture _getNode(String node, long startTime) throws ChicagoClientTimeoutException {
     while (connectionMap.get(node) == null) {
-      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
-        Thread.currentThread().interrupt();
-        System.out.println("Cannot get connection for node "+ node +" connectionMap ="+ connectionMap.keySet().toString());
-        throw new ChicagoClientTimeoutException();
-      }
+//      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
+//        Thread.currentThread().interrupt();
+//        System.out.println("Cannot get connection for node "+ node +" connectionMap ="+ connectionMap.keySet().toString());
+//        throw new ChicagoClientTimeoutException();
+//      }
 //      try {
 //        Thread.sleep(1);
 //      } catch (InterruptedException e) {
@@ -241,5 +247,9 @@ public class ConnectionPoolManager {
     };
 
     bootstrap.connect(server).addListener(listener);
+  }
+
+  public void releaseChannel(String node, ChannelFuture cf1) {
+
   }
 }

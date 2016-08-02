@@ -35,7 +35,6 @@ public class ClientNodeWatcherTest {
     servers.get(3).start();
 
     chicagoClientDHT = new ChicagoClient(testingServer.getConnectString(), 3);
-    chicagoClientDHT.startAndWaitForNodes(4);
   }
 
   @After

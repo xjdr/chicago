@@ -1,8 +1,10 @@
 package com.xjeffrose.chicago;
 
 import com.google.common.primitives.Longs;
+import com.xjeffrose.chicago.server.ChicagoServer;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.util.internal.PlatformDependent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,7 +35,7 @@ public class DBManager {
   private final Options options = new Options();
   private final ReadOptions readOptions = new ReadOptions();
   private final WriteOptions writeOptions = new WriteOptions();
-  private final Map<String, ColumnFamilyHandle> columnFamilies = new ConcurrentHashMap<>();
+  private final Map<String, ColumnFamilyHandle> columnFamilies = PlatformDependent.newConcurrentHashMap();
   private final ChiConfig config;
   private ZkClient zkClient;
   private final HashMap<String,AtomicLong> counter = new HashMap<>();
@@ -42,9 +44,8 @@ public class DBManager {
 
   private RocksDB db;
 
-  public DBManager(ChiConfig config, ZkClient zkClient) {
+  public DBManager(ChiConfig config) {
     this.config = config;
-    this.zkClient = zkClient;
     RocksDB.loadLibrary();
     configOptions();
     configReadOptions();
@@ -63,6 +64,10 @@ public class DBManager {
       System.exit(-1);
     }
     //createColumnFamily(ChiUtil.defaultColFam.getBytes());
+  }
+
+  public void setZkClient(ZkClient zkClient){
+    this.zkClient = zkClient;
   }
 
   void removeDB(File file) {
@@ -153,7 +158,7 @@ public class DBManager {
       columnFamilies.put(new String(name), db.createColumnFamily(columnFamilyDescriptor));
       counter.put(new String(name), new AtomicLong(0));
       if (zkClient != null) {
-        zkClient.set("/chicago/replication-lock/" + new String(name), null);
+        zkClient.createIfNotExist(ChicagoServer.NODE_LOCK_PATH+ "/" + new String(name), "");
       }
       return true;
     } catch (RocksDBException e) {
