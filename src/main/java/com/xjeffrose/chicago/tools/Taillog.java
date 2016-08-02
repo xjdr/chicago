@@ -62,7 +62,6 @@ public class Taillog {
 
     if(sc == null) {
       chicagoClient = new ChicagoClient(zkString, 3);
-      chicagoClient.startAndWaitForNodes(3);
     }else{
       chicagoClient = new ChicagoClient(sc);
     }
@@ -107,7 +106,7 @@ public class Taillog {
           if(debug) {
             System.out.print("Last offset =" + offset + ":");
           }
-          if(endDateTime !=null && endDateTime.after(getDate(line))){
+          if(endDateTime !=null && endDateTime.before(getDate(line))){
             System.out.println("End time reached.");
             System.exit(0);
           }

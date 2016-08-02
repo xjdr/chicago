@@ -56,7 +56,7 @@ public class ChicagoClient extends BaseChicagoClient {
   public ChicagoClient(String address) throws InterruptedException {
     super(address);
   }
-  
+
   public ByteBuf aggregatedStream(byte[] key, byte[] offset){
     ByteBuf responseStream = Unpooled.directBuffer();
     aggregatedStream(key,offset,responseStream);
@@ -110,10 +110,17 @@ public class ChicagoClient extends BaseChicagoClient {
 
               @Override
               public void onFailure(Throwable throwable) {
+<<<<<<< HEAD
 
               }
             };
 
+=======
+
+              }
+            };
+
+>>>>>>> smarth/development
             if (offset != null) {
               Futures.addCallback(stream(xs.getBytes(), offset), cb);
             } else {
