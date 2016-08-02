@@ -34,7 +34,7 @@ abstract public class BaseChicagoClient {
   protected static boolean TIMEOUT_ENABLED = true;
   protected static int MAX_RETRY = 3;
   protected final AtomicInteger nodesAvailable = new AtomicInteger(0);
-
+  protected static final ConcurrentHashMap<String, Long> lastOffsetMap = new ConcurrentHashMap<>();
   protected final boolean single_server;
   protected final RendezvousHash rendezvousHash;
   protected final ClientNodeWatcher clientNodeWatcher;
@@ -89,6 +89,7 @@ abstract public class BaseChicagoClient {
     } else {
       evg = new NioEventLoopGroup(5);
     }
+    startAndWaitForNodes(quorum);
   }
 
   public void start() {

@@ -42,7 +42,6 @@ public class ChicagoTSClientTest {
 		}
 		chicagoTSClient = new ChicagoClient(testingServer.getConnectString(),
 				3);
-		chicagoTSClient.startAndWaitForNodes(4);
 	}
 
 	@After
@@ -64,7 +63,6 @@ public class ChicagoTSClientTest {
 		}
 		final ChicagoClient chicagoTSClientParalellel = new ChicagoClient(
 				testingServer.getConnectString(), 3);
-		chicagoTSClientParalellel.startAndWaitForNodes(4);
 		final ArrayList<String> response = new ArrayList<String>();
 		Runnable runnableStreamer = new Runnable() {
 			@Override
@@ -152,7 +150,6 @@ public class ChicagoTSClientTest {
 		}
 		final ChicagoClient chicagoTSClientParalellel = new ChicagoClient(
 				testingServer.getConnectString(), 3);
-		chicagoTSClientParalellel.startAndWaitForNodes(4);
 		final ArrayList<String> response = new ArrayList<String>();
 		Runnable runnableStreamer = new Runnable() {
 			@Override

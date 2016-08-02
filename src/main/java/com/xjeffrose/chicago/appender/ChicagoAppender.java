@@ -92,7 +92,6 @@ public class ChicagoAppender extends AppenderSkeleton{
         for (int i = 0; i < pool; i++) {
           LogLog.debug("Attempting connection");
           ChicagoClient cs = new ChicagoClient(chicagoZk, 3);
-          cs.startAndWaitForNodes(3, 2000);
           clientQueue.add(cs);
           LogLog.debug("Chicago connected to " + chicagoZk);
           self = this;

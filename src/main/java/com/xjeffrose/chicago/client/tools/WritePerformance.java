@@ -22,7 +22,7 @@ import javax.annotation.Nullable;
  * Created by root on 6/23/16.
  */
 public class WritePerformance{
-  private final static String key = "ppfe-test";
+  private final static String key = "ppfe-test-cc";
   ChicagoClient cts;
   //private final CountDownLatch latch;
   private static AtomicInteger success = new AtomicInteger(0);
@@ -44,7 +44,6 @@ public class WritePerformance{
     final int clients = Integer.parseInt(args[2]);
     int throughput = Integer.parseInt(args[3]);
     final String connectionString = args[4];
-    ExecutorService executor = Executors.newFixedThreadPool(workerSize);
     CountDownLatch latch = new CountDownLatch(loop);
     ChicagoClient[] ctsa = new ChicagoClient[clients];
     keys = new Long[loop];
@@ -53,20 +52,20 @@ public class WritePerformance{
         //Jeff servers = 10.22.100.183:2181,10.25.180.234:2181,10.22.103.86:2181,10.25.180.247:2181,10.25.69.226:2181
         //smadan server = 10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181
         ctsa[i] = new ChicagoClient(connectionString,3);
-        ctsa[i].startAndWaitForNodes(3);
+        //ctsa[i].startAndWaitForNodes(3);
       }else {
         ctsa[i] = new ChicagoClient(connectionString);
       }
     }
-    Thread.sleep(500);
+    //Thread.sleep(500);
     long sleepTime = NS_PER_SEC / throughput;
     long sleepDeficitNs = 0;
-    Stats stats = new Stats(loop,5000);
+    Stats stats = new Stats(loop,5000, latch);
     System.out.println("########       Statring writes        #########");
     long startTime = System.currentTimeMillis();
     for (int i = 0; i < loop; i++) {
       long sendStart = System.currentTimeMillis();
-      String v = "val" +i + "TTE";
+      String v = "val" +i + "TTE-cc";
       Callback cb = stats.nextCompletion(sendStart, v.getBytes().length, stats);
       ListenableFuture<List<byte[]>> future = ctsa[i%clients].tsWrite(key.getBytes(),v.getBytes());
       Futures.addCallback(future,cb);
@@ -81,37 +80,14 @@ public class WritePerformance{
       }
     }
 
-    //latch.await();
+    latch.await();
     stats.printTotal();
-    System.out.println("Total time taken for "+loop+ " writes ="+ (System.currentTimeMillis() - startTime) + "ms");
+    Long totalTime = (System.currentTimeMillis() - startTime);
+    System.out.println("Total time taken for "+loop+ " writes ="+ totalTime + "ms" +  " average ="+ (totalTime/(float)loop)+"ms");
     System.out.println("Total success :"+ success.get() + " Failures :"+ failure.get() + "Timeouts :"+ timeouts.get());
     System.out.println("########       Writes completed       #########");
     System.out.println();
     System.out.println();
-
-    //System.out.println("########       Verifying the writes        #########");
-    //System.out.println("Randomly reading 5 values");
-    //Random ran = new Random();
-    //for(int i =0;i<5;i++){
-    //
-    //  long curkey = keys[ran.nextInt(loop)];
-    //    try{
-    //      String returnVal = new String(ctsa[(int)curkey%clients].read(key.getBytes(), Longs.toByteArray(curkey)).get());
-    //      //System.out.println(curkey +" :"+returnVal);
-    //      if(returnVal.startsWith("val")){
-    //        readSuccess.getAndIncrement();
-    //      }else{
-    //        readFailure.getAndIncrement();
-    //      }
-    //    }catch(Exception e){
-    //      e.printStackTrace();
-    //      readFailure.getAndIncrement();
-    //    }finally {
-    //    }
-    //}
-    //System.out.println("Total read success :"+ readSuccess.get() + " Failures :"+ readFailure.get());
-    executor.shutdownNow();
-
     System.exit(0);
   }
 
@@ -131,8 +107,9 @@ public class WritePerformance{
     private long windowTotalLatency;
     private long windowBytes;
     private long reportingInterval;
+    private final CountDownLatch latch;
 
-    public Stats(long numRecords, int reportingInterval) {
+    public Stats(long numRecords, int reportingInterval, CountDownLatch latch) {
       this.start = System.currentTimeMillis();
       this.windowStart = System.currentTimeMillis();
       this.index = 0;
@@ -148,6 +125,7 @@ public class WritePerformance{
       this.windowBytes = 0;
       this.totalLatency = 0;
       this.reportingInterval = reportingInterval;
+      this.latch = latch;
     }
 
     public void record(int iter, int latency, int bytes, long time) {
@@ -164,19 +142,19 @@ public class WritePerformance{
         this.index++;
       }
             /* maybe report the recent perf */
-      if (time - windowStart >= reportingInterval) {
+      if (time - windowStart >= reportingInterval && Thread.currentThread().getName().contains("10")) {
         printWindow();
         newWindow();
       }
     }
 
     public Callback nextCompletion(long start, int bytes, Stats stats) {
-      Callback cb = new Callback(this.iteration, start, bytes, stats);
+      Callback cb = new Callback(this.iteration, start, bytes, stats, latch);
       this.iteration++;
       return cb;
     }
 
-    public void printWindow() {
+    public synchronized void printWindow() {
       long ellapsed = System.currentTimeMillis() - windowStart;
       double recsPerSec = 1000.0 * windowCount / (double) ellapsed;
       double mbPerSec = 1000.0 * this.windowBytes / (double) ellapsed / (1024.0 * 1024.0);
@@ -230,66 +208,27 @@ public class WritePerformance{
     private final Stats stats;
     private final int iteration;
     private final int nbytes;
+    private final CountDownLatch latch;
 
-    public Callback(int iter, long start,int bytes, Stats stats) {
+    public Callback(int iter, long start,int bytes, Stats stats, CountDownLatch latch) {
       this.start = start;
       this.stats = stats;
       this.iteration = iter;
       this.nbytes = bytes;
+      this.latch = latch;
     }
 
     @Override public void onSuccess(@Nullable List<byte[]> bytes) {
       long now = System.currentTimeMillis();
       int latency = (int) (now - start);
       this.stats.record(iteration, latency, nbytes, now);
+      latch.countDown();
     }
 
     @Override public void onFailure(Throwable throwable) {
       System.out.println("Failed...");
+      latch.countDown();
     }
   }
-
-  //@Override
-  //public void run(){
-  //  try{
-  //    String v = "val" +valCount + "TTE";
-  //    byte[] val = v.getBytes();
-  //    System.arraycopy(v.getBytes(),0,val,0,v.getBytes().length);
-  //    ListenableFuture<List<byte[]>> future = cts.tsWrite(key.getBytes(),val);
-  //    Futures.addCallback(future, new FutureCallback<List<byte[]>>() {
-  //      @Override
-  //      public void onSuccess(@Nullable List<byte[]> bytes) {
-  //        if(!bytes.isEmpty()) {
-  //          long o = Longs.fromByteArray(bytes.get(0));
-  //          //System.out.println(o);
-  //        }else{
-  //          System.out.println("Failed "+ v);
-  //        }
-  //        success.getAndIncrement();
-  //        latch.countDown();
-  //      }
-  //
-  //      @Override
-  //      public void onFailure(Throwable throwable) {
-  //        // TODO(JR): Maybe Try again?
-  //        //throwable.printStackTrace();
-  //        failure.getAndIncrement();
-  //        latch.countDown();
-  //      }
-  //    });
-  //  } catch (ChicagoClientTimeoutException e){
-  //    System.out.println(e.getMessage());
-  //    latch.countDown();
-  //    failure.getAndIncrement();
-  //    e.printStackTrace();
-  //  } catch (ChicagoClientException e) {
-  //    System.out.println(e.getMessage());
-  //    failure.getAndIncrement();
-  //    latch.countDown();
-  //    e.printStackTrace();
-  //  } finally {
-  //
-  //  }
-  //}
 
 }

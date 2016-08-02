@@ -21,15 +21,15 @@ public class ChicagoStreamExample {
 
   public static void main(String[] args) throws Exception{
     ChicagoStreamExample cs = new ChicagoStreamExample();
-    //cs.chicagoClient = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181",3);
-    cs.chicagoClient = new ChicagoClient("10.22.100.183:2181,10.25.180.234:2181,10.22.103.86:2181,10.25.180.247:2181,10.25.69.226:2181",3);
+    cs.chicagoClient = new ChicagoClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181",3);
+    //cs.chicagoClient = new ChicagoClient("ppfe-msmaster-stage2cs2678.qa.paypal.com",3);
 
 
 
-    cs.chicagoClient.startAndWaitForNodes(4);
+    //cs.chicagoClient.startAndWaitForNodes(4);
     //cs.writeSomeData();
-    cs.transactStream();
-    //cs.transactStreamWithBuf();
+    //cs.transactStream();
+    cs.transactStreamWithBuf();
     System.exit(0);
   }
 
@@ -90,28 +90,31 @@ public class ChicagoStreamExample {
     }
   }
 
-  //public void transactStreamWithBuf() throws Exception {
-  //  ByteBuf buffer = chicagoClient.bufStream(key,0l);
-  //  int readableBytes = buffer.readableBytes();
-  //  int i =0;
-  //  while(true) {
-  //    if (readableBytes > 0) {
-  //      byte[] data = new byte[buffer.readableBytes()];
-  //      try {
-  //        buffer.readBytes(data);
-  //        String stringData = new String(data);
-  //        String[] lines = (stringData).split("\0");
-  //        for (String line : lines) {
-  //          line.replace('\n',' ');
-  //          System.out.println(++i + line);
-  //        }
-  //      }catch (Exception e){
-  //        e.printStackTrace();
-  //      }
-  //    } else {
-  //      Thread.sleep(100);
-  //    }
-  //    readableBytes = buffer.readableBytes();
-  //  }
-  //}
+  public void transactStreamWithBuf() throws Exception {
+    ByteBuf buffer = chicagoClient.aggregatedStream(key.getBytes(),Longs.toByteArray(9999));
+    int readableBytes = buffer.readableBytes();
+    int i =0;
+    while(true) {
+      if (readableBytes > 0) {
+        byte[] data = new byte[buffer.readableBytes()];
+        try {
+          buffer.readBytes(data);
+          String stringData = new String(data);
+          String[] lines = (stringData).split("\0");
+          for (String line : lines) {
+            line.replace('\n',' ');
+            System.out.println(++i + line);
+            if(i>400000){
+              break;
+            }
+          }
+        }catch (Exception e){
+          e.printStackTrace();
+        }
+      } else {
+        Thread.sleep(100);
+      }
+      readableBytes = buffer.readableBytes();
+    }
+  }
 }

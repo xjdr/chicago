@@ -1,5 +1,6 @@
 package com.xjeffrose.chicago.client;
 
+import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -13,8 +14,10 @@ import io.netty.channel.ChannelFuture;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,47 +56,73 @@ public class ChicagoClient extends BaseChicagoClient {
   public ChicagoClient(String address) throws InterruptedException {
     super(address);
   }
-
-  public ByteBuf aggregatedStream(byte[] offset) {
+  
+  public ByteBuf aggregatedStream(byte[] key, byte[] offset){
     ByteBuf responseStream = Unpooled.directBuffer();
+    aggregatedStream(key,offset,responseStream);
+    return  responseStream;
+  }
 
-    zkClient.getChildren(REPLICATION_LOCK_PATH).stream().parallel().forEach(xs -> {
-      if (offset == null) {
-        try {
-          Futures.addCallback(stream(xs.getBytes()), new FutureCallback<List<byte[]>>() {
-            @Override
-            public void onSuccess(@Nullable List<byte[]> bytes) {
-              responseStream.writeBytes(bytes.get(0));
+
+  public void aggregatedStream(byte[] key, byte[] offset, ByteBuf responseStream) {
+    //System.out.println("New Stream called with key = "+ new String(key) +" and Offset ="+ Longs.fromByteArray(offset));
+    zkClient.getChildren(REPLICATION_LOCK_PATH).stream()
+      .filter(xs -> xs.startsWith(new String(key)))
+      .collect(Collectors.toList())
+      .stream()
+      .parallel()
+      .forEach(xs -> {
+          try {
+            FutureCallback<List<byte[]>> cb = new FutureCallback<List<byte[]>>() {
+              @Override
+              public void onSuccess(@Nullable List<byte[]> bytes) {
+                byte[] resultArray = bytes.get(0);
+                Long newOffset = Longs.fromByteArray(offset);
+                if (resultArray != null) {
+                  newOffset = ChiUtil.findOffset(resultArray);
+                  if (newOffset != -1) {
+                    responseStream.writeBytes(
+                      new String(resultArray).split(ChiUtil.delimiter)[0].getBytes());
+                  }
+
+                  if (new String(resultArray).split(ChiUtil.delimiter)[0].contains("\0")) {
+                    newOffset++;
+                  }
+
+                  Long lastOffset = lastOffsetMap.get(xs);
+                  if (lastOffset != null && lastOffset.equals(newOffset)) {
+                    //try {
+                    //  //Thread.sleep(500);
+                    //} catch (InterruptedException e) {
+                    //  e.printStackTrace();
+                    //}
+                  } else {
+                    lastOffsetMap.put(xs, newOffset);
+                  }
+                }
+
+                try {
+                  Futures.addCallback(stream(xs.getBytes(),Longs.toByteArray(newOffset)),this);
+                } catch (ChicagoClientTimeoutException e) {
+                  e.printStackTrace();
+                }
+              }
+
+              @Override
+              public void onFailure(Throwable throwable) {
+
+              }
+            };
+
+            if (offset != null) {
+              Futures.addCallback(stream(xs.getBytes(), offset), cb);
+            } else {
+              Futures.addCallback(stream(xs.getBytes()), cb);
             }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-
-            }
-          });
-        } catch (ChicagoClientTimeoutException e) {
-          e.printStackTrace();
-        }
-      } else {
-        try {
-          Futures.addCallback(stream(xs.getBytes(), offset), new FutureCallback<List<byte[]>>() {
-            @Override
-            public void onSuccess(@Nullable List<byte[]> bytes) {
-              responseStream.writeBytes(bytes.get(0));
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-
-            }
-          });
-        } catch (ChicagoClientTimeoutException e) {
-          e.printStackTrace();
-        }
-      }
+          } catch (ChicagoClientTimeoutException e) {
+            e.printStackTrace();
+          }
     });
-
-    return responseStream;
   }
 
   public ListenableFuture<List<byte[]>> stream(byte[] key) throws ChicagoClientTimeoutException {
@@ -110,7 +139,7 @@ public class ChicagoClient extends BaseChicagoClient {
       if (cf.channel().isWritable()) {
         UUID id = UUID.randomUUID();
         SettableFuture<byte[]> f = SettableFuture.create();
-        Futures.withTimeout(f, TIMEOUT, TimeUnit.MILLISECONDS, evg);
+        //Futures.withTimeout(f, TIMEOUT, TimeUnit.MILLISECONDS, evg);
         Futures.addCallback(f, new FutureCallback<byte[]>() {
           @Override
           public void onSuccess(@Nullable byte[] bytes) {
@@ -123,7 +152,7 @@ public class ChicagoClient extends BaseChicagoClient {
           public void onFailure(Throwable throwable) {
 
           }
-        });
+        },evg);
         futureMap.put(id, f);
         relevantFutures.add(f);
         cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.STREAM, key, null, offset));
