@@ -10,8 +10,10 @@ import com.xjeffrose.chicago.Op;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
+import io.netty.util.internal.PlatformDependent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
@@ -21,6 +23,8 @@ import org.slf4j.LoggerFactory;
 
 public class ChicagoClient extends BaseChicagoClient {
   private static final Logger log = LoggerFactory.getLogger(ChicagoClient.class);
+
+  private final Map<String, ByteBuf> streamBuffer = PlatformDependent.newConcurrentHashMap();
 
   public ChicagoClient(String zkConnectionString, int quorum) throws InterruptedException {
     super(zkConnectionString, quorum);
@@ -283,19 +287,36 @@ public class ChicagoClient extends BaseChicagoClient {
     return Futures.successfulAsList(relevantFutures);
   }
 
+
   public ListenableFuture<List<byte[]>> tsWrite(byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException {
-    return _tsWrite(null, key, value, 0);
+    if (!streamBuffer.containsKey(new String(key))) {
+      streamBuffer.put(new String(key), Unpooled.buffer());
+    }
+
+    ByteBuf bb = streamBuffer.get(new String(key));
+    bb.writeBytes(value);
+    bb.writeBytes("@@@".getBytes());
+
+    if (bb.readableBytes() > 10000) {
+      return _tsWrite(key, bb.array());
+    } else {
+      return SettableFuture.create();
+    }
   }
 
-  public ListenableFuture<List<byte[]>> tsWrite(byte[] colFam, byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException {
-    return _tsWrite(colFam, key, value, 0);
+  private ListenableFuture<List<byte[]>> _tsWrite(byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException {
+    return __tsWrite(null, key, value, 0);
   }
 
-  private ListenableFuture<List<byte[]>> _tsWrite(byte[] colFam, byte[] key, byte[] value, int _retries) throws ChicagoClientTimeoutException, ChicagoClientException {
+  private ListenableFuture<List<byte[]>> _tsWrite(byte[] colFam, byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException {
+    return __tsWrite(colFam, key, value, 0);
+  }
+
+  private ListenableFuture<List<byte[]>> __tsWrite(byte[] colFam, byte[] key, byte[] value, int _retries) throws ChicagoClientTimeoutException, ChicagoClientException {
     final int retries = _retries;
     List<ListenableFuture<byte[]>> relevantFutures = new ArrayList<>();
-
     final long startTime = System.currentTimeMillis();
+
     List<String> hashList;
     if (colFam == null) {
       hashList = getEffectiveNodes(key);
@@ -309,7 +330,6 @@ public class ChicagoClient extends BaseChicagoClient {
         if (cf.channel().isWritable()) {
           UUID id = UUID.randomUUID();
           SettableFuture<byte[]> f = SettableFuture.create();
-          Futures.withTimeout(f, TIMEOUT, TimeUnit.MILLISECONDS, evg);
           Futures.addCallback(f, new FutureCallback<byte[]>() {
             @Override
             public void onSuccess(@Nullable byte[] bytes) {
