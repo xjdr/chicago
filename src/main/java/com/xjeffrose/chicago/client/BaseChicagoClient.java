@@ -84,6 +84,7 @@ abstract public class BaseChicagoClient {
     this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
     clientNodeWatcher = new ClientNodeWatcher(zkClient, rendezvousHash, listener);
     this.connectionPoolMgr = new ConnectionPoolManager(zkClient, futureMap);
+    clientNodeWatcher.registerConnectionPoolManager(connectionPoolMgr);
     if (Epoll.isAvailable()) {
       evg = new EpollEventLoopGroup(5);
     } else {
@@ -97,7 +98,6 @@ abstract public class BaseChicagoClient {
         zkClient.start();
         connectionPoolMgr.start();
         clientNodeWatcher.start();
-        clientNodeWatcher.registerConnectionPoolManager(connectionPoolMgr);
       }
     } catch (Exception e) {
       e.printStackTrace();
