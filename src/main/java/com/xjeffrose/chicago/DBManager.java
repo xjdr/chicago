@@ -29,6 +29,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DBManager {
+  static {
+    RocksDB.loadLibrary();
+  }
+
   private static final Logger log = LoggerFactory.getLogger(DBManager.class);
 
   private final Options options = new Options();
@@ -46,22 +50,22 @@ public class DBManager {
   public DBManager(ChiConfig config, ZkClient zkClient) {
     this.config = config;
     this.zkClient = zkClient;
-    RocksDB.loadLibrary();
+    //    RocksDB.loadLibrary();
     configOptions();
     configReadOptions();
     configWriteOptions();
 
     try {
-      File f = new File(config.getDBPath());
+      File f = new File(config.getDbPath());
       if (f.exists() && !config.isGraceFullStart()) {
         removeDB(f);
       } else if (!f.exists()) {
         f.mkdir();
       }
-      this.db = RocksDB.open(options, config.getDBPath());
+      this.db = RocksDB.open(options, config.getDbPath());
     } catch (RocksDBException e) {
-      log.error("Could not load DB: " + config.getDBPath() + " " + e.getMessage());
-      System.exit(-1);
+      log.error("Could not load DB: " + config.getDbPath() + " " + e.getMessage());
+      throw new RuntimeException(e);
     }
     //createColumnFamily(ChiUtil.defaultColFam.getBytes());
   }
@@ -236,16 +240,17 @@ public class DBManager {
   }
 
   List<byte[]> getKeys(ReadOptions readOptions) {
-    RocksIterator i = db.newIterator(readOptions);
-    List<byte[]> keySet = new ArrayList();
-    i.seekToFirst();
+    try(RocksIterator i = db.newIterator(readOptions)) {
+      List<byte[]> keySet = new ArrayList();
+      i.seekToFirst();
 
-    while (i.isValid()) {
-      keySet.add(i.key());
-      i.next();
+      while (i.isValid()) {
+        keySet.add(i.key());
+        i.next();
+      }
+
+      return keySet;
     }
-
-    return keySet;
   }
 
   public void destroy() {
@@ -314,33 +319,34 @@ public class DBManager {
 
     log.info("Requesting stream");
     if (colFamilyExists(colFam)) {
-      RocksIterator i = db.newIterator(columnFamilies.get(new String(colFam)), readOptions);
-      ByteBuf bb = Unpooled.buffer();
-      byte[] lastOffset=null;
+      try (RocksIterator i = db.newIterator(columnFamilies.get(new String(colFam)), readOptions)) {
+        ByteBuf bb = Unpooled.buffer();
+        byte[] lastOffset=null;
 
-      if (offset.length == 0) {
-        i.seekToLast();
-      } else {
-        lastOffset = offset;
-        i.seek(offset);
+        if (offset.length == 0) {
+          i.seekToLast();
+        } else {
+          lastOffset = offset;
+          i.seek(offset);
+        }
+        int count = 0;
+
+        while (i.isValid() && count<MAX_ENTRIES) {
+          byte[] v = i.value();
+          byte[] _v = new byte[v.length + 1];
+          System.arraycopy(v, 0, _v, 0, v.length);
+          System.arraycopy(new byte[]{'\0'}, 0, _v, v.length, 1);
+          bb.writeBytes(_v);
+          lastOffset=i.key();
+          i.next();
+          count++;
+        }
+
+        bb.writeBytes(ChiUtil.delimiter.getBytes());
+        bb.writeBytes(lastOffset);
+        log.info("Stream response from DB : "+ (System.currentTimeMillis() - startTime)+ "ms with last offset as "+Longs.fromByteArray(lastOffset));
+        return bb.array();
       }
-      int count = 0;
-
-      while (i.isValid() && count<MAX_ENTRIES) {
-        byte[] v = i.value();
-        byte[] _v = new byte[v.length + 1];
-        System.arraycopy(v, 0, _v, 0, v.length);
-        System.arraycopy(new byte[]{'\0'}, 0, _v, v.length, 1);
-        bb.writeBytes(_v);
-        lastOffset=i.key();
-        i.next();
-        count++;
-      }
-
-      bb.writeBytes(ChiUtil.delimiter.getBytes());
-      bb.writeBytes(lastOffset);
-      log.info("Stream response from DB : "+ (System.currentTimeMillis() - startTime)+ "ms with last offset as "+Longs.fromByteArray(lastOffset));
-      return bb.array();
     } else {
       return null;
     }
@@ -351,18 +357,19 @@ public class DBManager {
   }
 
   public List<byte[]> getKeys(byte[] colFam, byte[] offset){
-    RocksIterator i = db.newIterator(columnFamilies.get(new String(colFam)), readOptions);
-    List<byte[]> keySet = new ArrayList();
-    if (offset.length == 0) {
-      i.seekToFirst();
-    } else {
-      i.seek(offset);
-    }
+    try (RocksIterator i = db.newIterator(columnFamilies.get(new String(colFam)), readOptions)) {
+      List<byte[]> keySet = new ArrayList();
+      if (offset.length == 0) {
+        i.seekToFirst();
+      } else {
+        i.seek(offset);
+      }
 
-    while (i.isValid()) {
-      keySet.add(i.key());
-      i.next();
+      while (i.isValid()) {
+        keySet.add(i.key());
+        i.next();
+      }
+      return keySet;
     }
-    return keySet;
   }
 }
