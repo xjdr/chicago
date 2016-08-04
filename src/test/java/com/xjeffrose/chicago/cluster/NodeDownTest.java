@@ -44,7 +44,14 @@ public class NodeDownTest {
     testingServer = new TestingServer(spec,true);
     servers = TestChicago.makeNamedServers(TestChicago.chicago_dir(tmp), 4, testingServer.getConnectString());
     for (String server : servers.keySet()) {
-      servers.get(server).start();
+      ChicagoServer s = servers.get(server);
+      log.debug("server: " + server + " : " + s);
+      try {
+        s.start();
+      } catch (Exception e) {
+        e.printStackTrace();
+        throw e;
+      }
     }
 
     chicagoClient = new ChicagoClient(testingServer.getConnectString(), 3);

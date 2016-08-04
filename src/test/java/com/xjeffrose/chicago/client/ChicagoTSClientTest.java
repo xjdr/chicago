@@ -24,6 +24,7 @@ import org.junit.rules.TemporaryFolder;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.xjeffrose.chicago.server.ChicagoServer;
 
+@Slf4j
 public class ChicagoTSClientTest {
   TestingServer testingServer;
   @Rule
@@ -33,7 +34,7 @@ public class ChicagoTSClientTest {
 
   @Before
   public void setup() throws Exception {
-    InstanceSpec spec = new InstanceSpec(null, 2182, -1, -1, true, -1,
+    InstanceSpec spec = new InstanceSpec(null, -1, -1, -1, true, -1,
         2000, -1);
     testingServer = new TestingServer(spec, true);
     servers = TestChicago.makeServers(TestChicago.chicago_dir(tmp), 4,
@@ -123,7 +124,7 @@ public class ChicagoTSClientTest {
     t1.join();
     t2.join();
     Assert.assertEquals(response.size(), 3);
-    System.out.println(response.get(0) + " /// " + response.get(1)
+    log.debug(response.get(0) + " /// " + response.get(1)
         + response.get(2));
     Assert.assertEquals(response.get(0).contains("val11"), false);// Ensures
                                     // that
@@ -216,7 +217,7 @@ public class ChicagoTSClientTest {
     t1.join();
     t2.join();
     Assert.assertEquals(response.size(), 3);
-    System.out.println(response.get(0) + " " + response.get(1)
+    log.debug(response.get(0) + " " + response.get(1)
         + response.get(2));
     Assert.assertEquals(response.get(0).contains("val11"), false);// Ensures
                                     // that
@@ -254,7 +255,7 @@ public class ChicagoTSClientTest {
       }
     }
     long testTime=(System.currentTimeMillis()-startTime)/1000;
-    System.out.println("Tiem taken for one round robin read/write on avergae is: "+testTime );
+    log.debug("Time taken for one round robin read/write on average is: "+testTime );
     Assert.assertTrue(testTime <10);
   }
 
@@ -293,7 +294,7 @@ public class ChicagoTSClientTest {
       }
 
       String output = result.split(ChiUtil.delimiter)[0];
-      System.out.println(output);
+      log.debug(output);
 
       if(!output.isEmpty()){
         offset = offset +1;
@@ -310,7 +311,7 @@ public class ChicagoTSClientTest {
       "tskey".getBytes(), Longs.toByteArray(offset)).get().get(0);
 
     assertNotNull(_resp);
-    System.out.println(new String(_resp));
+    log.debug(new String(_resp));
   }
 
   @Test
@@ -326,10 +327,10 @@ public class ChicagoTSClientTest {
 
     byte[] resp = chicagoTSClient.stream("LargeTskey".getBytes()).get().get(0);
 
-    System.out.println(new String(resp));
+    log.debug(new String(resp));
     byte[] _resp = chicagoTSClient.stream(
       "tskey".getBytes(), offset).get().get(0);
 
-    System.out.println(new String(_resp));
+    log.debug(new String(_resp));
   }
 }
