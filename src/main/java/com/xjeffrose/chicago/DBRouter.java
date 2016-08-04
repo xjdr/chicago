@@ -38,14 +38,13 @@ public class DBRouter implements Closeable {
   private final ChiConfig config;
   private final DBManager dbManager;
   private final DBLog dbLog;
-  private final ChicagoMasterManager masterManager;
+  private ChicagoMasterManager masterManager;
   private Application application;
 
   public DBRouter(ChiConfig config, DBManager dbManager, DBLog dbLog) {
     this.config = config;
     this.dbManager = dbManager;
     this.dbLog = dbLog;
-    this.masterManager = new ChicagoMasterManager(config);
     //config.setDbRouter(this);
   }
   /*
@@ -226,6 +225,8 @@ public class DBRouter implements Closeable {
       .addServer("election", (bs) -> bs.addToPipeline(buildElectionPipeline()))
       .addServer("rpc", (bs) -> bs.addToPipeline(buildRpcPipeline()))
       .build();
+
+    this.masterManager = new ChicagoMasterManager(config, application.instrumentation("election").boundAddress());
 
     /*
     configureAdminServer();

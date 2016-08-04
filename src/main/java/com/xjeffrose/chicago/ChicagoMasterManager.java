@@ -41,10 +41,10 @@ public class ChicagoMasterManager {
 
   private int master = -1;
 
-  ChicagoMasterManager(ChiConfig config) {
+  ChicagoMasterManager(ChiConfig config, InetSocketAddress boundAddress) {
 
     this.config = config;
-    this.whoami = config.getEBindIP();
+    this.whoami = boundAddress.getHostString();
 
     this.q = config.getQuorum();
     this.witnessList = config.getWitnessList();
