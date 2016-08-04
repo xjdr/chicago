@@ -1,5 +1,6 @@
 package com.xjeffrose.chicago.client;
 
+import lombok.extern.slf4j.Slf4j;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 

@@ -21,31 +21,33 @@ public class NodeWatcher {
   private static final Logger log = LoggerFactory.getLogger(NodeWatcher.class);
   private final String NODE_LIST_PATH;
   private final String REPLICATION_LOCK_PATH;
+  private final int quorum;
   private final CountDownLatch latch = new CountDownLatch(1);
   private final GenericListener genericListener = new GenericListener();
   private ChicagoClient chicagoClient;
   private TreeCacheInstance nodeList;
   private ZkClient zkClient;
   private DBManager dbManager;
-  private ChiConfig config;
   private ExecutorService replicationWorker = Executors.newFixedThreadPool(5);
+  private String advertisedEndpoint;
 
-  public NodeWatcher(String nodeListPath, String replicationLockPath) {
+  public NodeWatcher(String nodeListPath, String replicationLockPath, int quorum) {
     NODE_LIST_PATH = nodeListPath;
     REPLICATION_LOCK_PATH = replicationLockPath;
+    this.quorum = quorum;
   }
 
   /**
    * TODO: Refactor this into a constructor and a start method
    */
-  public void refresh(ZkClient zkClient, DBManager dbManager, ChiConfig config) {
+  public void refresh(ZkClient zkClient, DBManager dbManager, String advertisedEndpoint) {
     nodeList = new TreeCacheInstance(zkClient, NODE_LIST_PATH);
     this.zkClient = zkClient;
     this.dbManager = dbManager;
-    this.config = config;
+    this.advertisedEndpoint = advertisedEndpoint;
     nodeList.getCache().getListenable().addListener(genericListener);
     try {
-      this.chicagoClient = new ChicagoClient(zkClient.getConnectionString(), config.getQuorum());
+      this.chicagoClient = new ChicagoClient(zkClient.getConnectionString(), quorum);
       chicagoClient.start();
       nodeList.start();
     } catch (Exception e) {
@@ -72,8 +74,8 @@ public class NodeWatcher {
   private void redistributeKeys(String node, TreeCacheEvent.Type type) {
       log.info("Starting replication...");
       long startTime = System.currentTimeMillis();
-      RendezvousHash rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), zkClient.list(NODE_LIST_PATH), config.getQuorum());
-      RendezvousHash rendezvousHashnOld = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), zkClient.list(NODE_LIST_PATH), config.getQuorum());
+      RendezvousHash rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), zkClient.list(NODE_LIST_PATH), quorum);
+      RendezvousHash rendezvousHashnOld = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), zkClient.list(NODE_LIST_PATH), quorum);
       switch(type){
         case NODE_ADDED: rendezvousHashnOld.remove(node);
                          break;
@@ -92,17 +94,17 @@ public class NodeWatcher {
 
         if(type == TreeCacheEvent.Type.NODE_REMOVED){
           bounceLockPath = REPLICATION_LOCK_PATH + "/" + cf + "/" + node;
-          zkClient.createLockPath(bounceLockPath,config.getDBBindEndpoint(), "BOUNCE_LOCK");
+          zkClient.createLockPath(bounceLockPath, advertisedEndpoint, "BOUNCE_LOCK");
           bounceLock=true;
         }
 
         //For all the nodes that have been newly added to the hash.
         newS.forEach(s -> {
-            if(!s.equals(config.getDBBindEndpoint())) {
+            if(!s.equals(advertisedEndpoint)) {
               log.info("Replicatng colFam " + cf + " to " + s);
               String lockPath = REPLICATION_LOCK_PATH + "/" + cf + "/" + s;
               try {
-                zkClient.createLockPath(lockPath , config.getDBBindEndpoint(), "REPLICATION_LOCK");
+                zkClient.createLockPath(lockPath, advertisedEndpoint, "REPLICATION_LOCK");
                 ChicagoClient c = new ChicagoClient((String) s);
                 byte[] offset = new byte[]{};
                 List<byte[]> keys = dbManager.getKeys(cf.getBytes(), offset);
@@ -125,14 +127,14 @@ public class NodeWatcher {
               } catch (InterruptedException e) {
                 e.printStackTrace();
               } finally {
-                zkClient.deleteLockPath(lockPath, config.getDBBindEndpoint());
+                zkClient.deleteLockPath(lockPath, advertisedEndpoint);
               }
             }
           });
 
           //Remove the bounce lock.
           if(bounceLock){
-            zkClient.deleteLockPath(bounceLockPath, config.getDBBindEndpoint());
+            zkClient.deleteLockPath(bounceLockPath, advertisedEndpoint);
           }
         });
       log.info("Replication ended in " + (System.currentTimeMillis() - startTime) + "ms");

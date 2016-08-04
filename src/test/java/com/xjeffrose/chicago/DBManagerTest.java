@@ -3,6 +3,7 @@ package com.xjeffrose.chicago;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.Before;
 import org.junit.Rule;
@@ -10,6 +11,7 @@ import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.*;
 
+@Slf4j
 public class DBManagerTest {
   @Rule
   public TemporaryFolder tmp = new TemporaryFolder();
@@ -27,7 +29,7 @@ public class DBManagerTest {
     Date date = new Date();
     String time = dateFormat.format(date);
     String key = new String(colFam).concat("-").concat(time);
-    System.out.print(key);
+    log.debug(key);
   }
 
   @Test

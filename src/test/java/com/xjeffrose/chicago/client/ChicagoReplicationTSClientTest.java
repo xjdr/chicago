@@ -5,6 +5,7 @@ import com.xjeffrose.chicago.TestChicago;
 import com.xjeffrose.chicago.ZkClient;
 import com.xjeffrose.chicago.server.ChicagoServer;
 import com.google.common.util.concurrent.ListenableFuture;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.curator.test.TestingServer;
 

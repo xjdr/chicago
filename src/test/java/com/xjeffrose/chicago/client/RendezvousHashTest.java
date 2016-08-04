@@ -6,10 +6,12 @@ import com.google.common.hash.Funnels;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+@Slf4j
 public class RendezvousHashTest {
   private static final Funnel<CharSequence> strFunnel = Funnels.stringFunnel(Charset.defaultCharset());
 
@@ -162,11 +164,14 @@ public class RendezvousHashTest {
   }
 
   public void printHash(RendezvousHash r, String key){
-    System.out.println("Hash value :");
+    StringBuilder builder = new StringBuilder();
+
     r.get(key.getBytes()).forEach(x -> {
-      System.out.print(x + " ");
+      builder.append(x);
+      builder.append(" ");
     });
-    System.out.println();
+    log.debug("Hash value :");
+    log.debug(builder.toString());
   }
 
 }

@@ -1,5 +1,6 @@
 package com.xjeffrose.chicago;
 
+import com.typesafe.config.Config;
 import com.xjeffrose.chicago.server.ChicagoServer;
 import java.io.File;
 import java.util.List;
@@ -19,36 +20,20 @@ public class TestChicago {
     File db_filename = new File(tmp_dir, "test" + server_num + ".db");
 
     Map<String, Object> mapping = new HashMap<>();
-    mapping.put("zk_hosts", zk_hosts);
-    mapping.put("db_path", db_filename.getPath());
-    mapping.put("workers", 20);
-    mapping.put("quorum", 3);
-    mapping.put("boss_count", 4);
-    mapping.put("admin_bind_ip", "127.0.0.1");
+    mapping.put("settings.zookeeperCluster", zk_hosts);
+    mapping.put("settings.dbPath", db_filename.getPath());
     if(ports){
-      mapping.put("admin_port", 9000+server_num);
-      mapping.put("stats_port", 8000+server_num);
-      mapping.put("db_port", 12000+server_num);
-      mapping.put("e_port", 12001+server_num);
-      mapping.put("rpc_port", 12002+server_num);
-    }else{
-      mapping.put("admin_port",0);
-      mapping.put("stats_port",0);
-      mapping.put("db_port", 0);
-      mapping.put("e_port",0);
-      mapping.put("rpc_port", 0);
+      mapping.put("settings.admin.bindPort", 9000+server_num);
+      mapping.put("settings.stats.bindPort", 8000+server_num);
+      mapping.put("settings.db.bindPort", 12000+server_num);
+      mapping.put("settings.election.bindPort", 12001+server_num);
+      mapping.put("settings.rpc.bindPort", 12002+server_num);
     }
-    mapping.put("stats_bind_ip", "127.0.0.1");
-    mapping.put("db_bind_ip", "127.0.0.1");
-    mapping.put("e_bind_ip", "127.0.0.1");
-    mapping.put("rpc_bind_ip", "127.0.0.1");
-    mapping.put("X509_CERT", "certs/cert.pem");
-    mapping.put("PRIVATE_KEY", "certs/privateKey.pem");
-    mapping.put("compaction_size", 60);
-    mapping.put("database_mode", false);
     mapping.put("witness_list", "127.0.0.1:120010, 127.0.0.1:120011, 127.0.0.1:120012");
-  
-    return new ChiConfig(ConfigFactory.parseMap(mapping));
+
+    Config defaults = ConfigFactory.load().getConfig("chicago.application");
+    Config overrides = ConfigFactory.parseMap(mapping);
+    return new ChiConfig(overrides.withFallback(defaults));
   }
 
   public static File chicago_dir(TemporaryFolder tmp) {

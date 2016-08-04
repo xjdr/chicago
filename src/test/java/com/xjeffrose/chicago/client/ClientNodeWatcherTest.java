@@ -26,7 +26,7 @@ public class ClientNodeWatcherTest {
 
   @Before
   public void setup() throws Exception {
-    InstanceSpec spec = new InstanceSpec(null, 2182,  -1 , -1, true, -1 , 20 , -1);
+    InstanceSpec spec = new InstanceSpec(null, -1,  -1 , -1, true, -1 , 20 , -1);
     testingServer = new TestingServer(spec,true);
     servers = TestChicago.makeServers(TestChicago.chicago_dir(tmp), 5, testingServer.getConnectString());
     servers.get(0).start();

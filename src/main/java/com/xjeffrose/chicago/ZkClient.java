@@ -92,6 +92,7 @@ public class ZkClient {
   public void stop() throws Exception {
     leaderListener.relinquish();
     if (leaderSelector != null) {
+      // TODO(CK): this is throwing an exception, not sure how to do this properly.
       leaderSelector.close();
     }
     client.close();

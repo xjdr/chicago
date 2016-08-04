@@ -4,6 +4,7 @@ import com.google.common.primitives.Longs;
 import com.xjeffrose.chicago.TestChicago;
 import com.xjeffrose.chicago.ZkClient;
 import com.xjeffrose.chicago.server.ChicagoServer;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.curator.test.InstanceSpec;
 import org.apache.curator.test.TestingServer;
@@ -24,6 +25,7 @@ import static org.junit.Assert.assertTrue;
  * Created by root on 6/21/16.
  */
 
+@Slf4j
 public class ReplicationLockTest {
   TestingServer testingServer;
   @Rule
@@ -33,7 +35,7 @@ public class ReplicationLockTest {
 
   @Before
   public void setup() throws Exception {
-    InstanceSpec spec = new InstanceSpec(null, 2182,  -1 , -1, true, -1 , 3000 , -1);
+    InstanceSpec spec = new InstanceSpec(null, -1,  -1 , -1, true, -1 , 3000 , -1);
     testingServer = new TestingServer(spec,true);
     servers = TestChicago.makeServers(TestChicago.chicago_dir(tmp), 4, testingServer.getConnectString());
     for (ChicagoServer server : servers) {
@@ -57,7 +59,7 @@ public class ReplicationLockTest {
   public void simulateReplication() throws Exception {
     String key = "testKey";
     List<String> servers =  chicagoClient.getNodeList(key.getBytes());
-    System.out.println("Servers for key : " + servers.toString());
+    log.debug("Servers for key : " + servers.toString());
     String val = "testVal";
     long insertedKey  = Longs.fromByteArray(chicagoClient.tsWrite(key.getBytes(),val.getBytes()).get().get(0));
     assertTSClient(key,insertedKey,val,servers);
@@ -69,9 +71,9 @@ public class ReplicationLockTest {
     val = "newVal";
     boolean created  = zk.createIfNotExist(ChicagoServer.NODE_LOCK_PATH+"/"+key+"/"+servers.get(0), "");
     if(!created){
-      System.exit(-1);
+      throw new RuntimeException("Couldn't create lock");
     }
-    System.out.println("Created the replication path.");
+    log.debug("Created the replication path.");
     Thread.sleep(100);
     assertEquals(2,chicagoClient.getEffectiveNodes(key.getBytes()).size());
     insertedKey  = Longs.fromByteArray(chicagoClient.tsWrite(key.getBytes(),val.getBytes()).get().get(0));
@@ -84,19 +86,19 @@ public class ReplicationLockTest {
     //Value should not be present in the node being replicated
     ChicagoClient cc = new ChicagoClient(removedServer);
     try {
-      System.out.println("Trying to get the value from bad node");
+      log.debug("Trying to get the value from bad node");
       String futureval = new String(cc.read(key.getBytes(), Longs.toByteArray(insertedKey)).get().get(0));
       assertTrue(futureval.equals(""));
     }catch(Exception e){
       e.printStackTrace();
-      System.out.println("countdown catch");
+      log.debug("countdown catch");
     }
 
   }
 
   public void assertTSClient(String colFam, long key, String val, List<String> nodes){
     nodes.forEach(n -> {
-      System.out.println("Checking node "+n);
+      log.debug("Checking node "+n);
       try {
         ChicagoClient cc = new ChicagoClient(n);
         assertTrue(val.equals(new String(cc.read(colFam.getBytes(), Longs.toByteArray(key)).get().get(0))));

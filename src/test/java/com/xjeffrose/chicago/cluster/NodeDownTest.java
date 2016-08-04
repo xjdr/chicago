@@ -6,6 +6,7 @@ import com.xjeffrose.chicago.TestChicago;
 import com.xjeffrose.chicago.ZkClient;
 import com.xjeffrose.chicago.client.ChicagoClient;
 import com.xjeffrose.chicago.server.ChicagoServer;
+import lombok.extern.slf4j.Slf4j;
 
 import io.netty.util.internal.StringUtil;
 
@@ -29,6 +30,7 @@ import static org.junit.Assert.assertNotNull;
  * Created by smadan on 6/8/16.
  */
 
+@Slf4j
 public class NodeDownTest {
   TestingServer testingServer;
   @Rule
@@ -38,7 +40,7 @@ public class NodeDownTest {
 
   @Before
   public void setup() throws Exception {
-    InstanceSpec spec = new InstanceSpec(null, 2182,  -1 , -1, true, -1 , 20 , -1);
+    InstanceSpec spec = new InstanceSpec(null, -1,  -1 , -1, true, -1 , 20 , -1);
     testingServer = new TestingServer(spec,true);
     servers = TestChicago.makeNamedServers(TestChicago.chicago_dir(tmp), 4, testingServer.getConnectString());
     for (String server : servers.keySet()) {
@@ -65,7 +67,7 @@ public class NodeDownTest {
     byte[] offset = null;
     String key = "tskey";
 
-    System.out.println("Clients : " + chicagoClient.getNodeList(key.getBytes()).toString());
+    log.debug("Clients : " + chicagoClient.getNodeList(key.getBytes()).toString());
 
     for (int i = 0; i < 30; i++) {
       String _v = "val" + i;
@@ -78,7 +80,7 @@ public class NodeDownTest {
 
     }
 
-    System.out.println("On normal state : ");
+    log.debug("On normal state : ");
     printStrem(key, Longs.toByteArray(0));
 
     //Restart chicago1 intermittently
@@ -108,8 +110,8 @@ public class NodeDownTest {
     //BringDown one server
     ZkClient zk = new ZkClient(testingServer.getConnectString(),false);
     zk.start();
-    System.out.println("Stopping server : "+servers.get(server).config.getDBBindEndpoint());
-    zk.delete("/chicago/node-list/" + servers.get(server).config.getDBBindEndpoint());
+    log.debug("Stopping server : "+servers.get(server).getDBAddress());
+    zk.delete("/chicago/node-list/" + servers.get(server).getDBAddress());
     zk.stop();
   }
 
@@ -117,17 +119,17 @@ public class NodeDownTest {
     //BringDown one server
     ZkClient zk = new ZkClient(testingServer.getConnectString(),false);
     zk.start();
-    System.out.println("Starting server : "+ servers.get(server).config.getDBBindEndpoint());
-    zk.set("/chicago/node-list/"+ servers.get(server).config.getDBBindEndpoint(), "");
+    log.debug("Starting server : "+ servers.get(server).getDBAddress());
+    zk.set("/chicago/node-list/"+ servers.get(server).getDBAddress(), "");
     zk.stop();
   }
 
   public void printStrem(String key, byte[] offset) throws Exception {
-    System.out.println("Clients : " + chicagoClient.getNodeList(key.getBytes()).toString());
+    log.debug("Clients : " + chicagoClient.getNodeList(key.getBytes()).toString());
 
     String result = new String(chicagoClient.stream(key.getBytes(), offset).get().get(0));
     assertEquals(true, !StringUtil.isNullOrEmpty(result));
-    System.out.println(result);
+    log.debug(result);
   }
 
 }
