@@ -4,12 +4,15 @@ machine:
   pre:
     - sudo apt-get update
     - sudo apt-get install openssl libssl-dev
+    - curl -SsL 'https://circleci.com/api/v1/project/xjdr/xio/latest/artifacts/0/$CIRCLE_ARTIFACTS/xio-0.12.0-SNAPSHOT.jar?filter=successful' > xio.jar
+    - mvn install:install-file -Dfile=xio.jar
 dependencies:
   cache_directories:
     - ~/.m2
 test:
   override:
-    - mvn test
+    - mvn package javadoc:jar
   post:
+    - cp target/chicago*jar $CIRCLE_ARTIFACTS
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
     - find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
