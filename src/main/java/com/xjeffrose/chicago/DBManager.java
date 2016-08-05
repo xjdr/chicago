@@ -49,10 +49,6 @@ public class DBManager {
   private ZkClient zkClient;
   private final HashMap<String,AtomicLong> counter = new HashMap<>();
 
-  static {
-    RocksDB.loadLibrary();
-  }
-
   private RocksDB db;
 
   public DBManager(ChiConfig config) {

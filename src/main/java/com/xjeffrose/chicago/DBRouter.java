@@ -23,7 +23,6 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
