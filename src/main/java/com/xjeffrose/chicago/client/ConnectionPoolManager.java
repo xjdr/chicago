@@ -152,31 +152,37 @@ public class ConnectionPoolManager {
     }
   }
 
-  public ChannelFuture getNode(String node) throws ChicagoClientTimeoutException {
+  public ChannelFuture getNode(String node) throws ChicagoClientTimeoutException, InterruptedException {
     log.debug("Trying to get node:"+node);
     return _getNode(node, System.currentTimeMillis());
   }
 
-  private ChannelFuture _getNode(String node, long startTime) throws ChicagoClientTimeoutException {
-    while (connectionMap.get(node) == null) {
+  private ChannelFuture _getNode(String node, long startTime) throws ChicagoClientTimeoutException, InterruptedException {
+    while (!connectionMap.containsKey(node)) {
       if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
 //        Thread.currentThread().interrupt();
-        System.out.println("Cannot get connection for node "+ node +" connectionMap ="+ connectionMap.keySet().toString());
+//        System.out.println("Cannot get connection for node "+ node +" connectionMap ="+ connectionMap.keySet().toString());
         throw new ChicagoClientTimeoutException();
       }
       try {
-        Thread.sleep(1);
+        Thread.sleep(0, 250);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
     }
 
-    ChannelFuture cf = connectionMap.get(node);
-    if (cf.channel().isWritable()) {
-      return cf;
-    }else{
+    if (connectionMap.containsKey(node)) {
+      ChannelFuture cf = connectionMap.get(node);
+      if (cf.channel().isWritable()) {
+        return cf;
+      } else {
+        checkConnection();
+        return _getNode(node, startTime);
+      }
+    } else {
+      Thread.sleep(0, 250);
       checkConnection();
-      return _getNode(node,startTime);
+      return _getNode(node, startTime);
     }
   }
 

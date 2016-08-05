@@ -136,7 +136,12 @@ public class ChicagoClient extends BaseChicagoClient {
     String node = hashList.get(0);
     if (node == null) {
     } else {
-      ChannelFuture cf = connectionPoolMgr.getNode(node);
+      ChannelFuture cf = null;
+      try {
+        cf = connectionPoolMgr.getNode(node);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
       if (cf.channel().isWritable()) {
         UUID id = UUID.randomUUID();
         SettableFuture<byte[]> f = SettableFuture.create();
@@ -168,6 +173,8 @@ public class ChicagoClient extends BaseChicagoClient {
               cf1 = connectionPoolMgr.getNode(node1);
             } catch (ChicagoClientTimeoutException e) {
               e.printStackTrace();
+            } catch (InterruptedException e) {
+              e.printStackTrace();
             }
             if (cf1.channel().isWritable()) {
               UUID id1 = UUID.randomUUID();
@@ -198,11 +205,11 @@ public class ChicagoClient extends BaseChicagoClient {
     return null;
   }
 
-  public ListenableFuture<List<byte[]>> read(byte[] key) throws ChicagoClientTimeoutException {
+  public ListenableFuture<List<byte[]>> read(byte[] key) throws ChicagoClientTimeoutException, InterruptedException {
     return read(ChiUtil.defaultColFam.getBytes(), key);
   }
 
-  public ListenableFuture<List<byte[]>> read(byte[] colFam, byte[] key) throws ChicagoClientTimeoutException {
+  public ListenableFuture<List<byte[]>> read(byte[] colFam, byte[] key) throws ChicagoClientTimeoutException, InterruptedException {
 //    ConcurrentLinkedDeque<byte[]> responseList = new ConcurrentLinkedDeque<>();
     List<ListenableFuture<byte[]>> relevantFutures = new ArrayList<>();
     List<String> hashList = getEffectiveNodes(colFam);
@@ -241,6 +248,8 @@ public class ChicagoClient extends BaseChicagoClient {
               cf1 = connectionPoolMgr.getNode(node1);
             } catch (ChicagoClientTimeoutException e) {
               e.printStackTrace();
+            } catch (InterruptedException e) {
+              e.printStackTrace();
             }
             if (cf1.channel().isWritable()) {
               UUID id1 = UUID.randomUUID();
@@ -270,15 +279,15 @@ public class ChicagoClient extends BaseChicagoClient {
     return null;
   }
 
-  public ListenableFuture<List<byte[]>> write(byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException {
+  public ListenableFuture<List<byte[]>> write(byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException, InterruptedException {
     return write(ChiUtil.defaultColFam.getBytes(), key, value);
   }
 
-  public ListenableFuture<List<byte[]>> write(byte[] colFam, byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException {
+  public ListenableFuture<List<byte[]>> write(byte[] colFam, byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException, InterruptedException {
     return _write(colFam, key, value, 0);
   }
 
-  private ListenableFuture<List<byte[]>> _write(byte[] colFam, byte[] key, byte[] value, int _retries) throws ChicagoClientTimeoutException, ChicagoClientException {
+  private ListenableFuture<List<byte[]>> _write(byte[] colFam, byte[] key, byte[] value, int _retries) throws ChicagoClientTimeoutException, ChicagoClientException, InterruptedException {
 //    final int retries = _retries;
     List<ListenableFuture<byte[]>> relevantFutures = new ArrayList<>();
 //    final long startTime = System.currentTimeMillis();
@@ -312,15 +321,15 @@ public class ChicagoClient extends BaseChicagoClient {
     return Futures.successfulAsList(relevantFutures);
   }
 
-  public ListenableFuture<List<byte[]>> tsWrite(byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException {
+  public ListenableFuture<List<byte[]>> tsWrite(byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException, InterruptedException {
     return _tsWrite(null,key,value,0);
   }
 
-  public ListenableFuture<List<byte[]>> tsWrite(byte[] colFam, byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException {
+  public ListenableFuture<List<byte[]>> tsWrite(byte[] colFam, byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException, InterruptedException {
     return _tsWrite(colFam, key, value, 0);
   }
 
-  private ListenableFuture<List<byte[]>> _tsWrite(byte[] colFam, byte[] key, byte[] value, int _retries) throws ChicagoClientTimeoutException, ChicagoClientException {
+  private ListenableFuture<List<byte[]>> _tsWrite(byte[] colFam, byte[] key, byte[] value, int _retries) throws ChicagoClientTimeoutException, ChicagoClientException, InterruptedException {
 //    final int retries = _retries;
     List<ListenableFuture<byte[]>> relevantFutures = new ArrayList<>();
 //    final long startTime = System.currentTimeMillis();
@@ -368,15 +377,15 @@ public class ChicagoClient extends BaseChicagoClient {
     return chicagoBuffer.append(key , value);
   }
 
-  public ListenableFuture<List<byte[]>> delete(byte[] key) throws ChicagoClientTimeoutException, ChicagoClientException {
+  public ListenableFuture<List<byte[]>> delete(byte[] key) throws ChicagoClientTimeoutException, ChicagoClientException, InterruptedException {
     return delete(ChiUtil.defaultColFam.getBytes(), key);
   }
 
-  public ListenableFuture<List<byte[]>> delete(byte[] colFam, byte[] key) throws ChicagoClientTimeoutException, ChicagoClientException {
+  public ListenableFuture<List<byte[]>> delete(byte[] colFam, byte[] key) throws ChicagoClientTimeoutException, ChicagoClientException, InterruptedException {
     return _delete(colFam, key, 0);
   }
 
-  public ListenableFuture<List<byte[]>> deleteColFam(byte[] colFam) throws ChicagoClientTimeoutException, ChicagoClientException {
+  public ListenableFuture<List<byte[]>> deleteColFam(byte[] colFam) throws ChicagoClientTimeoutException, ChicagoClientException, InterruptedException {
 //    final int retries = 0;
     List<ListenableFuture<byte[]>> relevantFutures = new ArrayList<>();
 //    final long startTime = System.currentTimeMillis();
@@ -409,7 +418,7 @@ public class ChicagoClient extends BaseChicagoClient {
     return Futures.successfulAsList(relevantFutures);
   }
 
-  private ListenableFuture<List<byte[]>> _delete(byte[] colFam, byte[] key, int _retries) throws ChicagoClientTimeoutException, ChicagoClientException {
+  private ListenableFuture<List<byte[]>> _delete(byte[] colFam, byte[] key, int _retries) throws ChicagoClientTimeoutException, ChicagoClientException, InterruptedException {
     final int retries = _retries;
     List<ListenableFuture<byte[]>> relevantFutures = new ArrayList<>();
     final long startTime = System.currentTimeMillis();

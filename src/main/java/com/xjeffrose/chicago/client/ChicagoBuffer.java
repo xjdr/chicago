@@ -106,6 +106,8 @@ public class ChicagoBuffer {
                 cf = connectionPoolMgr.getNode(node);
               } catch (ChicagoClientTimeoutException e) {
                 e.printStackTrace();
+              } catch (InterruptedException e) {
+                e.printStackTrace();
               }
               if (cf.channel().isWritable()) {
                 UUID id = UUID.randomUUID();

@@ -73,6 +73,8 @@ public class AsyncChicagoAppender extends AppenderSkeleton {
       e.printStackTrace();
     } catch (ChicagoClientException e) {
       e.printStackTrace();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
     }
   }
 

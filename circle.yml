@@ -7,10 +7,9 @@ machine:
     - sudo mkdir /var/chicago
 dependencies:
   override:
-    - ./sbt "show update"
+    -mvn fetch
   cache_directories:
     - ~/.m2
-    - ~/.sbt
 test:
   override:
     - ./sbt "show test"
