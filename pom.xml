@@ -45,13 +45,14 @@
         <dependency>
             <groupId>com.xjeffrose</groupId>
             <artifactId>xio</artifactId>
-            <version>0.11.0-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
-                </exclusion>
-            </exclusions>
+            <version>0.12.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>3.0.1</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
@@ -89,18 +90,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.7.3</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>2.7.3</version>
-        </dependency>
-
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
@@ -119,6 +108,24 @@
             </exclusions>
             <scope>test</scope>
         </dependency>
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-api</artifactId>
+    <version>1.7.21</version>
+</dependency>
+
+<dependency>
+  <groupId>ch.qos.logback</groupId>
+  <artifactId>logback-classic</artifactId>
+  <version>1.1.7</version>
+  <scope>test</scope>
+ </dependency>
+ <dependency>
+  <groupId>ch.qos.logback</groupId>
+  <artifactId>logback-core</artifactId>
+  <version>1.1.7</version>
+  <scope>test</scope>
+ </dependency>
 
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
@@ -126,11 +133,13 @@
             <version>2.4.1</version>
             <scope>test</scope>
         </dependency>
+<!--
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-log4j12</artifactId>
         <version>1.7.5</version>
       </dependency>
+-->
       <dependency>
         <groupId>com.beust</groupId>
         <artifactId>jcommander</artifactId>
@@ -156,26 +165,13 @@
                 </configuration>
             </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.19.1</version>
-                <configuration>
-                    <forkCount>1</forkCount>
-                    <reuseForks>false</reuseForks>
-                    <parallel>none</parallel>
-                    <threadCount>0</threadCount>
-                    <!--                    <argLine>-Xcheck:jni</argLine> -->
-                </configuration>
-            </plugin>
-
-
+<!--
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>2.4.1</version>
                 <configuration>
-                    <!-- put your configurations here -->
+                    
                 </configuration>
                 <executions>
                     <execution>
@@ -186,16 +182,46 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--<plugin>-->
-                <!--<groupId>org.apache.maven.plugins</groupId>-->
-                <!--<artifactId>maven-surefire-plugin</artifactId>-->
-                <!--<version>2.19.1</version>-->
-                <!--<configuration>-->
-                    <!--<forkCount>4</forkCount>-->
-                    <!--<parallel>classes</parallel>-->
-                    <!--<threadCount>8</threadCount>-->
-                <!--</configuration>-->
-            <!--</plugin>-->
+-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.19.1</version>
+                <configuration>
+<!--
+                    <forkCount>2.5C</forkCount>
+-->
+                    <forkCount>1</forkCount>
+                    <reuseForks>false</reuseForks>
+                    <parallel>none</parallel>
+                    <threadCount>0</threadCount>
+<!--                    <argLine>-Xcheck:jni</argLine> -->
+                </configuration>
+            </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>2.9</version>
+        <executions>
+          <execution>
+            <id>build-classpath</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>build-classpath</goal>
+            </goals>
+            <configuration>
+              <!-- configure the plugin here -->
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-install-plugin</artifactId>
+    <version>2.5.2</version>
+</plugin>
         </plugins>
     </build>
 </project>

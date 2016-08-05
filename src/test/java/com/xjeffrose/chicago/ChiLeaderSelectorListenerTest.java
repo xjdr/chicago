@@ -29,7 +29,7 @@ public class ChiLeaderSelectorListenerTest {
 
   @Before
   public void setup() throws Exception {
-    InstanceSpec spec = new InstanceSpec(null, 2182,  -1 , -1, true, -1 , 20 , -1);
+    InstanceSpec spec = new InstanceSpec(null, -1,  -1 , -1, true, -1 , 20 , -1);
     testingServer = new TestingServer(spec,true);
     zk = CuratorFrameworkFactory.newClient(testingServer.getConnectString(), new ExponentialBackoffRetry(2000, 20));
     zk.start();

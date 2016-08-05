@@ -241,7 +241,7 @@ public class ConnectionPoolManager {
           }
           try {
             retryLoop.takeException((Exception) future.cause());
-            log.error("==== Service connect failure (will retry)", future.cause());
+            log.info("==== Service connect failure (will retry)", future.cause());
             connect2(server, bootstrap, retryLoop);
           } catch (Exception e) {
             log.error("==== Service connect failure ", future.cause());

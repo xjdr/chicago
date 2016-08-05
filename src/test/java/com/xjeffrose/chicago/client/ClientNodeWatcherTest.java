@@ -26,23 +26,23 @@ public class ClientNodeWatcherTest {
 
   @Before
   public void setup() throws Exception {
-    InstanceSpec spec = new InstanceSpec(null, 2182,  -1 , -1, true, -1 , 20 , -1);
+    InstanceSpec spec = new InstanceSpec(null, -1,  -1 , -1, true, -1 , 20 , -1);
     testingServer = new TestingServer(spec,true);
-    servers = TestChicago.makeServers(TestChicago.chicago_dir(tmp), 5, testingServer.getConnectString());
-    servers.get(0).start();
-    servers.get(1).start();
-    servers.get(2).start();
-    servers.get(3).start();
+    servers = TestChicago.makeServers(TestChicago.chicago_dir(tmp), 4, testingServer.getConnectString());
+
+    for (ChicagoServer server : servers) {
+      server.start();
+    }
 
     chicagoClientDHT = new ChicagoClient(testingServer.getConnectString(), 3);
+    chicagoClientDHT.startAndWaitForNodes(4);
   }
 
   @After
   public void teardown() throws Exception {
-    servers.get(1).stop();
-    servers.get(2).stop();
-    servers.get(3).stop();
-    servers.get(4).stop();
+    for (ChicagoServer server : servers) {
+      server.stop();
+    }
     chicagoClientDHT.stop();
     testingServer.stop();
   }

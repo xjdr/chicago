@@ -35,6 +35,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DBManager {
+  static {
+    RocksDB.loadLibrary();
+  }
+
   private static final Logger log = LoggerFactory.getLogger(DBManager.class);
 
   private final Options options = new Options();
@@ -45,30 +49,26 @@ public class DBManager {
   private ZkClient zkClient;
   private final HashMap<String,AtomicLong> counter = new HashMap<>();
 
-  static {
-    RocksDB.loadLibrary();
-  }
-
   private RocksDB db;
 
   public DBManager(ChiConfig config) {
     this.config = config;
-//    RocksDB.loadLibrary();
+    //    RocksDB.loadLibrary();
     configOptions();
     configReadOptions();
     configWriteOptions();
 
     try {
-      File f = new File(config.getDBPath());
+      File f = new File(config.getDbPath());
       if (f.exists() && !config.isGraceFullStart()) {
         removeDB(f);
       } else if (!f.exists()) {
         f.mkdir();
       }
-      this.db = RocksDB.open(options, config.getDBPath());
+      this.db = RocksDB.open(options, config.getDbPath());
     } catch (RocksDBException e) {
-      log.error("Could not load DB: " + config.getDBPath() + " " + e.getMessage());
-      System.exit(-1);
+      log.error("Could not load DB: " + config.getDbPath() + " " + e.getMessage());
+      throw new RuntimeException(e);
     }
     //createColumnFamily(ChiUtil.defaultColFam.getBytes());
   }
@@ -247,16 +247,17 @@ public class DBManager {
   }
 
   List<byte[]> getKeys(ReadOptions readOptions) {
-    RocksIterator i = db.newIterator(readOptions);
-    List<byte[]> keySet = new ArrayList();
-    i.seekToFirst();
+    try(RocksIterator i = db.newIterator(readOptions)) {
+      List<byte[]> keySet = new ArrayList();
+      i.seekToFirst();
 
-    while (i.isValid()) {
-      keySet.add(i.key());
-      i.next();
+      while (i.isValid()) {
+        keySet.add(i.key());
+        i.next();
+      }
+
+      return keySet;
     }
-
-    return keySet;
   }
 
   public void destroy() {

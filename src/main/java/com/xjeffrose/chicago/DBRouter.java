@@ -1,18 +1,19 @@
 package com.xjeffrose.chicago;
 
+import com.xjeffrose.chicago.server.ChicagoServerPipeline;
 import com.xjeffrose.xio.SSL.XioSecurityHandlerImpl;
-import com.xjeffrose.xio.core.XioAggregatorFactory;
+import com.xjeffrose.xio.application.Application;
+import com.xjeffrose.xio.bootstrap.ApplicationBootstrap;
+import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
+import com.xjeffrose.xio.pipeline.XioServerPipeline;
+import com.xjeffrose.xio.server.XioServerState;
+
 import com.xjeffrose.xio.core.XioCodecFactory;
 import com.xjeffrose.xio.core.XioNoOpHandler;
 import com.xjeffrose.xio.core.XioRoutingFilterFactory;
-import com.xjeffrose.xio.core.XioSecurityFactory;
-import com.xjeffrose.xio.core.XioSecurityHandlers;
-import com.xjeffrose.xio.processor.XioProcessor;
-import com.xjeffrose.xio.processor.XioProcessorFactory;
-import com.xjeffrose.xio.server.XioBootstrap;
+import com.xjeffrose.xio.pipeline.XioSslHttp1_1Pipeline;
+import com.xjeffrose.xio.server.XioServer;
 import com.xjeffrose.xio.server.XioServerConfig;
-import com.xjeffrose.xio.server.XioServerDef;
-import com.xjeffrose.xio.server.XioServerDefBuilder;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInboundHandler;
 import io.netty.channel.group.ChannelGroup;
@@ -33,108 +34,19 @@ public class DBRouter implements Closeable {
   private static final Logger log = LoggerFactory.getLogger(DBRouter.class);
 
   //TODO(JR): Make this concurrent to applow for parallel streams
-  private final Set<XioServerDef> serverDefSet = new HashSet<>();
   private final ChiConfig config;
   private final DBManager dbManager;
-  private XioBootstrap x;
   private final DBLog dbLog;
-  private final ChicagoMasterManager masterManager;
+  //private ChicagoMasterManager masterManager;
+  private Application application;
 
   public DBRouter(ChiConfig config, DBManager dbManager, DBLog dbLog) {
     this.config = config;
     this.dbManager = dbManager;
     this.dbLog = dbLog;
-    this.masterManager = new ChicagoMasterManager(config);
-    config.setDbRouter(this);
+    //config.setDbRouter(this);
   }
-
-  private void configureAdminServer() {
-    XioServerDef adminServer = new XioServerDefBuilder()
-        .name("Chicago Admin Server")
-        .listen(new InetSocketAddress(config.getAdminBindIP(), config.getAdminPort()))
-        .withSecurityFactory(new XioSecurityFactory() {
-          @Override
-          public XioSecurityHandlers getSecurityHandlers(XioServerDef xioServerDef, XioServerConfig xioServerConfig) {
-            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
-          }
-
-          @Override
-          public XioSecurityHandlers getSecurityHandlers() {
-            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
-          }
-        })
-        .withProcessorFactory(new XioProcessorFactory() {
-          @Override
-          public XioProcessor getProcessor() {
-            return new ChicagoAdminProcessor();
-          }
-        })
-        .withCodecFactory(new XioCodecFactory() {
-          @Override
-          public ChannelHandler getCodec() {
-            return new HttpServerCodec();
-          }
-        })
-        .withAggregator(new XioAggregatorFactory() {
-          @Override
-          public ChannelHandler getAggregator() {
-            return null;
-          }
-        })
-        .withRoutingFilter(new XioRoutingFilterFactory() {
-          @Override
-          public ChannelInboundHandler getRoutingFilter() {
-            return null;
-          }
-        })
-        .build();
-
-    serverDefSet.add(adminServer);
-  }
-
-  private void configureStatsServer() {
-    XioServerDef statsServer = new XioServerDefBuilder()
-        .name("Chicago Stats Server")
-        .listen(new InetSocketAddress(config.getStatsBindIP(), config.getStatsPort()))
-        .withSecurityFactory(new XioSecurityFactory() {
-          @Override
-          public XioSecurityHandlers getSecurityHandlers(XioServerDef xioServerDef, XioServerConfig xioServerConfig) {
-            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
-          }
-
-          @Override
-          public XioSecurityHandlers getSecurityHandlers() {
-            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
-          }
-        })
-        .withProcessorFactory(new XioProcessorFactory() {
-          @Override
-          public XioProcessor getProcessor() {
-            return new ChicagoStatsProcessor();
-          }
-        })
-        .withCodecFactory(new XioCodecFactory() {
-          @Override
-          public ChannelHandler getCodec() {
-            return new HttpServerCodec();
-          }
-        })
-        .withAggregator(new XioAggregatorFactory() {
-          @Override
-          public ChannelHandler getAggregator() {
-            return null;
-          }
-        })
-        .withRoutingFilter(new XioRoutingFilterFactory() {
-          @Override
-          public ChannelInboundHandler getRoutingFilter() {
-            return null;
-          }
-        })
-        .build();
-
-    serverDefSet.add(statsServer);
-  }
+  /*
   private void configureDBServer() {
     XioServerDef dbServer = new XioServerDefBuilder()
         .name("Chicago DB Server")
@@ -180,6 +92,7 @@ public class DBRouter implements Closeable {
     serverDefSet.add(dbServer);
   }
 
+  */
 //  private void configureElectionServer() {
 //    XioServerDef eServer = new XioServerDefBuilder()
 //        .name("Chicago Election Server")
@@ -270,8 +183,54 @@ public class DBRouter implements Closeable {
 //    serverDefSet.add(rpcServer);
 //  }
 
-  public void run() {
 
+  /*
+  private ChicagoServerPipeline buildElectionPipeline() {
+    return new ChicagoServerPipeline("election") {
+      @Override
+      public ChannelHandler getCodecHandler() {
+        return new XioNoOpHandler();
+      }
+
+      @Override
+      public ChannelHandler getApplicationHandler() {
+        return new ChicagoElectionHandler(config, masterManager);
+      }
+    };
+  }
+
+  private ChicagoServerPipeline buildRpcPipeline() {
+    return new ChicagoServerPipeline("rpc") {
+      @Override
+      public ChannelHandler getApplicationHandler() {
+        return new ChicagoRPCHandler(config, masterManager);
+      }
+    };
+  }
+  */
+
+  private ChicagoServerPipeline buildDbPipeline() {
+    return new ChicagoServerPipeline("db") {
+      @Override
+      public ChannelHandler getApplicationHandler() {
+        return new ChicagoDBHandler(dbManager, dbLog);
+      }
+    };
+  }
+
+
+  public void run() {
+    application = new ApplicationBootstrap("chicago.application")
+      .addServer("admin", (bs) -> bs.addToPipeline(new XioSslHttp1_1Pipeline()))
+      .addServer("stats", (bs) -> bs.addToPipeline(new XioSslHttp1_1Pipeline()))
+      .addServer("db", (bs) -> bs.addToPipeline(buildDbPipeline()))
+//      .addServer("election", (bs) -> bs.addToPipeline(buildElectionPipeline()))
+//      .addServer("rpc", (bs) -> bs.addToPipeline(buildRpcPipeline()))
+      .build();
+
+    //this.masterManager = new ChicagoMasterManager(config, application.instrumentation("election").boundAddress());
+
+    /*
     configureAdminServer();
     configureStatsServer();
     //configureElectionServer();
@@ -302,12 +261,16 @@ public class DBRouter implements Closeable {
       x.stop();
       throw new RuntimeException(e);
     }
+    */
   }
 
   @Override
   public void close() throws IOException {
+    application.close();
+    /*
     x.stop();
     serverDefSet.clear();
+    */
     dbManager.destroy();
   }
 
@@ -317,19 +280,11 @@ public class DBRouter implements Closeable {
     } catch (IOException e) {
       //TODO(JR): Should we just force close here?
       log.error("Error while attempting to close", e);
-      System.exit(-1);
+      throw new RuntimeException(e);
     }
   }
 
   public InetSocketAddress getDBBoundInetAddress() {
-    for (Map.Entry<XioServerDef, Integer> entry : x.getBoundPorts().entrySet()) {
-      if (entry.getKey().getName().equals("Chicago DB Server")) {
-        return new InetSocketAddress(
-                                     entry.getKey().getHostAddress().getAddress(),
-                                     entry.getValue()
-                                     );
-      }
-    }
-    return null;
+    return application.instrumentation("db").boundAddress();
   }
 }

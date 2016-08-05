@@ -92,7 +92,6 @@ abstract public class BaseChicagoClient {
     } else {
       evg = new NioEventLoopGroup(5);
     }
-    startAndWaitForNodes(quorum);
   }
 
   public void start() {
@@ -101,7 +100,6 @@ abstract public class BaseChicagoClient {
         zkClient.start();
         connectionPoolMgr.start();
         clientNodeWatcher.start();
-        clientNodeWatcher.registerConnectionPoolManager(connectionPoolMgr);
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -133,7 +131,9 @@ abstract public class BaseChicagoClient {
     if(!single_server) {
       clientNodeWatcher.stop();
       connectionPoolMgr.stop();
-      zkClient.stop();
+      if (zkClient != null) {
+        zkClient.stop();
+      }
     }
     evg.shutdownGracefully();
   }

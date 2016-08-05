@@ -24,12 +24,10 @@ import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class ChicagoMasterManager {
-  private static final Logger log = LoggerFactory.getLogger(ChicagoMasterManager.class.getName());
-
   private final AtomicBoolean isThereAMaster = new AtomicBoolean();
   private final AtomicBoolean amIMaster = new AtomicBoolean();
   private final Random markov = new Random();
@@ -43,10 +41,10 @@ public class ChicagoMasterManager {
 
   private int master = -1;
 
-  ChicagoMasterManager(ChiConfig config) {
+  ChicagoMasterManager(ChiConfig config, InetSocketAddress boundAddress) {
 
     this.config = config;
-    this.whoami = config.getEBindIP();
+    this.whoami = boundAddress.getHostString();
 
     this.q = config.getQuorum();
     this.witnessList = config.getWitnessList();
