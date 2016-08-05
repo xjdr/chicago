@@ -43,7 +43,6 @@ public class ReplicationLockTest {
     }
 
     chicagoClient = new ChicagoClient(testingServer.getConnectString(), 3);
-    chicagoClient.startAndWaitForNodes(3);
   }
 
   @After

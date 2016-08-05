@@ -34,10 +34,11 @@ abstract public class BaseChicagoClient {
   protected static boolean TIMEOUT_ENABLED = true;
   protected static int MAX_RETRY = 3;
   protected final AtomicInteger nodesAvailable = new AtomicInteger(0);
-
+  protected static final Map<String, Long> lastOffsetMap = PlatformDependent.newConcurrentHashMap();
   protected final boolean single_server;
   protected final RendezvousHash rendezvousHash;
   protected final ClientNodeWatcher clientNodeWatcher;
+  protected final ChicagoBuffer chicagoBuffer;
   private CountDownLatch latch;
   private final ClientNodeWatcher.Listener listener = new ClientNodeWatcher.Listener() {
       public void nodeAdded() {
@@ -67,6 +68,7 @@ abstract public class BaseChicagoClient {
     this.rendezvousHash =  new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
     clientNodeWatcher = null;
     this.connectionPoolMgr = new ConnectionPoolManager(address, futureMap);
+    this.chicagoBuffer = new ChicagoBuffer(connectionPoolMgr, this);
     if (Epoll.isAvailable()) {
       evg = new EpollEventLoopGroup(5);
     } else {
@@ -84,12 +86,13 @@ abstract public class BaseChicagoClient {
     this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
     clientNodeWatcher = new ClientNodeWatcher(zkClient, rendezvousHash, listener);
     this.connectionPoolMgr = new ConnectionPoolManager(zkClient, futureMap);
-    clientNodeWatcher.registerConnectionPoolManager(connectionPoolMgr);
+    this.chicagoBuffer = new ChicagoBuffer(connectionPoolMgr, this);
     if (Epoll.isAvailable()) {
       evg = new EpollEventLoopGroup(5);
     } else {
       evg = new NioEventLoopGroup(5);
     }
+    startAndWaitForNodes(quorum);
   }
 
   public void start() {

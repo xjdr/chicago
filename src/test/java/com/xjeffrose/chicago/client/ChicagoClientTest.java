@@ -3,47 +3,40 @@ package com.xjeffrose.chicago.client;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.xjeffrose.chicago.TestChicago;
 import com.xjeffrose.chicago.server.ChicagoServer;
-
-import org.apache.curator.test.InstanceSpec;
-import org.apache.curator.test.TestingServer;
-
-import java.io.File;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.List;
-
-import org.apache.tomcat.jni.Thread;
+import org.apache.curator.test.InstanceSpec;
+import org.apache.curator.test.TestingServer;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 
 public class ChicagoClientTest {
-  TestingServer testingServer;
   @Rule
   public TemporaryFolder tmp = new TemporaryFolder();
+  TestingServer testingServer;
   List<ChicagoServer> servers;
   ChicagoClient chicagoClientDHT;
 
   @Before
   public void setup() throws Exception {
     InstanceSpec spec = new InstanceSpec(null, -1,  -1 , -1, true, -1 , 2000 , -1);
-    testingServer = new TestingServer(spec,true);
+    testingServer = new TestingServer(spec, true);
     servers = TestChicago.makeServers(TestChicago.chicago_dir(tmp), 4, testingServer.getConnectString());
     for (ChicagoServer server : servers) {
       server.start();
     }
 
     chicagoClientDHT = new ChicagoClient(testingServer.getConnectString(), 3);
-    chicagoClientDHT.startAndWaitForNodes(3);
   }
 
   @After
@@ -62,7 +55,8 @@ public class ChicagoClientTest {
       byte[] key = _k.getBytes();
       String _v = "val" + i;
       byte[] val = _v.getBytes();
-      assertEquals(true, (chicagoClientDHT.write(key, val).get().get(0)[0] != 0));
+//      assertEquals(true, (chicagoClientDHT.write(key, val).get().get(0)[0] != 0));
+      chicagoClientDHT.write(key, val);
       assertEquals(new String(val), new String(chicagoClientDHT.read(key).get().get(0)));
       //assertEquals(true, chicagoClientDHT.delete(key));
     }
@@ -77,7 +71,8 @@ public class ChicagoClientTest {
       String _v = "val" + i;
       byte[] val = _v.getBytes();
 
-      assertEquals(true,(chicagoClientDHT.write(key, val).get().get(0)[0] != 0));
+//      assertEquals(true,(chicagoClientDHT.write(key, val).get().get(0)[0] != 0));
+      chicagoClientDHT.write(key, val);
       assertEquals(new String(val), new String(chicagoClientDHT.read(key).get().get(0)));
     }
 

@@ -62,7 +62,6 @@ public class Taillog {
 
     if(sc == null) {
       chicagoClient = new ChicagoClient(zkString, 3);
-      chicagoClient.startAndWaitForNodes(3);
     }else{
       chicagoClient = new ChicagoClient(sc);
     }
@@ -107,7 +106,7 @@ public class Taillog {
           if(debug) {
             System.out.print("Last offset =" + offset + ":");
           }
-          if(endDateTime !=null && endDateTime.after(getDate(line))){
+          if(endDateTime !=null && endDateTime.before(getDate(line))){
             System.out.println("End time reached.");
             System.exit(0);
           }
@@ -175,8 +174,9 @@ public class Taillog {
       System.exit(0);
     }
     System.out.print("Finding offset.");
+    long midOffset = -1;
     while(endOffset > startOffset){
-      long midOffset = (endOffset + startOffset)/2;
+      midOffset = (endOffset + startOffset)/2;
 
       Date midDate = getDate(key,midOffset);
       if(midDate.before(targetDate) && (TimeUnit.MILLISECONDS.toMinutes(targetDate.getTime()-midDate.getTime()) < 10)){
@@ -184,13 +184,14 @@ public class Taillog {
       }
 
       if(midDate.after(targetDate)){
-        endOffset = midOffset;
+        endOffset = midOffset-1;
       }else{
-        startOffset = midOffset;
+        startOffset = midOffset+1;
       }
       System.out.print(" .");
     }
-    return offset;
+    System.out.println("\nCannot find the nearest Offset to starting time. Starting Taillog from the nearest timestamp.");
+    return midOffset;
   }
 
   public Long getLastOffset(String key) {

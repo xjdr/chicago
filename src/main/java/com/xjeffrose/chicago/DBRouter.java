@@ -93,96 +93,96 @@ public class DBRouter implements Closeable {
     serverDefSet.add(dbServer);
   }
 
-  private void configureElectionServer() {
-    XioServerDef eServer = new XioServerDefBuilder()
-        .name("Chicago Election Server")
-        .listen(new InetSocketAddress(config.getEBindIP(), config.getEPort()))
-//        .withSecurityFactory(new XioNoOpSecurityFactory())
-        .withSecurityFactory(new XioSecurityFactory() {
-          @Override
-          public XioSecurityHandlers getSecurityHandlers(XioServerDef xioServerDef, XioServerConfig xioServerConfig) {
-            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
-          }
-
-          @Override
-          public XioSecurityHandlers getSecurityHandlers() {
-            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
-          }
-        })
-        .withProcessorFactory(new XioProcessorFactory() {
-          @Override
-          public XioProcessor getProcessor() {
-            return new ChicagoProcessor();
-          }
-        })
-        .withCodecFactory(new XioCodecFactory() {
-          @Override
-          public ChannelHandler getCodec() {
-            return new XioNoOpHandler();
-          }
-        })
-        .withAggregator(new XioAggregatorFactory() {
-          @Override
-          public ChannelHandler getAggregator() {
-            return new XioNoOpHandler();
-          }
-        })
-        .withRoutingFilter(new XioRoutingFilterFactory() {
-          @Override
-          public ChannelInboundHandler getRoutingFilter() {
-            return new ChicagoElectionHandler(config, masterManager);
-          }
-        })
-        .build();
-
-    serverDefSet.add(eServer);
-  }
-
-  private void configureRPCServer() {
-    XioServerDef rpcServer = new XioServerDefBuilder()
-        .name("Chicago RPC Server")
-        .listen(new InetSocketAddress(config.getRPCBindIP(), config.getRPCPort()))
-//        .withSecurityFactory(new XioNoOpSecurityFactory())
-        .withSecurityFactory(new XioSecurityFactory() {
-          @Override
-          public XioSecurityHandlers getSecurityHandlers(XioServerDef xioServerDef, XioServerConfig xioServerConfig) {
-            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
-          }
-
-          @Override
-          public XioSecurityHandlers getSecurityHandlers() {
-            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
-          }
-        })
-        .withProcessorFactory(new XioProcessorFactory() {
-          @Override
-          public XioProcessor getProcessor() {
-            return new ChicagoProcessor();
-          }
-        })
-        .withCodecFactory(new XioCodecFactory() {
-          @Override
-          public ChannelHandler getCodec() {
-            return new ChicagoCodec();
-          }
-        })
-        .withAggregator(new XioAggregatorFactory() {
-          @Override
-          public ChannelHandler getAggregator() {
-            return new XioNoOpHandler();
-          }
-        })
-        .withRoutingFilter(new XioRoutingFilterFactory() {
-          @Override
-          public ChannelInboundHandler getRoutingFilter() {
-            return new ChicagoRPCHandler(config, masterManager);
-          }
-        })
-        .build();
-
-    serverDefSet.add(rpcServer);
-  }
   */
+//  private void configureElectionServer() {
+//    XioServerDef eServer = new XioServerDefBuilder()
+//        .name("Chicago Election Server")
+//        .listen(new InetSocketAddress(config.getEBindIP(), config.getEPort()))
+////        .withSecurityFactory(new XioNoOpSecurityFactory())
+//        .withSecurityFactory(new XioSecurityFactory() {
+//          @Override
+//          public XioSecurityHandlers getSecurityHandlers(XioServerDef xioServerDef, XioServerConfig xioServerConfig) {
+//            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
+//          }
+//
+//          @Override
+//          public XioSecurityHandlers getSecurityHandlers() {
+//            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
+//          }
+//        })
+//        .withProcessorFactory(new XioProcessorFactory() {
+//          @Override
+//          public XioProcessor getProcessor() {
+//            return new ChicagoProcessor();
+//          }
+//        })
+//        .withCodecFactory(new XioCodecFactory() {
+//          @Override
+//          public ChannelHandler getCodec() {
+//            return new XioNoOpHandler();
+//          }
+//        })
+//        .withAggregator(new XioAggregatorFactory() {
+//          @Override
+//          public ChannelHandler getAggregator() {
+//            return new XioNoOpHandler();
+//          }
+//        })
+//        .withRoutingFilter(new XioRoutingFilterFactory() {
+//          @Override
+//          public ChannelInboundHandler getRoutingFilter() {
+//            return new ChicagoElectionHandler(config, masterManager);
+//          }
+//        })
+//        .build();
+//
+//    serverDefSet.add(eServer);
+//  }
+
+//  private void configureRPCServer() {
+//    XioServerDef rpcServer = new XioServerDefBuilder()
+//        .name("Chicago RPC Server")
+//        .listen(new InetSocketAddress(config.getRPCBindIP(), config.getRPCPort()))
+////        .withSecurityFactory(new XioNoOpSecurityFactory())
+//        .withSecurityFactory(new XioSecurityFactory() {
+//          @Override
+//          public XioSecurityHandlers getSecurityHandlers(XioServerDef xioServerDef, XioServerConfig xioServerConfig) {
+//            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
+//          }
+//
+//          @Override
+//          public XioSecurityHandlers getSecurityHandlers() {
+//            return new XioSecurityHandlerImpl(config.getCert(), config.getKey());
+//          }
+//        })
+//        .withProcessorFactory(new XioProcessorFactory() {
+//          @Override
+//          public XioProcessor getProcessor() {
+//            return new ChicagoProcessor();
+//          }
+//        })
+//        .withCodecFactory(new XioCodecFactory() {
+//          @Override
+//          public ChannelHandler getCodec() {
+//            return new ChicagoCodec();
+//          }
+//        })
+//        .withAggregator(new XioAggregatorFactory() {
+//          @Override
+//          public ChannelHandler getAggregator() {
+//            return new XioNoOpHandler();
+//          }
+//        })
+//        .withRoutingFilter(new XioRoutingFilterFactory() {
+//          @Override
+//          public ChannelInboundHandler getRoutingFilter() {
+//            return new ChicagoRPCHandler(config, masterManager);
+//          }
+//        })
+//        .build();
+//
+//    serverDefSet.add(rpcServer);
+//  }
 
 
   private ChicagoServerPipeline buildElectionPipeline() {
@@ -222,8 +222,8 @@ public class DBRouter implements Closeable {
       .addServer("admin", (bs) -> bs.addToPipeline(new XioSslHttp1_1Pipeline()))
       .addServer("stats", (bs) -> bs.addToPipeline(new XioSslHttp1_1Pipeline()))
       .addServer("db", (bs) -> bs.addToPipeline(buildDbPipeline()))
-      .addServer("election", (bs) -> bs.addToPipeline(buildElectionPipeline()))
-      .addServer("rpc", (bs) -> bs.addToPipeline(buildRpcPipeline()))
+//      .addServer("election", (bs) -> bs.addToPipeline(buildElectionPipeline()))
+//      .addServer("rpc", (bs) -> bs.addToPipeline(buildRpcPipeline()))
       .build();
 
     this.masterManager = new ChicagoMasterManager(config, application.instrumentation("election").boundAddress());
@@ -231,8 +231,8 @@ public class DBRouter implements Closeable {
     /*
     configureAdminServer();
     configureStatsServer();
-    configureElectionServer();
-    configureRPCServer();
+    //configureElectionServer();
+    // configureRPCServer();
     configureDBServer();
 
     XioServerConfig serverConfig = XioServerConfig.newBuilder()

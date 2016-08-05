@@ -11,6 +11,7 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
@@ -55,21 +56,28 @@ public class ConnectionPoolManager {
           .build());
 
   private final Map<UUID, SettableFuture<byte[]>> futureMap;
+  private final ChannelHandler handler;
 
   public ConnectionPoolManager(ZkClient zkClient, Map<UUID, SettableFuture<byte[]>> futureMap) {
     this.zkClient = zkClient;
     this.futureMap = futureMap;
+    this.handler = new ChicagoClientHandler(futureMap);
   }
 
   public ConnectionPoolManager(String hostname, Map<UUID,SettableFuture<byte[]>> futureMap) {
     this.zkClient = null;
     connect(new InetSocketAddress(hostname.split(":")[0], Integer.parseInt(hostname.split(":")[1])));
     this.futureMap = futureMap;
+    this.handler = new ChicagoClientHandler(futureMap);
   }
 
   public void start() {
     running.set(true);
     refreshPool();
+  }
+
+  public void addToFutureMap(UUID id, SettableFuture<byte[]> f){
+    futureMap.put(id,f);
   }
 
   public void stop() {
@@ -144,31 +152,37 @@ public class ConnectionPoolManager {
     }
   }
 
-  public ChannelFuture getNode(String node) throws ChicagoClientTimeoutException {
+  public ChannelFuture getNode(String node) throws ChicagoClientTimeoutException, InterruptedException {
     log.debug("Trying to get node:"+node);
     return _getNode(node, System.currentTimeMillis());
   }
 
-  private ChannelFuture _getNode(String node, long startTime) throws ChicagoClientTimeoutException {
-    while (connectionMap.get(node) == null) {
-//      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
+  private ChannelFuture _getNode(String node, long startTime) throws ChicagoClientTimeoutException, InterruptedException {
+    while (!connectionMap.containsKey(node)) {
+      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
 //        Thread.currentThread().interrupt();
 //        System.out.println("Cannot get connection for node "+ node +" connectionMap ="+ connectionMap.keySet().toString());
-//        throw new ChicagoClientTimeoutException();
-//      }
-//      try {
-//        Thread.sleep(1);
-//      } catch (InterruptedException e) {
-//        e.printStackTrace();
-//      }
+        throw new ChicagoClientTimeoutException();
+      }
+      try {
+        Thread.sleep(0, 250);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
     }
 
-    ChannelFuture cf = connectionMap.get(node);
-    if (cf.channel().isWritable()) {
-      return cf;
-    }else{
+    if (connectionMap.containsKey(node)) {
+      ChannelFuture cf = connectionMap.get(node);
+      if (cf.channel().isWritable()) {
+        return cf;
+      } else {
+        checkConnection();
+        return _getNode(node, startTime);
+      }
+    } else {
+      Thread.sleep(0, 250);
       checkConnection();
-      return _getNode(node,startTime);
+      return _getNode(node, startTime);
     }
   }
 
@@ -195,7 +209,7 @@ public class ConnectionPoolManager {
             cp.addLast(new XioSecurityHandlerImpl(true).getEncryptionHandler());
             //cp.addLast(new XioIdleDisconnectHandler(20, 20, 20));
             cp.addLast(new ChicagoClientCodec());
-            cp.addLast(new ChicagoClientHandler(futureMap));
+            cp.addLast(handler);
           }
         });
 

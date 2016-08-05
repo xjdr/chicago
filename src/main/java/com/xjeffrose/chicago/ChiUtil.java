@@ -13,6 +13,7 @@ public class ChiUtil {
   private static final Logger log = LoggerFactory.getLogger(ChiUtil.class.getName());
   public static final String delimiter = "@@@";
   public static final String defaultColFam = "chicago";
+  public static final int MaxBufferSize = 100000;
   public static byte[] getTimeStamp() {
     return ZonedDateTime
         .now(ZoneId.of("UTC"))
@@ -20,7 +21,7 @@ public class ChiUtil {
   }
 
   public static long findOffset(byte[] input) {
-    if (new String(input).contains(delimiter)) {
+    if (input != null && input.length > 0 && new String(input).contains(delimiter)) {
       int lastIndex = findLastOffsetIndex(input,delimiter.getBytes());
       long offset = Longs.fromByteArray(Arrays.copyOfRange(input,lastIndex+1,input.length-1));
       //Incrementing by 1 because this offset is already processed.

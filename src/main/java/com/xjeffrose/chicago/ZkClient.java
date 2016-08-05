@@ -187,11 +187,17 @@ public class ZkClient {
   public boolean deleteLockPath(String path, String child) {
     try {
       List<String> children = this.getChildren(path);
-      if (children.size() == 1 && children.get(0).equals(child)){
+      if(children.size() == 0){
+        delete(path);
+      }else if (children.size() == 1 && children.get(0).equals(child)){
         delete(path + "/" + child);
         delete(path);
       }else if(children.size() > 1){
         delete(path +"/" + child);
+        //Check again if the path needs to be deleted.
+        if(this.getChildren(path).size() == 0){
+          delete(path);
+        }
       }else {
         log.error("Lock path corrupted !!!!");
       }

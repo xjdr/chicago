@@ -3,6 +3,7 @@ package com.xjeffrose.chicago.client;
 import com.google.common.util.concurrent.SettableFuture;
 import com.xjeffrose.chicago.ChicagoMessage;
 import com.xjeffrose.xio.core.XioIdleDisconnectException;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import java.util.Map;
@@ -10,6 +11,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@ChannelHandler.Sharable
 class ChicagoClientHandler extends SimpleChannelInboundHandler<ChicagoMessage> {
   private static final Logger log = LoggerFactory.getLogger(ChicagoClientHandler.class);
 

@@ -30,7 +30,7 @@ public class ChicagoServer {
   public ChicagoServer(ChiConfig config) {
     this.config = config;
     zkClient = new ZkClient(config.getZkHosts(),true);
-    dbManager = new DBManager(config, zkClient);
+    dbManager = new DBManager(config);
     nodeWatcher = new NodeWatcher(NODE_LIST_PATH, NODE_LOCK_PATH, config.getQuorum());
     dbRouter = new DBRouter(config, dbManager, dbLog);
 //    config.setZkClient(zkClient);
@@ -46,6 +46,7 @@ public class ChicagoServer {
     zkClient.electLeader(ELECTION_PATH);
     zkClient.createIfNotExist(NODE_LOCK_PATH,"");
     nodeWatcher.refresh(zkClient, dbManager, getDBAddress());
+    dbManager.setZkClient(zkClient);
   }
   public void stop() {
     log.info("Stopping Chicago!");

@@ -19,7 +19,7 @@ public class DBManagerTest {
 
   @Before
   public void setupFixture() throws Exception {
-    dbManager = new DBManager(TestChicago.makeConfig(TestChicago.chicago_dir(tmp), 1, "",false), null);
+    dbManager = new DBManager(TestChicago.makeConfig(TestChicago.chicago_dir(tmp), 1, "",false));
   }
 
   @Test

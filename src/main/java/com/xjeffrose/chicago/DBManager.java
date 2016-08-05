@@ -1,17 +1,22 @@
 package com.xjeffrose.chicago;
 
 import com.google.common.primitives.Longs;
+import com.xjeffrose.chicago.server.ChicagoServer;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.util.internal.PlatformDependent;
 import java.io.File;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 
+import javax.annotation.Nullable;
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.ColumnFamilyOptions;
@@ -23,6 +28,7 @@ import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
+import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
 import org.rocksdb.util.SizeUnit;
 import org.slf4j.Logger;
@@ -42,14 +48,15 @@ public class DBManager {
   private final ChiConfig config;
   private ZkClient zkClient;
   private final HashMap<String,AtomicLong> counter = new HashMap<>();
-  private final int MAX_ENTRIES = 500;
 
+  static {
+    RocksDB.loadLibrary();
+  }
 
   private RocksDB db;
 
-  public DBManager(ChiConfig config, ZkClient zkClient) {
+  public DBManager(ChiConfig config) {
     this.config = config;
-    this.zkClient = zkClient;
     //    RocksDB.loadLibrary();
     configOptions();
     configReadOptions();
@@ -68,6 +75,10 @@ public class DBManager {
       throw new RuntimeException(e);
     }
     //createColumnFamily(ChiUtil.defaultColFam.getBytes());
+  }
+
+  public void setZkClient(ZkClient zkClient){
+    this.zkClient = zkClient;
   }
 
   void removeDB(File file) {
@@ -158,7 +169,7 @@ public class DBManager {
       columnFamilies.put(new String(name), db.createColumnFamily(columnFamilyDescriptor));
       counter.put(new String(name), new AtomicLong(0));
       if (zkClient != null) {
-        zkClient.set("/chicago/replication-lock/" + new String(name), null);
+        zkClient.createIfNotExist(ChicagoServer.NODE_LOCK_PATH+ "/" + new String(name), "");
       }
       return true;
     } catch (RocksDBException e) {
@@ -309,6 +320,34 @@ public class DBManager {
     }
   }
 
+  public byte[] batchWrite(byte[] colFam, String value){
+    if (value == null) {
+      log.error("Tried to ts write a null value");
+      return null;
+    } else if (!colFamilyExists(colFam)) {
+      createColumnFamily(colFam);
+    }
+//    int noOfRecords = value.split(ChiUtil.delimiter).length;
+//    long returnVal = counter.get(new String(colFam)).get() + noOfRecords;
+    String[] values = new String(value).split(ChiUtil.delimiter);
+    byte[] ts = new byte[0];
+    for( String val : values){
+      ts = Longs.toByteArray(counter.get(new String(colFam)).getAndIncrement());
+      if(Longs.fromByteArray(ts)%1000 == 0) {
+        log.info("key reached " + Longs.fromByteArray(ts) + " for colFam "+ new String(colFam));
+      }
+      resetIfOverflow(counter.get(new String(colFam)),new String(colFam));
+      try {
+        db.put(columnFamilies.get(new String(colFam)), writeOptions, ts, val.getBytes());
+      } catch (RocksDBException e) {
+        log.error("Error writing record: " + new String(colFam), e);
+        return null;
+      }
+    }
+    return ts;
+  }
+
+
   public byte[] stream(byte[] colFam) {
     byte[] offset = new byte[]{};
     return stream(colFam, offset);
@@ -321,7 +360,7 @@ public class DBManager {
     if (colFamilyExists(colFam)) {
       try (RocksIterator i = db.newIterator(columnFamilies.get(new String(colFam)), readOptions)) {
         ByteBuf bb = Unpooled.buffer();
-        byte[] lastOffset=null;
+        byte[] lastOffset = Longs.toByteArray(0l);
 
         if (offset.length == 0) {
           i.seekToLast();
@@ -329,22 +368,23 @@ public class DBManager {
           lastOffset = offset;
           i.seek(offset);
         }
-        int count = 0;
+        int size = 0;
 
-        while (i.isValid() && count<MAX_ENTRIES) {
+        while (i.isValid() && size < ChiUtil.MaxBufferSize) {
           byte[] v = i.value();
           byte[] _v = new byte[v.length + 1];
           System.arraycopy(v, 0, _v, 0, v.length);
           System.arraycopy(new byte[]{'\0'}, 0, _v, v.length, 1);
           bb.writeBytes(_v);
-          lastOffset=i.key();
+          lastOffset = i.key();
           i.next();
-          count++;
+          size += _v.length;
         }
+
 
         bb.writeBytes(ChiUtil.delimiter.getBytes());
         bb.writeBytes(lastOffset);
-        log.info("Stream response from DB : "+ (System.currentTimeMillis() - startTime)+ "ms with last offset as "+Longs.fromByteArray(lastOffset));
+        log.info("Stream response from DB : " + (System.currentTimeMillis() - startTime) + "ms with last offset as " + Longs.fromByteArray(lastOffset));
         return bb.array();
       }
     } else {
