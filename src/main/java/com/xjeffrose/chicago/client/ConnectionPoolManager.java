@@ -72,6 +72,10 @@ public class ConnectionPoolManager {
     refreshPool();
   }
 
+  public void addToFutureMap(UUID id, SettableFuture<byte[]> f){
+    futureMap.put(id,f);
+  }
+
   public void stop() {
     log.info("ConnectionPoolManager stopping");
     running.set(false);
@@ -151,16 +155,16 @@ public class ConnectionPoolManager {
 
   private ChannelFuture _getNode(String node, long startTime) throws ChicagoClientTimeoutException {
     while (connectionMap.get(node) == null) {
-//      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
-//        Thread.currentThread().interrupt();
-//        System.out.println("Cannot get connection for node "+ node +" connectionMap ="+ connectionMap.keySet().toString());
-//        throw new ChicagoClientTimeoutException();
-//      }
-//      try {
-//        Thread.sleep(1);
-//      } catch (InterruptedException e) {
-//        e.printStackTrace();
-//      }
+      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
+        Thread.currentThread().interrupt();
+        System.out.println("Cannot get connection for node "+ node +" connectionMap ="+ connectionMap.keySet().toString());
+        throw new ChicagoClientTimeoutException();
+      }
+      try {
+        Thread.sleep(1);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
     }
 
     ChannelFuture cf = connectionMap.get(node);

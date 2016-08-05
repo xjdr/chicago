@@ -40,7 +40,7 @@ public class WritePerformance{
   public static void main(String[] args) throws Exception {
 
     final int loop = Integer.parseInt(args[0]);
-    final int workerSize = Integer.parseInt(args[1]);
+    final int size = Integer.parseInt(args[1]);
     final int clients = Integer.parseInt(args[2]);
     int throughput = Integer.parseInt(args[3]);
     final String connectionString = args[4];
@@ -51,13 +51,20 @@ public class WritePerformance{
       if(connectionString.contains("2181")){
         //Jeff servers = 10.22.100.183:2181,10.25.180.234:2181,10.22.103.86:2181,10.25.180.247:2181,10.25.69.226:2181
         //smadan server = 10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181
-        ctsa[i] = new ChicagoClient(connectionString,3);
-        //ctsa[i].startAndWaitForNodes(3);
+        try {
+          ctsa[i] = new ChicagoClient(connectionString,3);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
       }else {
-        ctsa[i] = new ChicagoClient(connectionString);
+        try {
+          ctsa[i] = new ChicagoClient(connectionString);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
       }
     }
-    //Thread.sleep(500);
+
     long sleepTime = NS_PER_SEC / throughput;
     long sleepDeficitNs = 0;
     Stats stats = new Stats(loop,5000, latch);
@@ -65,16 +72,24 @@ public class WritePerformance{
     long startTime = System.currentTimeMillis();
     for (int i = 0; i < loop; i++) {
       long sendStart = System.currentTimeMillis();
-      String v = "val" +i + "TTE-cc";
-      Callback cb = stats.nextCompletion(sendStart, v.getBytes().length, stats);
-      ListenableFuture<List<byte[]>> future = ctsa[i%clients].tsWrite(key.getBytes(),v.getBytes());
+      byte[] val = new byte[size];
+      Random random = new Random(0);
+      for (int j = 0; j < val.length; ++j)
+        val[j] = (byte) (random.nextInt(26) + 65);
+      //String v = "val" +i + "TTE-cc";
+      Callback cb = stats.nextCompletion(sendStart, val.length, stats);
+      ListenableFuture<List<byte[]>> future = ctsa[i%clients].tsbatchWrite(key.getBytes(),val);
       Futures.addCallback(future,cb);
       if (throughput > 0) {
         sleepDeficitNs += sleepTime;
         if (sleepDeficitNs >= MIN_SLEEP_NS) {
           long sleepMs = sleepDeficitNs / 1000000;
           long sleepNs = sleepDeficitNs - sleepMs * 1000000;
-          Thread.sleep(sleepMs, (int) sleepNs);
+          try {
+            Thread.sleep(sleepMs, (int) sleepNs);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
           sleepDeficitNs = 0;
         }
       }
@@ -219,6 +234,7 @@ public class WritePerformance{
     }
 
     @Override public void onSuccess(@Nullable List<byte[]> bytes) {
+      System.out.println("Got response :"+ success.incrementAndGet());
       long now = System.currentTimeMillis();
       int latency = (int) (now - start);
       this.stats.record(iteration, latency, nbytes, now);

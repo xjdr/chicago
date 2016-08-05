@@ -38,6 +38,7 @@ abstract public class BaseChicagoClient {
   protected final boolean single_server;
   protected final RendezvousHash rendezvousHash;
   protected final ClientNodeWatcher clientNodeWatcher;
+  protected final ChicagoBuffer chicagoBuffer;
   private CountDownLatch latch;
   private final ClientNodeWatcher.Listener listener = new ClientNodeWatcher.Listener() {
       public void nodeAdded() {
@@ -67,6 +68,7 @@ abstract public class BaseChicagoClient {
     this.rendezvousHash =  new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
     clientNodeWatcher = null;
     this.connectionPoolMgr = new ConnectionPoolManager(address, futureMap);
+    this.chicagoBuffer = new ChicagoBuffer(connectionPoolMgr, this);
     if (Epoll.isAvailable()) {
       evg = new EpollEventLoopGroup(5);
     } else {
@@ -84,6 +86,7 @@ abstract public class BaseChicagoClient {
     this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
     clientNodeWatcher = new ClientNodeWatcher(zkClient, rendezvousHash, listener);
     this.connectionPoolMgr = new ConnectionPoolManager(zkClient, futureMap);
+    this.chicagoBuffer = new ChicagoBuffer(connectionPoolMgr, this);
     if (Epoll.isAvailable()) {
       evg = new EpollEventLoopGroup(5);
     } else {

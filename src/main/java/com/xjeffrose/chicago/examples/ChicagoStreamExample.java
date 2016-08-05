@@ -17,7 +17,7 @@ public class ChicagoStreamExample {
   ChicagoClient chicagoClient;
 
   //private static String key = "ppfe-msmaster-LM-SJN-00875858";
-  private static String key = "ppfe-test";
+  private static String key = "ppfe-test-cc";
 
   public static void main(String[] args) throws Exception{
     ChicagoStreamExample cs = new ChicagoStreamExample();
@@ -29,8 +29,16 @@ public class ChicagoStreamExample {
     //cs.chicagoClient.startAndWaitForNodes(4);
     //cs.writeSomeData();
     //cs.transactStream();
-    cs.transactStreamWithBuf();
+    //cs.transactStreamWithBuf();
+    cs.printStream();
     System.exit(0);
+  }
+
+  public void printStream() throws  Exception{
+    Long offset = 3L;
+    byte[] resultArray = chicagoClient.read(key.getBytes(), Longs.toByteArray(offset)).get().get(0);
+    String result = new String(resultArray);
+    System.out.println(result);
   }
 
   public void writeSomeData() throws Exception{

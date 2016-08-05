@@ -98,7 +98,12 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
           break;
         case TS_WRITE:
           if(finalMsg.getKey().length == 0) {
-            readResponse = dbManager.tsWrite(finalMsg.getColFam(), finalMsg.getVal());
+            String value = new String(finalMsg.getVal());
+            if(value.contains(ChiUtil.delimiter)){
+              readResponse = dbManager.batchWrite(finalMsg.getColFam(),value);
+            }else {
+              readResponse = dbManager.tsWrite(finalMsg.getColFam(), finalMsg.getVal());
+            }
           }else{
             readResponse = dbManager.tsWrite(finalMsg.getColFam(),finalMsg.getKey(), finalMsg.getVal());
           }

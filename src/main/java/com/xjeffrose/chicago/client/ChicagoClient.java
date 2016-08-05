@@ -14,7 +14,6 @@ import io.netty.channel.ChannelFuture;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -24,6 +23,8 @@ import org.slf4j.LoggerFactory;
 
 public class ChicagoClient extends BaseChicagoClient {
   private static final Logger log = LoggerFactory.getLogger(ChicagoClient.class);
+  private final ByteBuf buffer = Unpooled.buffer();
+  private int count = 0;
 
   public ChicagoClient(String zkConnectionString, int quorum) throws InterruptedException {
     super(zkConnectionString, quorum);
@@ -56,7 +57,7 @@ public class ChicagoClient extends BaseChicagoClient {
   public ChicagoClient(String address) throws InterruptedException {
     super(address);
   }
-  
+
   public ByteBuf aggregatedStream(byte[] key, byte[] offset){
     ByteBuf responseStream = Unpooled.directBuffer();
     aggregatedStream(key,offset,responseStream);
@@ -313,7 +314,7 @@ public class ChicagoClient extends BaseChicagoClient {
   }
 
   public ListenableFuture<List<byte[]>> tsWrite(byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException {
-    return _tsWrite(null, key, value, 0);
+    return _tsWrite(null,key,value,0);
   }
 
   public ListenableFuture<List<byte[]>> tsWrite(byte[] colFam, byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException {
@@ -362,6 +363,11 @@ public class ChicagoClient extends BaseChicagoClient {
       }
     }
     return Futures.successfulAsList(relevantFutures);
+  }
+
+
+  public ListenableFuture<List<byte[]>> tsbatchWrite(byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException {
+    return chicagoBuffer.append(key , value);
   }
 
   public ListenableFuture<List<byte[]>> delete(byte[] key) throws ChicagoClientTimeoutException, ChicagoClientException {
