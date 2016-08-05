@@ -38,7 +38,7 @@ public class DBRouter implements Closeable {
   private final ChiConfig config;
   private final DBManager dbManager;
   private final DBLog dbLog;
-  private ChicagoMasterManager masterManager;
+  //private ChicagoMasterManager masterManager;
   private Application application;
 
   public DBRouter(ChiConfig config, DBManager dbManager, DBLog dbLog) {
@@ -185,6 +185,7 @@ public class DBRouter implements Closeable {
 //  }
 
 
+  /*
   private ChicagoServerPipeline buildElectionPipeline() {
     return new ChicagoServerPipeline("election") {
       @Override
@@ -207,6 +208,7 @@ public class DBRouter implements Closeable {
       }
     };
   }
+  */
 
   private ChicagoServerPipeline buildDbPipeline() {
     return new ChicagoServerPipeline("db") {
@@ -217,6 +219,7 @@ public class DBRouter implements Closeable {
     };
   }
 
+
   public void run() {
     application = new ApplicationBootstrap("chicago.application")
       .addServer("admin", (bs) -> bs.addToPipeline(new XioSslHttp1_1Pipeline()))
@@ -226,7 +229,7 @@ public class DBRouter implements Closeable {
 //      .addServer("rpc", (bs) -> bs.addToPipeline(buildRpcPipeline()))
       .build();
 
-    this.masterManager = new ChicagoMasterManager(config, application.instrumentation("election").boundAddress());
+    //this.masterManager = new ChicagoMasterManager(config, application.instrumentation("election").boundAddress());
 
     /*
     configureAdminServer();

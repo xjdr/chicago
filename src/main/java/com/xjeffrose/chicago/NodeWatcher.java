@@ -48,7 +48,7 @@ public class NodeWatcher {
     nodeList.getCache().getListenable().addListener(genericListener);
     try {
       this.chicagoClient = new ChicagoClient(zkClient.getConnectionString(), quorum);
-      //chicagoClient.start();
+      chicagoClient.start();
       nodeList.start();
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -64,11 +64,21 @@ public class NodeWatcher {
 
   public void stop() throws Exception {
     log.info("Nodewatcher stopping");
-    chicagoClient.stop();
+    if (chicagoClient != null) {
+      chicagoClient.stop();
+    } else {
+      System.out.println("No chicago client to stop");
+    }
     zkClient = null;
-    nodeList.getCache().getListenable().removeListener(genericListener);
+    if (nodeList != null && nodeList.getCache() != null && nodeList.getCache().getListenable() != null) {
+      nodeList.getCache().getListenable().removeListener(genericListener);
+    } else {
+      log.info("Couldn't remove genericListener without NPE");
+    }
     replicationWorker.shutdownNow();
-    nodeList.stop();
+    if (nodeList != null) {
+      nodeList.stop();
+    }
   }
 
   private void redistributeKeys(String node, TreeCacheEvent.Type type) {

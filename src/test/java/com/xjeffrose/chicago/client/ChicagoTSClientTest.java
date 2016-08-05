@@ -111,6 +111,8 @@ public class ChicagoTSClientTest {
             e.printStackTrace();
           } catch (ChicagoClientException e) {
             e.printStackTrace();
+          } catch (InterruptedException e) {
+            e.printStackTrace();
           }
         }
       }

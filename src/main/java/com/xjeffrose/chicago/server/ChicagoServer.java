@@ -52,7 +52,9 @@ public class ChicagoServer {
     log.info("Stopping Chicago!");
     try {
       nodeWatcher.stop();
-      zkClient.stop();
+      if (zkClient != null) {
+        zkClient.stop();
+      }
       zkClient = null;
       dbRouter.close();
       dbManager.destroy();
