@@ -289,7 +289,7 @@ public class ChicagoTSClientTest {
 			}
 
       String output = result.split(ChiUtil.delimiter)[0];
-			System.out.println(output);
+//			System.out.println(output);
 
       if(!output.isEmpty()){
         offset = offset +1;
@@ -306,7 +306,7 @@ public class ChicagoTSClientTest {
       "tskey".getBytes(), Longs.toByteArray(offset)).get().get(0);
 
 		assertNotNull(_resp);
-		System.out.println(new String(_resp));
+//		System.out.println(new String(_resp));
 	}
 
 	@Test

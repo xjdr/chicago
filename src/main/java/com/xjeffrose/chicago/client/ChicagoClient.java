@@ -23,8 +23,8 @@ import org.slf4j.LoggerFactory;
 
 public class ChicagoClient extends BaseChicagoClient {
   private static final Logger log = LoggerFactory.getLogger(ChicagoClient.class);
-  private final ByteBuf buffer = Unpooled.buffer();
-  private int count = 0;
+//  private final ByteBuf buffer = Unpooled.buffer();
+//  private int count = 0;
 
   public ChicagoClient(String zkConnectionString, int quorum) throws InterruptedException {
     super(zkConnectionString, quorum);
@@ -156,7 +156,7 @@ public class ChicagoClient extends BaseChicagoClient {
         },evg);
         futureMap.put(id, f);
         relevantFutures.add(f);
-        cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.STREAM, key, null, offset));
+        cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.STREAM, key, null, offset), cf.channel().voidPromise());
         connectionPoolMgr.releaseChannel(node, cf);
 
         evg.schedule(() -> {
@@ -172,7 +172,7 @@ public class ChicagoClient extends BaseChicagoClient {
             if (cf1.channel().isWritable()) {
               UUID id1 = UUID.randomUUID();
               SettableFuture<byte[]> f1 = SettableFuture.create();
-              Futures.withTimeout(f1, TIMEOUT, TimeUnit.MILLISECONDS, evg);
+//              Futures.withTimeout(f1, TIMEOUT, TimeUnit.MILLISECONDS, evg);
               Futures.addCallback(f1, new FutureCallback<byte[]>() {
                 @Override
                 public void onSuccess(@Nullable byte[] bytes) {
@@ -186,7 +186,7 @@ public class ChicagoClient extends BaseChicagoClient {
               });
               futureMap.put(id1, f1);
               relevantFutures.add(f1);
-              cf1.channel().writeAndFlush(new DefaultChicagoMessage(id1, Op.STREAM, key, null, offset));
+              cf1.channel().writeAndFlush(new DefaultChicagoMessage(id1, Op.STREAM, key, null, offset), cf1.channel().voidPromise());
               connectionPoolMgr.releaseChannel(node, cf1);
             }
           }
@@ -203,7 +203,7 @@ public class ChicagoClient extends BaseChicagoClient {
   }
 
   public ListenableFuture<List<byte[]>> read(byte[] colFam, byte[] key) throws ChicagoClientTimeoutException {
-    ConcurrentLinkedDeque<byte[]> responseList = new ConcurrentLinkedDeque<>();
+//    ConcurrentLinkedDeque<byte[]> responseList = new ConcurrentLinkedDeque<>();
     List<ListenableFuture<byte[]>> relevantFutures = new ArrayList<>();
     List<String> hashList = getEffectiveNodes(colFam);
     String node = hashList.get(0);
@@ -213,7 +213,7 @@ public class ChicagoClient extends BaseChicagoClient {
       if (cf.channel().isWritable()) {
         UUID id = UUID.randomUUID();
         SettableFuture<byte[]> f = SettableFuture.create();
-        Futures.withTimeout(f, TIMEOUT, TimeUnit.MILLISECONDS, evg);
+//        Futures.withTimeout(f, TIMEOUT, TimeUnit.MILLISECONDS, evg);
         Futures.addCallback(f, new FutureCallback<byte[]>() {
           @Override
           public void onSuccess(@Nullable byte[] bytes) {
@@ -229,7 +229,7 @@ public class ChicagoClient extends BaseChicagoClient {
         });
         futureMap.put(id, f);
         relevantFutures.add(f);
-        cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.READ, colFam, key, null));
+        cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.READ, colFam, key, null), cf.channel().voidPromise());
         connectionPoolMgr.releaseChannel(node, cf);
 
         evg.schedule(() -> {
@@ -245,7 +245,7 @@ public class ChicagoClient extends BaseChicagoClient {
             if (cf1.channel().isWritable()) {
               UUID id1 = UUID.randomUUID();
               SettableFuture<byte[]> f1 = SettableFuture.create();
-              Futures.withTimeout(f1, TIMEOUT, TimeUnit.MILLISECONDS, evg);
+//              Futures.withTimeout(f1, TIMEOUT, TimeUnit.MILLISECONDS, evg);
               Futures.addCallback(f1, new FutureCallback<byte[]>() {
                 @Override
                 public void onSuccess(@Nullable byte[] bytes) {
@@ -258,7 +258,7 @@ public class ChicagoClient extends BaseChicagoClient {
               });
               futureMap.put(id1, f1);
               relevantFutures.add(f1);
-              cf1.channel().writeAndFlush(new DefaultChicagoMessage(id1, Op.READ, colFam, key, null));
+              cf1.channel().writeAndFlush(new DefaultChicagoMessage(id1, Op.READ, colFam, key, null), cf1.channel().voidPromise());
               connectionPoolMgr.releaseChannel(node, cf1);
             }
           }
@@ -279,10 +279,9 @@ public class ChicagoClient extends BaseChicagoClient {
   }
 
   private ListenableFuture<List<byte[]>> _write(byte[] colFam, byte[] key, byte[] value, int _retries) throws ChicagoClientTimeoutException, ChicagoClientException {
-    final int retries = _retries;
+//    final int retries = _retries;
     List<ListenableFuture<byte[]>> relevantFutures = new ArrayList<>();
-
-    final long startTime = System.currentTimeMillis();
+//    final long startTime = System.currentTimeMillis();
     List<String> hashList = getEffectiveNodes(colFam);
     for (String node : hashList) {
       if (node == null) {
@@ -291,7 +290,7 @@ public class ChicagoClient extends BaseChicagoClient {
         if (cf.channel().isWritable()) {
           UUID id = UUID.randomUUID();
           SettableFuture<byte[]> f = SettableFuture.create();
-          Futures.withTimeout(f, TIMEOUT, TimeUnit.MILLISECONDS, evg);
+//          Futures.withTimeout(f, TIMEOUT, TimeUnit.MILLISECONDS, evg);
           Futures.addCallback(f, new FutureCallback<byte[]>() {
             @Override
             public void onSuccess(@Nullable byte[] bytes) {
@@ -305,7 +304,7 @@ public class ChicagoClient extends BaseChicagoClient {
           });
           futureMap.put(id, f);
           relevantFutures.add(f);
-          cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.WRITE, colFam, key, value));
+          cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.WRITE, colFam, key, value), cf.channel().voidPromise());
           connectionPoolMgr.releaseChannel(node, cf);
         }
       }
@@ -322,10 +321,9 @@ public class ChicagoClient extends BaseChicagoClient {
   }
 
   private ListenableFuture<List<byte[]>> _tsWrite(byte[] colFam, byte[] key, byte[] value, int _retries) throws ChicagoClientTimeoutException, ChicagoClientException {
-    final int retries = _retries;
+//    final int retries = _retries;
     List<ListenableFuture<byte[]>> relevantFutures = new ArrayList<>();
-
-    final long startTime = System.currentTimeMillis();
+//    final long startTime = System.currentTimeMillis();
     List<String> hashList;
     if (colFam == null) {
       hashList = getEffectiveNodes(key);
@@ -339,7 +337,7 @@ public class ChicagoClient extends BaseChicagoClient {
         if (cf.channel().isWritable()) {
           UUID id = UUID.randomUUID();
           SettableFuture<byte[]> f = SettableFuture.create();
-          Futures.withTimeout(f, TIMEOUT, TimeUnit.MILLISECONDS, evg);
+//          Futures.withTimeout(f, TIMEOUT, TimeUnit.MILLISECONDS, evg);
           Futures.addCallback(f, new FutureCallback<byte[]>() {
             @Override
             public void onSuccess(@Nullable byte[] bytes) {
@@ -354,9 +352,9 @@ public class ChicagoClient extends BaseChicagoClient {
           futureMap.put(id, f);
           relevantFutures.add(f);
           if (colFam != null) {
-            cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.TS_WRITE, colFam, key, value));
+            cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.TS_WRITE, colFam, key, value), cf.channel().voidPromise());
           } else {
-            cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.TS_WRITE, key, null, value));
+            cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.TS_WRITE, key, null, value), cf.channel().voidPromise());
           }
           connectionPoolMgr.releaseChannel(node, cf);
         }
@@ -379,9 +377,9 @@ public class ChicagoClient extends BaseChicagoClient {
   }
 
   public ListenableFuture<List<byte[]>> deleteColFam(byte[] colFam) throws ChicagoClientTimeoutException, ChicagoClientException {
-    final int retries = 0;
+//    final int retries = 0;
     List<ListenableFuture<byte[]>> relevantFutures = new ArrayList<>();
-    final long startTime = System.currentTimeMillis();
+//    final long startTime = System.currentTimeMillis();
     List<String> hashList = getEffectiveNodes(colFam);
     for (String node : hashList) {
       if (node == null) {
@@ -403,7 +401,7 @@ public class ChicagoClient extends BaseChicagoClient {
           });
           futureMap.put(id, f);
           relevantFutures.add(f);
-          cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.DELETE, colFam, null, null));
+          cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.DELETE, colFam, null, null), cf.channel().voidPromise());
           connectionPoolMgr.releaseChannel(node, cf);
         }
       }
@@ -436,7 +434,7 @@ public class ChicagoClient extends BaseChicagoClient {
           });
           futureMap.put(id, f);
           relevantFutures.add(f);
-          cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.DELETE, colFam, key, null));
+          cf.channel().writeAndFlush(new DefaultChicagoMessage(id, Op.DELETE, colFam, key, null), cf.channel().voidPromise());
           connectionPoolMgr.releaseChannel(node, cf);
         }
       }

@@ -6,10 +6,12 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.xjeffrose.xio.processor.XioProcessor;
 import com.xjeffrose.xio.processor.XioSimpleProcessor;
 import com.xjeffrose.xio.server.RequestContext;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@ChannelHandler.Sharable
 public class ChicagoProcessor implements XioSimpleProcessor {
   private static final Logger log = LoggerFactory.getLogger(ChicagoProcessor.class);
 
@@ -23,17 +25,17 @@ public class ChicagoProcessor implements XioSimpleProcessor {
     final ListeningExecutorService service = MoreExecutors.listeningDecorator(ctx.executor());
 
     return service.submit(() -> {
-      if (log.isDebugEnabled()) {
-        ChicagoMessage msg = null;
-
-        if (req instanceof ChicagoMessage) {
-          msg = (ChicagoMessage) req;
-
-          ChicagoMessage finalMsg = msg;
-          log.debug("  ========================================================== Server wrote :" +
-              " For UUID" + finalMsg.getId() + " and key " + new String(finalMsg.getKey()));
-        }
-      }
+//      if (log.isDebugEnabled()) {
+//        ChicagoMessage msg = null;
+//
+//        if (req instanceof ChicagoMessage) {
+//          msg = (ChicagoMessage) req;
+//
+//          ChicagoMessage finalMsg = msg;
+//          log.debug("  ========================================================== Server wrote :" +
+//              " For UUID" + finalMsg.getId() + " and key " + new String(finalMsg.getKey()));
+//        }
+//      }
       return true;
     });
   }
