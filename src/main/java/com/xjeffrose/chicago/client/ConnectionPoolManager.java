@@ -72,6 +72,10 @@ public class ConnectionPoolManager {
     refreshPool();
   }
 
+  public void addToFutureMap(UUID id, SettableFuture<byte[]> f){
+    futureMap.put(id,f);
+  }
+
   public void stop() {
     log.info("ConnectionPoolManager stopping");
     running.set(false);

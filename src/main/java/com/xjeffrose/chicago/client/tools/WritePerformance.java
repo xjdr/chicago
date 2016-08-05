@@ -37,10 +37,10 @@ public class WritePerformance{
   private static Long[] keys;
   int valCount;
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws Exception {
 
     final int loop = Integer.parseInt(args[0]);
-    final int workerSize = Integer.parseInt(args[1]);
+    final int size = Integer.parseInt(args[1]);
     final int clients = Integer.parseInt(args[2]);
     int throughput = Integer.parseInt(args[3]);
     final String connectionString = args[4];
@@ -56,7 +56,6 @@ public class WritePerformance{
         } catch (InterruptedException e) {
           e.printStackTrace();
         }
-        //ctsa[i].startAndWaitForNodes(3);
       }else {
         try {
           ctsa[i] = new ChicagoClient(connectionString);
@@ -65,7 +64,7 @@ public class WritePerformance{
         }
       }
     }
-    //Thread.sleep(500);
+
     long sleepTime = NS_PER_SEC / throughput;
     long sleepDeficitNs = 0;
     Stats stats = new Stats(loop,5000, latch);
@@ -73,17 +72,14 @@ public class WritePerformance{
     long startTime = System.currentTimeMillis();
     for (int i = 0; i < loop; i++) {
       long sendStart = System.currentTimeMillis();
-      String v = "val" +i + "TTE-cc";
-      Callback cb = stats.nextCompletion(sendStart, v.getBytes().length, stats);
-      ListenableFuture<List<byte[]>> future = null;
-      try {
-        future = ctsa[i%clients].tsWrite(key.getBytes(),v.getBytes());
-        Futures.addCallback(future,cb);
-      } catch (ChicagoClientTimeoutException e) {
-        e.printStackTrace();
-      } catch (ChicagoClientException e) {
-        e.printStackTrace();
-      }
+      byte[] val = new byte[size];
+      Random random = new Random(0);
+      for (int j = 0; j < val.length; ++j)
+        val[j] = (byte) (random.nextInt(26) + 65);
+      //String v = "val" +i + "TTE-cc";
+      Callback cb = stats.nextCompletion(sendStart, val.length, stats);
+      ListenableFuture<List<byte[]>> future = ctsa[i%clients].tsbatchWrite(key.getBytes(),val);
+      Futures.addCallback(future,cb);
       if (throughput > 0) {
         sleepDeficitNs += sleepTime;
         if (sleepDeficitNs >= MIN_SLEEP_NS) {
@@ -99,11 +95,7 @@ public class WritePerformance{
       }
     }
 
-    try {
-      latch.await();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
+    latch.await();
     stats.printTotal();
     Long totalTime = (System.currentTimeMillis() - startTime);
     System.out.println("Total time taken for "+loop+ " writes ="+ totalTime + "ms" +  " average ="+ (totalTime/(float)loop)+"ms");
@@ -242,6 +234,7 @@ public class WritePerformance{
     }
 
     @Override public void onSuccess(@Nullable List<byte[]> bytes) {
+      System.out.println("Got response :"+ success.incrementAndGet());
       long now = System.currentTimeMillis();
       int latency = (int) (now - start);
       this.stats.record(iteration, latency, nbytes, now);
