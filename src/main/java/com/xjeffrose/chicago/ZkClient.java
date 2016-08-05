@@ -65,8 +65,7 @@ public class ZkClient {
           .create()
           .creatingParentsIfNeeded()
           .withMode(CreateMode.EPHEMERAL)
-          .forPath(path,
-            ConfigSerializer.serialize(config).getBytes());
+          .forPath(path, config.toString().getBytes());
       } catch (Exception e) {
         log.error("Error registering Server", e);
         throw new RuntimeException(e);

@@ -11,10 +11,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import lombok.Getter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.rocksdb.util.SizeUnit;
 
 @Slf4j
+@ToString
 public class ChiConfig {
   @Getter
   private final String zkHosts;
