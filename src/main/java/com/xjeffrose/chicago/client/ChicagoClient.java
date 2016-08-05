@@ -12,10 +12,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -316,20 +314,7 @@ public class ChicagoClient extends BaseChicagoClient {
   }
 
   public ListenableFuture<List<byte[]>> tsWrite(byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException {
-    if(count == 0){
-      buffer.resetReaderIndex();
-      buffer.resetWriterIndex();
-    }
-    buffer.writeBytes(value);
-    count++;
-    if(count >10000){
-      count = 0;
-      return _tsWrite(null,key,buffer.array(),0);
-    }else{
-      SettableFuture<List<byte[]>> f = SettableFuture.create();
-      f.set(new ArrayList<byte[]>(Arrays.asList("Win!".getBytes())));
-      return f;
-    }
+    return _tsWrite(null,key,value,0);
   }
 
   public ListenableFuture<List<byte[]>> tsWrite(byte[] colFam, byte[] key, byte[] value) throws ChicagoClientTimeoutException, ChicagoClientException {
