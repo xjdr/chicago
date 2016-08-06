@@ -38,12 +38,14 @@ public class DBRouter implements Closeable {
   private final DBManager dbManager;
   private final DBLog dbLog;
   //private ChicagoMasterManager masterManager;
+  private final ChannelHandler handler;
   private Application application;
 
   public DBRouter(ChiConfig config, DBManager dbManager, DBLog dbLog) {
     this.config = config;
     this.dbManager = dbManager;
     this.dbLog = dbLog;
+    this.handler = new ChicagoDBHandler(dbManager, dbLog);
     //config.setDbRouter(this);
   }
   /*
@@ -213,7 +215,8 @@ public class DBRouter implements Closeable {
     return new ChicagoServerPipeline("db") {
       @Override
       public ChannelHandler getApplicationHandler() {
-        return new ChicagoDBHandler(dbManager, dbLog);
+//        return new ChicagoDBHandler(dbManager, dbLog);
+        return handler;
       }
     };
   }

@@ -1,5 +1,7 @@
 package com.xjeffrose.chicago.client;
 
+import com.xjeffrose.chicago.ChicagoObjectDecoder;
+import java.util.concurrent.TimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -31,6 +33,7 @@ public class ChicagoTSClientTest {
   public TemporaryFolder tmp = new TemporaryFolder();
   List<ChicagoServer> servers;
   ChicagoClient chicagoTSClient;
+  ChicagoObjectDecoder decoder = new ChicagoObjectDecoder();
 
   @Before
   public void setup() throws Exception {
@@ -76,17 +79,17 @@ public class ChicagoTSClientTest {
           ListenableFuture<List<byte[]>> _f = chicagoTSClientParalellel
               .stream("tskey".getBytes(), Longs.toByteArray(2));
           assertNotNull(new String(_f.get().get(0)));
-          response.add(new String(_f.get().get(0)));
+          response.add(new String(decoder.decode(_f.get().get(0)).getVal()));
           Thread.sleep(200);
           _f = chicagoTSClientParalellel.stream("tskey".getBytes(),
               Longs.toByteArray(4));
           assertNotNull(new String(_f.get().get(0)));
-          response.add(new String(_f.get().get(0)));
+          response.add(new String(decoder.decode(_f.get().get(0)).getVal()));
           Thread.sleep(200);
           _f = chicagoTSClientParalellel.stream("tskey".getBytes(),
               Longs.toByteArray(6));
           assertNotNull(new String(_f.get().get(0)));
-          response.add(new String(_f.get().get(0)));
+          response.add(new String(decoder.decode(_f.get().get(0)).getVal()));
         } catch (Exception e) {
         }
       }
@@ -112,6 +115,10 @@ public class ChicagoTSClientTest {
           } catch (ChicagoClientException e) {
             e.printStackTrace();
           } catch (InterruptedException e) {
+            e.printStackTrace();
+          } catch (ExecutionException e) {
+            e.printStackTrace();
+          } catch (TimeoutException e) {
             e.printStackTrace();
           }
         }
@@ -205,6 +212,8 @@ public class ChicagoTSClientTest {
           } catch (InterruptedException e) {
             e.printStackTrace();
           } catch (ExecutionException e) {
+            e.printStackTrace();
+          } catch (TimeoutException e) {
             e.printStackTrace();
           }
         }

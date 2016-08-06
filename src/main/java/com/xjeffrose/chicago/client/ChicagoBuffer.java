@@ -13,9 +13,13 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import static com.xjeffrose.chicago.client.BaseChicagoClient.TIMEOUT;
 
 
 public class ChicagoBuffer {
@@ -103,10 +107,14 @@ public class ChicagoBuffer {
             } else {
               ChannelFuture cf = null;
               try {
-                cf = connectionPoolMgr.getNode(node);
+                cf = connectionPoolMgr.getNode(node).get(TIMEOUT, TimeUnit.MILLISECONDS);
               } catch (ChicagoClientTimeoutException e) {
                 e.printStackTrace();
               } catch (InterruptedException e) {
+                e.printStackTrace();
+              } catch (ExecutionException e) {
+                e.printStackTrace();
+              } catch (TimeoutException e) {
                 e.printStackTrace();
               }
               if (cf.channel().isWritable()) {

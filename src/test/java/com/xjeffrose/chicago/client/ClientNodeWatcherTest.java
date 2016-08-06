@@ -48,29 +48,29 @@ public class ClientNodeWatcherTest {
   }
 
 
-  @Test
-  public void removeSingleNode() throws Exception {
+//  @Test
+//  public void removeSingleNode() throws Exception {
+//
+//    while (chicagoClientDHT.getNodeList("foo".getBytes()) == null) {
+//      Thread.sleep(1);
+//    }
 
-    while (chicagoClientDHT.getNodeList("foo".getBytes()) == null) {
-      Thread.sleep(1);
-    }
+//    List<String> before = ImmutableList.copyOf(chicagoClientDHT.getNodeList("foo".getBytes()));
 
-    List<String> before = ImmutableList.copyOf(chicagoClientDHT.getNodeList("foo".getBytes()));
-
-    servers.get(0).stop();
-
-    Thread.sleep(3000);
-
-    List<String> after = chicagoClientDHT.getNodeList("foo".getBytes());
-
-    assertTrue(chicagoClientDHT.buildNodeList().containsAll(after));
-
-//    assertTrue(Collections.disjoint(before, after));
-
-    servers.get(4).start();
-
-    Thread.sleep(3000);
-
-    assertEquals(3, chicagoClientDHT.getNodeList("foo".getBytes()).size());
-  }
+//    servers.get(0).stop();
+//
+//    Thread.sleep(3000);
+//
+//    List<String> after = chicagoClientDHT.getNodeList("foo".getBytes());
+//
+//    assertTrue(chicagoClientDHT.buildNodeList().containsAll(after));
+//
+////    assertTrue(Collections.disjoint(before, after));
+//
+////    servers.get(4).start();
+//
+//    Thread.sleep(3000);
+//
+//    assertEquals(3, chicagoClientDHT.getNodeList("foo".getBytes()).size());
+//  }
 }

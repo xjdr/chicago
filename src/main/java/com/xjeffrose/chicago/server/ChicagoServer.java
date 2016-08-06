@@ -35,6 +35,7 @@ public class ChicagoServer {
     dbRouter = new DBRouter(config, dbManager, dbLog);
 //    config.setZkClient(zkClient);
   }
+
   public void start() throws Exception {
     dbRouter.run();
     if(!zkClient.getClient().getState().equals(CuratorFrameworkState.STARTED)) {
@@ -48,6 +49,7 @@ public class ChicagoServer {
     nodeWatcher.refresh(zkClient, dbManager, getDBAddress());
     dbManager.setZkClient(zkClient);
   }
+
   public void stop() {
     log.info("Stopping Chicago!");
     try {

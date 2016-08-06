@@ -1,6 +1,8 @@
 package com.xjeffrose.chicago.client;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.xjeffrose.chicago.Chicago;
+import com.xjeffrose.chicago.ChicagoObjectDecoder;
 import com.xjeffrose.chicago.TestChicago;
 import com.xjeffrose.chicago.server.ChicagoServer;
 import java.util.List;
@@ -9,6 +11,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.apache.curator.test.InstanceSpec;
 import org.apache.curator.test.TestingServer;
 import org.junit.After;
@@ -26,6 +29,7 @@ public class ChicagoClientTest extends org.junit.Assert {
   TestingServer testingServer;
   List<ChicagoServer> servers;
   ChicagoClient chicagoClientDHT;
+  ChicagoObjectDecoder decoder = new ChicagoObjectDecoder();
 
   @Before
   public void setup() throws Exception {
@@ -59,7 +63,7 @@ public class ChicagoClientTest extends org.junit.Assert {
       byte[] val = _v.getBytes();
 //      assertEquals(true, (chicagoClientDHT.write(key, val).get().get(0)[0] != 0));
       chicagoClientDHT.write(key, val);
-      assertEquals(new String(val), new String(chicagoClientDHT.read(key).get().get(0)));
+      assertEquals(new String(val), new String(decoder.decode(chicagoClientDHT.read(key).get().get(0)).getVal()));
       //assertEquals(true, chicagoClientDHT.delete(key));
     }
 
@@ -75,7 +79,7 @@ public class ChicagoClientTest extends org.junit.Assert {
 
 //      assertEquals(true,(chicagoClientDHT.write(key, val).get().get(0)[0] != 0));
       chicagoClientDHT.write(key, val);
-      assertEquals(new String(val), new String(chicagoClientDHT.read(key).get().get(0)));
+      assertEquals(new String(val), new String(decoder.decode(chicagoClientDHT.read(key).get().get(0)).getVal()));
     }
 
   }
@@ -88,7 +92,7 @@ public class ChicagoClientTest extends org.junit.Assert {
       String _v = "val" + i;
       byte[] val = _v.getBytes();
       chicagoClientDHT.write("colfam".getBytes(), key, val);
-      assertEquals(new String(val), new String(chicagoClientDHT.read("colfam".getBytes(), key).get().get(0)));
+      assertEquals(new String(val), new String(decoder.decode(chicagoClientDHT.read("colfam".getBytes(), key).get().get(0)).getVal()));
     }
   }
 
@@ -121,7 +125,9 @@ public class ChicagoClientTest extends org.junit.Assert {
             assertTrue(readResult.size() > 0);
             assertNotNull(readResult.get(0));
             assertTrue(readResult.get(0).length > 0);
-            assertEquals(new String(val), new String(readResult.get(0)));
+
+//            assertEquals(new String(val), new String(readResult.get(0)));
+            assertEquals(new String(val), new String(decoder.decode(readResult.get(0)).getVal()));
 
 //            assertEquals(true, chicagoClientDHT.delete("xcolfam".getBytes(), key));
 //            System.out.println("2 " + latch.getCount());
@@ -134,6 +140,8 @@ public class ChicagoClientTest extends org.junit.Assert {
         } catch (InterruptedException e) {
           e.printStackTrace();
         } catch (ExecutionException e) {
+          e.printStackTrace();
+        } catch (TimeoutException e) {
           e.printStackTrace();
         }
       }
@@ -156,7 +164,9 @@ public class ChicagoClientTest extends org.junit.Assert {
             assertTrue(readResult.size() > 0);
             assertNotNull(readResult.get(0));
             assertTrue(readResult.get(0).length > 0);
-            assertEquals(new String(val), new String(readResult.get(0)));
+//            assertEquals(new String(val), new String(readResult.get(0)));
+            assertEquals(new String(val), new String(decoder.decode(readResult.get(0)).getVal()));
+
 
 //            assertEquals(true, chicagoClientDHT.delete("ycolfam".getBytes(), key));
 //            System.out.println("1 " + latch.getCount());
@@ -169,6 +179,8 @@ public class ChicagoClientTest extends org.junit.Assert {
         } catch (InterruptedException e) {
           e.printStackTrace();
         } catch (ExecutionException e) {
+          e.printStackTrace();
+        } catch (TimeoutException e) {
           e.printStackTrace();
         }
       }
@@ -193,7 +205,9 @@ public class ChicagoClientTest extends org.junit.Assert {
             assertTrue(readResult.size() > 0);
             assertNotNull(readResult.get(0));
             assertTrue(readResult.get(0).length > 0);
-            assertEquals(new String(val), new String(readResult.get(0)));
+//            assertEquals(new String(val), new String(readResult.get(0)));
+            assertEquals(new String(val), new String(decoder.decode(readResult.get(0)).getVal()));
+
 //            assertEquals(true, chicagoClientDHT.delete("xcolfam".getBytes(), key));
 //            System.out.println("2 " + latch.getCount());
             latch.countDown();
@@ -205,6 +219,8 @@ public class ChicagoClientTest extends org.junit.Assert {
         } catch (InterruptedException e) {
           e.printStackTrace();
         } catch (ExecutionException e) {
+          e.printStackTrace();
+        } catch (TimeoutException e) {
           e.printStackTrace();
         }
       }

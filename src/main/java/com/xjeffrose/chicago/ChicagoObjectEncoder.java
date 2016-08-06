@@ -23,6 +23,10 @@ public class ChicagoObjectEncoder extends MessageToMessageEncoder<Object> {
   public ChicagoObjectEncoder() {
   }
 
+  public byte[] encode(ChicagoMessage msg) {
+    return encode(msg.getId(), msg.getOp(), msg.getColFam(), msg.getKey(), msg.getVal());
+  }
+
   public byte[] encode(UUID _id, Op _op, byte[] colFam, byte[] key, byte[] val) {
 
     if (key == null) {

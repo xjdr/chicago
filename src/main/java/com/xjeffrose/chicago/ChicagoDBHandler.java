@@ -1,5 +1,7 @@
 package com.xjeffrose.chicago;
 
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -13,6 +15,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
 //  private static final int MAX_BUFFER_SIZE = 16000;
 
   private final DBManager dbManager;
+  private final ChicagoObjectEncoder encoder = new ChicagoObjectEncoder();
 //  private final DBLog dbLog;
 //  private boolean needsToWrite = false;
 //  private byte[] readResponse = null;
@@ -60,6 +63,15 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
 //      msg = (ChicagoMessage) req;
 //    }
 
+      ChannelFutureListener writeComplete = new ChannelFutureListener() {
+        @Override
+        public void operationComplete(ChannelFuture future) {
+          if (!future.isSuccess()) {
+            log.error("Server error writing :" + " For UUID" + ((ChicagoMessage) req).getId() + " and key " + new String(((ChicagoMessage) req).getKey()));
+          }
+        }
+      };
+
 //    finalMsg = msg;
 
 //    if (finalMsg == null) {
@@ -71,7 +83,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
 //        readResponse = dbManager.read(((ChicagoMessage)req).getColFam(), ((ChicagoMessage)req).getKey());
           ctx.writeAndFlush(new DefaultChicagoMessage(((ChicagoMessage) req).getId(), Op.fromInt(3),
               ((ChicagoMessage) req).getColFam(), Boolean.toString(true).getBytes(),
-              dbManager.read(((ChicagoMessage) req).getColFam(),((ChicagoMessage) req).getKey())), ctx.voidPromise());
+              dbManager.read(((ChicagoMessage) req).getColFam(),((ChicagoMessage) req).getKey())), ctx.voidPromise()).addListener(writeComplete);
 
           //dbLog.addRead(finalMsg.getColFam(), finalMsg.getKey());
 
@@ -87,8 +99,9 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
 //            status + " For UUID" + ((ChicagoMessage)req).getId() + " and key " + new String(((ChicagoMessage)req).getKey()));
 
           ctx.writeAndFlush(new DefaultChicagoMessage(((ChicagoMessage) req).getId(), Op.fromInt(3), ((ChicagoMessage) req).getColFam(),
-              Boolean.toString(dbManager.write(((ChicagoMessage)req).getColFam(), ((ChicagoMessage)req).getKey(), ((ChicagoMessage)req).getVal())).getBytes(),
-              null), ctx.voidPromise());
+//              Boolean.toString(dbManager.write(((ChicagoMessage)req).getColFam(), ((ChicagoMessage)req).getKey(), ((ChicagoMessage)req).getVal())).getBytes(),
+              Boolean.toString(dbManager.write(((ChicagoMessage)req).getColFam(), ((ChicagoMessage)req).getKey(), encoder.encode((ChicagoMessage)req))).getBytes(),
+              null), ctx.voidPromise()).addListener(writeComplete);
 
           break;
         case DELETE:
@@ -114,18 +127,18 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
             if (new String(((ChicagoMessage) req).getVal()).contains(ChiUtil.delimiter)) {
 
               ctx.writeAndFlush(new DefaultChicagoMessage(((ChicagoMessage) req).getId(), Op.fromInt(3), ((ChicagoMessage) req).getColFam(), Boolean.toString(true).getBytes(),
-                  dbManager.batchWrite(((ChicagoMessage) req).getColFam(), new String(((ChicagoMessage) req).getVal()))), ctx.voidPromise());
+                  dbManager.batchWrite(((ChicagoMessage) req).getColFam(), new String(((ChicagoMessage) req).getVal()))), ctx.voidPromise()).addListener(writeComplete);
 
 //              readResponse = dbManager.batchWrite(((ChicagoMessage) req).getColFam(), value);
             } else {
 //              readResponse = dbManager.tsWrite(((ChicagoMessage) req).getColFam(), ((ChicagoMessage) req).getVal());
               ctx.writeAndFlush(new DefaultChicagoMessage(((ChicagoMessage) req).getId(), Op.fromInt(3), ((ChicagoMessage) req).getColFam(), Boolean.toString(true).getBytes(),
-                  dbManager.tsWrite(((ChicagoMessage) req).getColFam(), ((ChicagoMessage) req).getVal())), ctx.voidPromise());
+                  dbManager.tsWrite(((ChicagoMessage) req).getColFam(),encoder.encode((ChicagoMessage)req)))).addListener(writeComplete);
             }
           } else {
 //            readResponse = dbManager.tsWrite(((ChicagoMessage) req).getColFam(), ((ChicagoMessage) req).getKey(), ((ChicagoMessage) req).getVal());
             ctx.writeAndFlush(new DefaultChicagoMessage(((ChicagoMessage) req).getId(), Op.fromInt(3), ((ChicagoMessage) req).getColFam(), Boolean.toString(true).getBytes(),
-                dbManager.tsWrite(((ChicagoMessage) req).getColFam(), ((ChicagoMessage) req).getKey(), ((ChicagoMessage) req).getVal())), ctx.voidPromise());
+                dbManager.tsWrite(((ChicagoMessage) req).getColFam(), ((ChicagoMessage) req).getKey(), encoder.encode((ChicagoMessage)req)))).addListener(writeComplete);
           }
 //          if (readResponse != null) {
 //            status = true;
@@ -134,7 +147,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
         case STREAM:
 //          readResponse = dbManager.stream(((ChicagoMessage) req).getColFam(), ((ChicagoMessage) req).getVal());
           ctx.writeAndFlush(new DefaultChicagoMessage(((ChicagoMessage) req).getId(), Op.fromInt(3), ((ChicagoMessage) req).getColFam(), Boolean.toString(true).getBytes(),
-              dbManager.stream(((ChicagoMessage) req).getColFam(), ((ChicagoMessage) req).getVal())), ctx.voidPromise());
+              dbManager.stream(((ChicagoMessage) req).getColFam(), ((ChicagoMessage) req).getVal()))).addListener(writeComplete);
 //          if (readResponse != null) {
 //            status = true;
 //          }
@@ -144,15 +157,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
           break;
       }
 
-//    ChannelFutureListener writeComplete = new ChannelFutureListener() {
-//      @Override
-//      public void operationComplete(ChannelFuture future) {
-//        if (!future.isSuccess()) {
-//          log.error("Server error writing :" +
-//              status + " For UUID" + finalMsg.getId() + " and key " + new String(finalMsg.getKey()));
-//        }
-//      }
-//    };
+
 //    needsToWrite = true;
 //    ctx.writeAndFlush(new DefaultChicagoMessage(finalMsg.getId(), Op.fromInt(3), finalMsg.getColFam(), Boolean.toString(status).getBytes(), readResponse)).addListener(writeComplete);
 //    ctx.writeAndFlush(new DefaultChicagoMessage(((ChicagoMessage)req).getId(), Op.fromInt(3), ((ChicagoMessage)req).getColFam(), Boolean.toString(status).getBytes(), readResponse), ctx.voidPromise());
