@@ -1,233 +1,177 @@
 package com.xjeffrose.chicago.client;
 
-import com.google.common.util.concurrent.ListenableFuture;
-import com.xjeffrose.chicago.Chicago;
+import com.google.common.util.concurrent.SettableFuture;
+import com.xjeffrose.chicago.ChicagoMessage;
 import com.xjeffrose.chicago.ChicagoObjectDecoder;
-import com.xjeffrose.chicago.TestChicago;
-import com.xjeffrose.chicago.server.ChicagoServer;
+import com.xjeffrose.chicago.ChicagoObjectEncoder;
+import com.xjeffrose.chicago.Op;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.util.internal.PlatformDependent;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import org.apache.curator.test.InstanceSpec;
+import java.util.Map;
+import java.util.UUID;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.test.TestingServer;
+import org.apache.zookeeper.CreateMode;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+public class ChicagoClientTest {
+  private final static String NODE_LIST_PATH = "/chicago/node-list";
+  private EmbeddedChannel ch1 = new EmbeddedChannel(new ChicagoClientCodec());
+  private EmbeddedChannel ch2 = new EmbeddedChannel();
+  private EmbeddedChannel ch3 = new EmbeddedChannel();
 
-public class ChicagoClientTest extends org.junit.Assert {
-  @Rule
-  public TemporaryFolder tmp = new TemporaryFolder();
-  TestingServer testingServer;
-  List<ChicagoServer> servers;
-  ChicagoClient chicagoClientDHT;
-  ChicagoObjectDecoder decoder = new ChicagoObjectDecoder();
+  private ChicagoObjectDecoder decoder = new ChicagoObjectDecoder();
+  private ChicagoObjectEncoder encoder = new ChicagoObjectEncoder();
+
+  private TestingServer zkServer;
+  private CuratorFramework curZkClient;
+  private ChicagoClient chicagoClient;
 
   @Before
-  public void setup() throws Exception {
-    InstanceSpec spec = new InstanceSpec(null, -1,  -1 , -1, true, -1 , 2000 , -1);
-    testingServer = new TestingServer(spec, true);
-    servers = TestChicago.makeServers(TestChicago.chicago_dir(tmp), 4, testingServer.getConnectString());
+  public void setUp() throws Exception {
+//    try (TestingServer zkServer = new TestingServer(true)) {
+//      zkServer.start();
+//      try (CuratorFramework curZkClient = CuratorFrameworkFactory.newClient(zkServer.getConnectString(), new ExponentialBackoffRetry(5000, 3))) {
+//        curZkClient.start();
+//
+//        this.zkServer = zkServer;
+//        this.curZkClient = curZkClient;
+//
+//        Map<UUID, SettableFuture<byte[]>> futureMap = PlatformDependent.newConcurrentHashMap();
+        List<EmbeddedChannel> hostList = new ArrayList<EmbeddedChannel>();
+        hostList.add(ch1);
 
-    for (ChicagoServer server : servers) {
-      server.start();
-    }
-
-    chicagoClientDHT = new ChicagoClient(testingServer.getConnectString(), 3);
-    chicagoClientDHT.startAndWaitForNodes(4);
+        try (ChicagoClient chicagoClient = new ChicagoClient(hostList, 1)) {
+          this.chicagoClient = chicagoClient;
+        }
+//      }
+//    }
   }
 
   @After
-  public void teardown() throws Exception {
-    for (ChicagoServer server : servers) {
-      server.stop();
-    }
-    chicagoClientDHT.stop();
-    testingServer.stop();
+  public void tearDown() throws Exception {
+//    zkServer.stop();
+//    curZkClient.close();
+    chicagoClient.close();
+  }
+
+//  private void register(String path) {
+//    try {
+//      curZkClient
+//          .create()
+//          .creatingParentsIfNeeded()
+//          .withMode(CreateMode.EPHEMERAL)
+//          .forPath(path, null);
+//    } catch (Exception e) {
+//      e.printStackTrace();
+//    }
+//  }
+
+  @Test
+  public void aggregatedStream() throws Exception {
+    //TODO(JR): Requires more complex test. Should be broken out into a seperate class.
   }
 
   @Test
-  public void transactOnce() throws Exception {
-    for (int i = 0; i < 1; i++) {
-      String _k = "key" + i;
-      byte[] key = _k.getBytes();
-      String _v = "val" + i;
-      byte[] val = _v.getBytes();
-//      assertEquals(true, (chicagoClientDHT.write(key, val).get().get(0)[0] != 0));
-      chicagoClientDHT.write(key, val);
-      assertEquals(new String(val), new String(decoder.decode(chicagoClientDHT.read(key).get().get(0)).getVal()));
-      //assertEquals(true, chicagoClientDHT.delete(key));
-    }
+  public void stream() throws Exception {
+    chicagoClient.stream("Key".getBytes(), "Offset".getBytes());
+
+    ByteBuf bb = ch1.readOutbound();
+    byte[] _bb = new byte[bb.readableBytes()];
+    bb.readBytes(_bb);
+    ChicagoMessage chicagoMessage = decoder.decode(_bb);
+
+    assertEquals(Op.STREAM, chicagoMessage.getOp());
+    assertEquals("Key", new String(chicagoMessage.getColFam()));
+    assertEquals("Offset", new String(chicagoMessage.getVal()));
+  }
+
+  @Test
+  public void read() throws Exception {
+    chicagoClient.read("ColFam".getBytes(), "Key".getBytes());
+
+    ByteBuf bb = ch1.readOutbound();
+    byte[] _bb = new byte[bb.readableBytes()];
+    bb.readBytes(_bb);
+    ChicagoMessage chicagoMessage = decoder.decode(_bb);
+
+    assertEquals(Op.READ, chicagoMessage.getOp());
+    assertEquals("ColFam", new String(chicagoMessage.getColFam()));
+    assertEquals("Key", new String(chicagoMessage.getKey()));
 
   }
 
   @Test
-  public void transactMany() throws Exception {
-    for (int i = 0; i < 20000; i++) {
-      String _k = "xxkey" + i;
-      byte[] key = _k.getBytes();
-      String _v = "val" + i;
-      byte[] val = _v.getBytes();
+  public void write() throws Exception {
+    chicagoClient.write("ColFam".getBytes(), "Key".getBytes(), "Val".getBytes());
 
-//      assertEquals(true,(chicagoClientDHT.write(key, val).get().get(0)[0] != 0));
-      chicagoClientDHT.write(key, val);
-      assertEquals(new String(val), new String(decoder.decode(chicagoClientDHT.read(key).get().get(0)).getVal()));
-    }
+    ByteBuf bb = ch1.readOutbound();
+    byte[] _bb = new byte[bb.readableBytes()];
+    bb.readBytes(_bb);
+    ChicagoMessage chicagoMessage = decoder.decode(_bb);
 
+    assertEquals(Op.WRITE, chicagoMessage.getOp());
+    assertEquals("ColFam", new String(chicagoMessage.getColFam()));
+    assertEquals("Key", new String(chicagoMessage.getKey()));
+    assertEquals("Val", new String(chicagoMessage.getVal()));
+
+  }
+
+
+  @Test
+  public void tsWrite() throws Exception {
+    chicagoClient.tsWrite("ColFam".getBytes(), "Val".getBytes());
+
+    ByteBuf bb = ch1.readOutbound();
+    byte[] _bb = new byte[bb.readableBytes()];
+    bb.readBytes(_bb);
+    ChicagoMessage chicagoMessage = decoder.decode(_bb);
+
+    assertEquals(Op.TS_WRITE, chicagoMessage.getOp());
+    assertEquals("ColFam", new String(chicagoMessage.getColFam()));
+    assertEquals("Val", new String(chicagoMessage.getVal()));
   }
 
   @Test
-  public void transactManyCF() throws Exception {
-    for (int i = 0; i < 2000; i++) {
-      String _k = "key" + i;
-      byte[] key = _k.getBytes();
-      String _v = "val" + i;
-      byte[] val = _v.getBytes();
-      chicagoClientDHT.write("colfam".getBytes(), key, val);
-      assertEquals(new String(val), new String(decoder.decode(chicagoClientDHT.read("colfam".getBytes(), key).get().get(0)).getVal()));
+  public void tsbatchWrite() throws Exception {
+    for (int i = 0; i < 10000; i++) {
+      String key = "Key";
+      String val = "Val" + i;
+      chicagoClient.tsbatchWrite(key.getBytes(), val.getBytes());
     }
+
+    ByteBuf bb = ch1.readOutbound();
+    byte[] _bb = new byte[bb.readableBytes()];
+    bb.readBytes(_bb);
+    ChicagoMessage chicagoMessage = decoder.decode(_bb);
+
+    assertEquals(Op.TS_WRITE, chicagoMessage.getOp());
+    assertEquals("Key", new String(chicagoMessage.getColFam()));
+    assertTrue(new String(chicagoMessage.getVal()).contains("Val0"));
   }
 
   @Test
-  public void transactManyCFConcurrent() throws Exception {
-    ExecutorService exe = Executors.newFixedThreadPool(6);
-    int count = 2000;
-    CountDownLatch latch = new CountDownLatch(count * 3);
+  public void delete() throws Exception {
+    chicagoClient.delete("ColFam".getBytes(), "Key".getBytes());
 
+    ByteBuf bb = ch1.readOutbound();
+    byte[] _bb = new byte[bb.readableBytes()];
+    bb.readBytes(_bb);
+    ChicagoMessage chicagoMessage = decoder.decode(_bb);
 
-    exe.execute(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          for (int i = 0; i < count; i++) {
-            String _k = "xkey" + i;
-            byte[] key = _k.getBytes();
-            String _v = "xval" + i;
-            byte[] val = _v.getBytes();
-            //assertEquals(true, (chicagoClientDHT.write("xcolfam".getBytes(), key, val).get().get(0)[0] != 0));
-            ListenableFuture<List<byte[]>> writeFuture = chicagoClientDHT.write("xcolfam".getBytes(), key, val);
-            List<byte[]> writeResult = writeFuture.get();
-            assertTrue(writeResult.size() > 0);
-            assertNotNull(writeResult.get(0));
-            //assertTrue(writeResult.get(0).length > 0);
-            //assertTrue(writeResult.get(0)[0] != 0);
-            //assertEquals(new String(val), new String(chicagoClientDHT.read("xcolfam".getBytes(), key).get().get(0)));
-            ListenableFuture<List<byte[]>> readFuture = chicagoClientDHT.read("xcolfam".getBytes(), key);
-            List<byte[]> readResult = readFuture.get();
-            assertTrue(readResult.size() > 0);
-            assertNotNull(readResult.get(0));
-            assertTrue(readResult.get(0).length > 0);
-
-//            assertEquals(new String(val), new String(readResult.get(0)));
-            assertEquals(new String(val), new String(decoder.decode(readResult.get(0)).getVal()));
-
-//            assertEquals(true, chicagoClientDHT.delete("xcolfam".getBytes(), key));
-//            System.out.println("2 " + latch.getCount());
-            latch.countDown();
-          }
-        } catch (ChicagoClientTimeoutException e) {
-          e.printStackTrace();
-        } catch (ChicagoClientException e) {
-          e.printStackTrace();
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        } catch (ExecutionException e) {
-          e.printStackTrace();
-        } catch (TimeoutException e) {
-          e.printStackTrace();
-        }
-      }
-    });
-
-
-    exe.execute(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          for (int i = 0; i < count; i++) {
-            String _k = "ykey" + i;
-            byte[] key = _k.getBytes();
-            String _v = "yval" + i;
-            byte[] val = _v.getBytes();
-            chicagoClientDHT.write("ycolfam".getBytes(), key, val);
-            //assertEquals(new String(val), new String(chicagoClientDHT.read("ycolfam".getBytes(), key).get().get(0)));
-            ListenableFuture<List<byte[]>> readFuture = chicagoClientDHT.read("ycolfam".getBytes(), key);
-            List<byte[]> readResult = readFuture.get();
-            assertTrue(readResult.size() > 0);
-            assertNotNull(readResult.get(0));
-            assertTrue(readResult.get(0).length > 0);
-//            assertEquals(new String(val), new String(readResult.get(0)));
-            assertEquals(new String(val), new String(decoder.decode(readResult.get(0)).getVal()));
-
-
-//            assertEquals(true, chicagoClientDHT.delete("ycolfam".getBytes(), key));
-//            System.out.println("1 " + latch.getCount());
-            latch.countDown();
-          }
-        } catch (ChicagoClientTimeoutException e) {
-          e.printStackTrace();
-        } catch (ChicagoClientException e) {
-          e.printStackTrace();
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        } catch (ExecutionException e) {
-          e.printStackTrace();
-        } catch (TimeoutException e) {
-          e.printStackTrace();
-        }
-      }
-    });
-
-
-    exe.execute(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          for (int i = 0; i < count; i++) {
-            String _k = "zkey" + i;
-            byte[] key = _k.getBytes();
-            String _v = "zval" + i;
-            byte[] val = _v.getBytes();
-//            assertEquals(true, chicagoClientDHT.write("xcolfam".getBytes(), key, val));
-            chicagoClientDHT.write("xcolfam".getBytes(), key, val);
-
-            //assertEquals(new String(val), new String(chicagoClientDHT.read("xcolfam".getBytes(), key).get().get(0)));
-            ListenableFuture<List<byte[]>> readFuture = chicagoClientDHT.read("xcolfam".getBytes(), key);
-            List<byte[]> readResult = readFuture.get();
-            assertTrue(readResult.size() > 0);
-            assertNotNull(readResult.get(0));
-            assertTrue(readResult.get(0).length > 0);
-//            assertEquals(new String(val), new String(readResult.get(0)));
-            assertEquals(new String(val), new String(decoder.decode(readResult.get(0)).getVal()));
-
-//            assertEquals(true, chicagoClientDHT.delete("xcolfam".getBytes(), key));
-//            System.out.println("2 " + latch.getCount());
-            latch.countDown();
-          }
-        } catch (ChicagoClientTimeoutException e) {
-          e.printStackTrace();
-        } catch (ChicagoClientException e) {
-          e.printStackTrace();
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        } catch (ExecutionException e) {
-          e.printStackTrace();
-        } catch (TimeoutException e) {
-          e.printStackTrace();
-        }
-      }
-    });
-
-
-    latch.await(20000, TimeUnit.MILLISECONDS);
-    exe.shutdownNow();
+    assertEquals(Op.DELETE, chicagoMessage.getOp());
+    assertEquals("ColFam", new String(chicagoMessage.getColFam()));
+    assertEquals("Key", new String(chicagoMessage.getKey()));
   }
+
 }

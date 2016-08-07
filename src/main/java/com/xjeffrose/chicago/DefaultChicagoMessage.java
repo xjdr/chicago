@@ -64,6 +64,11 @@ public class DefaultChicagoMessage implements ChicagoMessage {
   }
 
   @Override
+  public void setSuccess() {
+
+  }
+
+  @Override
   public byte[] getColFam() {
     return colFam;
   }

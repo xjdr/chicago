@@ -10,6 +10,7 @@ import com.xjeffrose.xio.client.retry.RetryLoop;
 import com.xjeffrose.xio.client.retry.TracerDriver;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
@@ -17,6 +18,7 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -43,7 +45,7 @@ public class ConnectionPoolManager {
   protected static int MAX_RETRY = 3;
   private static boolean TIMEOUT_ENABLED = true;
 
-  private final Map<String, ChannelFuture> connectionMap = PlatformDependent.newConcurrentHashMap();
+  private final Map<String, Channel> connectionMap = PlatformDependent.newConcurrentHashMap();
   private final NioEventLoopGroup workerLoop = new NioEventLoopGroup(5,
       new ThreadFactoryBuilder()
           .setNameFormat("chicago-nioEventLoopGroup-%d")
@@ -72,6 +74,14 @@ public class ConnectionPoolManager {
     this.handler = new ChicagoClientHandler(futureMap);
   }
 
+  public ConnectionPoolManager(List<EmbeddedChannel> hostPool, Map<UUID, SettableFuture<byte[]>> futureMap) {
+    this.zkClient = null;
+    this.futureMap = futureMap;
+    this.handler = new ChicagoClientHandler(futureMap);
+
+    connectionMap.put("embedded", hostPool.get(0));
+  }
+
   public void start() {
     running.set(true);
     refreshPool();
@@ -85,8 +95,8 @@ public class ConnectionPoolManager {
     log.info("ConnectionPoolManager stopping");
     running.set(false);
     ChannelGroup channelGroup = new DefaultChannelGroup(workerLoop.next());
-    for (ChannelFuture cf : connectionMap.values()) {
-      channelGroup.add(cf.channel());
+    for (Channel ch : connectionMap.values()) {
+      channelGroup.add(ch);
     }
     log.info("Closing channels");
     channelGroup.close().awaitUninterruptibly();
@@ -105,18 +115,17 @@ public class ConnectionPoolManager {
       if (connectionMap.get(s) == null) {
         log.debug("Channel not present for " + s);
         reconnectNodes.add(s);
-      } else if (connectionMap.get(s) != null && !connectionMap.get(s).channel().isWritable()) {
+      } else if (connectionMap.get(s) != null && !connectionMap.get(s).isWritable()) {
         log.debug("Channel not writeable for " + s);
         reconnectNodes.add(s);
       }
     });
 
     reconnectNodes.forEach(s -> {
-      ChannelFuture cf = connectionMap.remove(s);
-      if (cf != null) {
-        cf.channel().disconnect();
-        cf.channel().close();
-        cf.cancel(true);
+      Channel ch = connectionMap.remove(s);
+      if (ch != null) {
+        ch.disconnect();
+        ch.close();
       }
       connect(address(s));
     });
@@ -153,7 +162,7 @@ public class ConnectionPoolManager {
     }
   }
 
-  public ListenableFuture<ChannelFuture> getNode(String node) throws ChicagoClientTimeoutException, InterruptedException {
+  public ListenableFuture<Channel> getNode(String node) throws ChicagoClientTimeoutException, InterruptedException {
 //    log.debug("Trying to get node:"+node);
 //    return _getNode(node, System.currentTimeMillis());
 
@@ -164,7 +173,7 @@ public class ConnectionPoolManager {
   }
 
   //  private ChannelFuture _getNode(String node, long startTime) throws ChicagoClientTimeoutException, InterruptedException {
-  private void _getNode(SettableFuture<ChannelFuture> f, String node) throws ChicagoClientTimeoutException, InterruptedException {
+  private void _getNode(SettableFuture<Channel> f, String node) throws ChicagoClientTimeoutException, InterruptedException {
 
   while (!connectionMap.containsKey(node)) {
 //      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
@@ -180,9 +189,9 @@ public class ConnectionPoolManager {
     }
 
     if (connectionMap.containsKey(node)) {
-      ChannelFuture cf = connectionMap.get(node);
-      if (cf.channel().isWritable()) {
-        f.set(cf);
+      Channel ch = connectionMap.get(node);
+      if (ch.isWritable()) {
+        f.set(ch);
       } else {
         checkConnection();
         _getNode(f, node, 0);
@@ -195,13 +204,13 @@ public class ConnectionPoolManager {
   }
 
 
-  private void _getNode(SettableFuture<ChannelFuture> f, String node, int retry) throws ChicagoClientTimeoutException, InterruptedException {
+  private void _getNode(SettableFuture<Channel> f, String node, int retry) throws ChicagoClientTimeoutException, InterruptedException {
 
     if (retry > MAX_RETRY) {
       if (connectionMap.containsKey(node)) {
-        ChannelFuture cf = connectionMap.get(node);
-        if (cf.channel().isWritable()) {
-          f.set(cf);
+        Channel ch = connectionMap.get(node);
+        if (ch.isWritable()) {
+          f.set(ch);
         } else {
           checkConnection();
           _getNode(f, node, retry++);
@@ -218,8 +227,9 @@ public class ConnectionPoolManager {
   }
 
   public void addNode(String hostname, ChannelFuture future) {
-    connectionMap.put(hostname, future);
-
+    if (future.isSuccess()) {
+      connectionMap.put(hostname, future.channel());
+    }
   }
 
   private void connect(InetSocketAddress server) {
@@ -294,7 +304,7 @@ public class ConnectionPoolManager {
     bootstrap.connect(server).addListener(listener);
   }
 
-  public void releaseChannel(String node, ChannelFuture cf1) {
+  public void releaseChannel(String node, Channel cf1) {
 
   }
 }

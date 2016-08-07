@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.xjeffrose.chicago.ChiUtil;
 import com.xjeffrose.chicago.DefaultChicagoMessage;
 import com.xjeffrose.chicago.Op;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.util.internal.PlatformDependent;
 import java.util.ArrayDeque;
@@ -105,9 +106,9 @@ public class ChicagoBuffer {
           for (String node : colFamBufferRequest.getNodes()) {
             if (node == null) {
             } else {
-              ChannelFuture cf = null;
+              Channel ch = null;
               try {
-                cf = connectionPoolMgr.getNode(node).get(TIMEOUT, TimeUnit.MILLISECONDS);
+                ch = connectionPoolMgr.getNode(node).get(TIMEOUT, TimeUnit.MILLISECONDS);
               } catch (ChicagoClientTimeoutException e) {
                 e.printStackTrace();
               } catch (InterruptedException e) {
@@ -117,12 +118,11 @@ public class ChicagoBuffer {
               } catch (TimeoutException e) {
                 e.printStackTrace();
               }
-              if (cf.channel().isWritable()) {
+              if (ch.isWritable()) {
                 UUID id = UUID.randomUUID();
                 connectionPoolMgr.addToFutureMap(id, colFamBufferRequest.getFuture(node));
-                cf.channel()
-                    .writeAndFlush(new DefaultChicagoMessage(id, Op.TS_WRITE, colFam, null, value));
-                connectionPoolMgr.releaseChannel(node, cf);
+                    ch.writeAndFlush(new DefaultChicagoMessage(id, Op.TS_WRITE, colFam, null, value));
+                connectionPoolMgr.releaseChannel(node, ch);
               }
             }
           }

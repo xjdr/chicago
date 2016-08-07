@@ -1,32 +1,14 @@
 package com.xjeffrose.chicago;
 
 import com.xjeffrose.chicago.server.ChicagoServerPipeline;
-import com.xjeffrose.xio.SSL.XioSecurityHandlerImpl;
 import com.xjeffrose.xio.application.Application;
 import com.xjeffrose.xio.bootstrap.ApplicationBootstrap;
-import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
-import com.xjeffrose.xio.pipeline.XioServerPipeline;
-import com.xjeffrose.xio.server.XioServerState;
 
-import com.xjeffrose.xio.core.XioCodecFactory;
-import com.xjeffrose.xio.core.XioNoOpHandler;
-import com.xjeffrose.xio.core.XioRoutingFilterFactory;
 import com.xjeffrose.xio.pipeline.XioSslHttp1_1Pipeline;
-import com.xjeffrose.xio.server.XioServer;
-import com.xjeffrose.xio.server.XioServerConfig;
 import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelInboundHandler;
-import io.netty.channel.group.ChannelGroup;
-import io.netty.channel.group.DefaultChannelGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.handler.codec.http.HttpServerCodec;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,17 +17,17 @@ public class DBRouter implements Closeable {
 
   //TODO(JR): Make this concurrent to applow for parallel streams
   private final ChiConfig config;
-  private final DBManager dbManager;
+  private final RocksDBImpl rocksDbImpl;
   private final DBLog dbLog;
   //private ChicagoMasterManager masterManager;
   private final ChannelHandler handler;
   private Application application;
 
-  public DBRouter(ChiConfig config, DBManager dbManager, DBLog dbLog) {
+  public DBRouter(ChiConfig config, RocksDBImpl rocksDbImpl, DBLog dbLog) {
     this.config = config;
-    this.dbManager = dbManager;
+    this.rocksDbImpl = rocksDbImpl;
     this.dbLog = dbLog;
-    this.handler = new ChicagoDBHandler(dbManager, dbLog);
+    this.handler = new ChicagoDBHandler(rocksDbImpl, dbLog);
     //config.setDbRouter(this);
   }
   /*
@@ -86,7 +68,7 @@ public class DBRouter implements Closeable {
         .withRoutingFilter(new XioRoutingFilterFactory() {
           @Override
           public ChannelInboundHandler getRoutingFilter() {
-            return new ChicagoDBHandler(dbManager, dbLog);
+            return new ChicagoDBHandler(rocksDbImpl, dbLog);
           }
         })
         .build();
@@ -215,7 +197,7 @@ public class DBRouter implements Closeable {
     return new ChicagoServerPipeline("db") {
       @Override
       public ChannelHandler getApplicationHandler() {
-//        return new ChicagoDBHandler(dbManager, dbLog);
+//        return new ChicagoDBHandler(rocksDbImpl, dbLog);
         return handler;
       }
     };
@@ -274,7 +256,7 @@ public class DBRouter implements Closeable {
     x.stop();
     serverDefSet.clear();
     */
-    dbManager.destroy();
+    rocksDbImpl.destroy();
   }
 
   public void stop() {

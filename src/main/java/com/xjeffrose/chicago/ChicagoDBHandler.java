@@ -14,7 +14,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
   private static final Logger log = LoggerFactory.getLogger(ChicagoDBHandler.class);
 //  private static final int MAX_BUFFER_SIZE = 16000;
 
-  private final DBManager dbManager;
+  private final RocksDBImpl rocksDbImpl;
   private final ChicagoObjectEncoder encoder = new ChicagoObjectEncoder();
 //  private final DBLog dbLog;
 //  private boolean needsToWrite = false;
@@ -23,8 +23,8 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
 //  private ChicagoMessage finalMsg = null;
 
 
-  public ChicagoDBHandler(DBManager dbManager, DBLog dbLog) {
-    this.dbManager = dbManager;
+  public ChicagoDBHandler(RocksDBImpl rocksDbImpl, DBLog dbLog) {
+    this.rocksDbImpl = rocksDbImpl;
 //    this.dbLog = dbLog;
   }
 
@@ -80,10 +80,10 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
 
       switch (((ChicagoMessage) req).getOp()) {
         case READ:
-//        readResponse = dbManager.read(((ChicagoMessage)req).getColFam(), ((ChicagoMessage)req).getKey());
+//        readResponse = rocksDbImpl.read(((ChicagoMessage)req).getColFam(), ((ChicagoMessage)req).getKey());
           ctx.writeAndFlush(new DefaultChicagoMessage(((ChicagoMessage) req).getId(), Op.fromInt(3),
               ((ChicagoMessage) req).getColFam(), Boolean.toString(true).getBytes(),
-              dbManager.read(((ChicagoMessage) req).getColFam(),((ChicagoMessage) req).getKey())), ctx.voidPromise()).addListener(writeComplete);
+              rocksDbImpl.read(((ChicagoMessage) req).getColFam(),((ChicagoMessage) req).getKey())), ctx.voidPromise()).addListener(writeComplete);
 
           //dbLog.addRead(finalMsg.getColFam(), finalMsg.getKey());
 
@@ -92,30 +92,30 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
 //        }
           break;
         case WRITE:
-//        status = dbManager.write(((ChicagoMessage)req).getColFam(), ((ChicagoMessage)req).getKey(), ((ChicagoMessage)req).getVal());
+//        status = rocksDbImpl.write(((ChicagoMessage)req).getColFam(), ((ChicagoMessage)req).getKey(), ((ChicagoMessage)req).getVal());
           //dbLog.addWrite(finalMsg.getColFam(), finalMsg.getKey(), finalMsg.getVal());
 //        readResponse = new byte[]{(byte) (status ? 1 : 0)};
 //        log.debug("  ========================================================== Server wrote :" +
 //            status + " For UUID" + ((ChicagoMessage)req).getId() + " and key " + new String(((ChicagoMessage)req).getKey()));
 
           ctx.writeAndFlush(new DefaultChicagoMessage(((ChicagoMessage) req).getId(), Op.fromInt(3), ((ChicagoMessage) req).getColFam(),
-//              Boolean.toString(dbManager.write(((ChicagoMessage)req).getColFam(), ((ChicagoMessage)req).getKey(), ((ChicagoMessage)req).getVal())).getBytes(),
-              Boolean.toString(dbManager.write(((ChicagoMessage)req).getColFam(), ((ChicagoMessage)req).getKey(), encoder.encode((ChicagoMessage)req))).getBytes(),
+//              Boolean.toString(rocksDbImpl.write(((ChicagoMessage)req).getColFam(), ((ChicagoMessage)req).getKey(), ((ChicagoMessage)req).getVal())).getBytes(),
+              Boolean.toString(rocksDbImpl.write(((ChicagoMessage)req).getColFam(), ((ChicagoMessage)req).getKey(), encoder.encode((ChicagoMessage)req))).getBytes(),
               null), ctx.voidPromise()).addListener(writeComplete);
 
           break;
         case DELETE:
 //        if (((ChicagoMessage)req).getKey().length == 0) {
-//          status = dbManager.delete(((ChicagoMessage)req).getColFam());
+//          status = rocksDbImpl.delete(((ChicagoMessage)req).getColFam());
 //        } else {
-//          status = dbManager.delete(((ChicagoMessage)req).getColFam(), ((ChicagoMessage)req).getKey());
+//          status = rocksDbImpl.delete(((ChicagoMessage)req).getColFam(), ((ChicagoMessage)req).getKey());
 //        }
 //        readResponse = new byte[]{(byte) (status ? 1 : 0)};
 
           if (((ChicagoMessage) req).getKey().length == 0) {
-            dbManager.delete(((ChicagoMessage) req).getColFam());
+            rocksDbImpl.delete(((ChicagoMessage) req).getColFam());
           } else {
-            dbManager.delete(((ChicagoMessage) req).getColFam(), ((ChicagoMessage) req).getKey());
+            rocksDbImpl.delete(((ChicagoMessage) req).getColFam(), ((ChicagoMessage) req).getKey());
           }
 //          readResponse = new byte[]{(byte) (status ? 1 : 0)};
 
@@ -127,27 +127,27 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler {
             if (new String(((ChicagoMessage) req).getVal()).contains(ChiUtil.delimiter)) {
 
               ctx.writeAndFlush(new DefaultChicagoMessage(((ChicagoMessage) req).getId(), Op.fromInt(3), ((ChicagoMessage) req).getColFam(), Boolean.toString(true).getBytes(),
-                  dbManager.batchWrite(((ChicagoMessage) req).getColFam(), new String(((ChicagoMessage) req).getVal()))), ctx.voidPromise()).addListener(writeComplete);
+                  rocksDbImpl.batchWrite(((ChicagoMessage) req).getColFam(), ((ChicagoMessage) req).getVal())), ctx.voidPromise()).addListener(writeComplete);
 
-//              readResponse = dbManager.batchWrite(((ChicagoMessage) req).getColFam(), value);
+//              readResponse = rocksDbImpl.batchWrite(((ChicagoMessage) req).getColFam(), value);
             } else {
-//              readResponse = dbManager.tsWrite(((ChicagoMessage) req).getColFam(), ((ChicagoMessage) req).getVal());
+//              readResponse = rocksDbImpl.tsWrite(((ChicagoMessage) req).getColFam(), ((ChicagoMessage) req).getVal());
               ctx.writeAndFlush(new DefaultChicagoMessage(((ChicagoMessage) req).getId(), Op.fromInt(3), ((ChicagoMessage) req).getColFam(), Boolean.toString(true).getBytes(),
-                  dbManager.tsWrite(((ChicagoMessage) req).getColFam(),encoder.encode((ChicagoMessage)req)))).addListener(writeComplete);
+                  rocksDbImpl.tsWrite(((ChicagoMessage) req).getColFam(),encoder.encode((ChicagoMessage)req)))).addListener(writeComplete);
             }
           } else {
-//            readResponse = dbManager.tsWrite(((ChicagoMessage) req).getColFam(), ((ChicagoMessage) req).getKey(), ((ChicagoMessage) req).getVal());
+//            readResponse = rocksDbImpl.tsWrite(((ChicagoMessage) req).getColFam(), ((ChicagoMessage) req).getKey(), ((ChicagoMessage) req).getVal());
             ctx.writeAndFlush(new DefaultChicagoMessage(((ChicagoMessage) req).getId(), Op.fromInt(3), ((ChicagoMessage) req).getColFam(), Boolean.toString(true).getBytes(),
-                dbManager.tsWrite(((ChicagoMessage) req).getColFam(), ((ChicagoMessage) req).getKey(), encoder.encode((ChicagoMessage)req)))).addListener(writeComplete);
+                rocksDbImpl.tsWrite(((ChicagoMessage) req).getColFam(), ((ChicagoMessage) req).getKey(), encoder.encode((ChicagoMessage)req)))).addListener(writeComplete);
           }
 //          if (readResponse != null) {
 //            status = true;
 //          }
           break;
         case STREAM:
-//          readResponse = dbManager.stream(((ChicagoMessage) req).getColFam(), ((ChicagoMessage) req).getVal());
+//          readResponse = rocksDbImpl.stream(((ChicagoMessage) req).getColFam(), ((ChicagoMessage) req).getVal());
           ctx.writeAndFlush(new DefaultChicagoMessage(((ChicagoMessage) req).getId(), Op.fromInt(3), ((ChicagoMessage) req).getColFam(), Boolean.toString(true).getBytes(),
-              dbManager.stream(((ChicagoMessage) req).getColFam(), ((ChicagoMessage) req).getVal()))).addListener(writeComplete);
+              rocksDbImpl.stream(((ChicagoMessage) req).getColFam(), ((ChicagoMessage) req).getVal()))).addListener(writeComplete);
 //          if (readResponse != null) {
 //            status = true;
 //          }

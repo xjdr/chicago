@@ -1,17 +1,8 @@
 package com.xjeffrose.chicago.server;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import java.io.File;
-import java.io.IOException;
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
-import org.apache.curator.framework.recipes.leader.LeaderSelector;
-import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.zookeeper.CreateMode;
 import com.xjeffrose.chicago.*;
 
 public class ChicagoServer {
@@ -22,7 +13,7 @@ public class ChicagoServer {
 
   public final ChiConfig config;
   private ZkClient zkClient;
-  private final DBManager dbManager;
+  private final RocksDBImpl rocksDbImpl;
   private final NodeWatcher nodeWatcher;
   private final DBRouter dbRouter;
   public final DBLog dbLog = new DBLog();
@@ -30,9 +21,9 @@ public class ChicagoServer {
   public ChicagoServer(ChiConfig config) {
     this.config = config;
     zkClient = new ZkClient(config.getZkHosts(),true);
-    dbManager = new DBManager(config);
+    rocksDbImpl = new RocksDBImpl(config);
     nodeWatcher = new NodeWatcher(NODE_LIST_PATH, NODE_LOCK_PATH, config.getQuorum());
-    dbRouter = new DBRouter(config, dbManager, dbLog);
+    dbRouter = new DBRouter(config, rocksDbImpl, dbLog);
 //    config.setZkClient(zkClient);
   }
 
@@ -46,8 +37,8 @@ public class ChicagoServer {
     zkClient.register(NODE_LIST_PATH, config, dbRouter.getDBBoundInetAddress());
     zkClient.electLeader(ELECTION_PATH);
     zkClient.createIfNotExist(NODE_LOCK_PATH,"");
-    nodeWatcher.refresh(zkClient, dbManager, getDBAddress());
-    dbManager.setZkClient(zkClient);
+    nodeWatcher.refresh(zkClient, rocksDbImpl, getDBAddress());
+    rocksDbImpl.setZkClient(zkClient);
   }
 
   public void stop() {
@@ -59,7 +50,7 @@ public class ChicagoServer {
       }
       zkClient = null;
       dbRouter.close();
-      dbManager.destroy();
+      rocksDbImpl.destroy();
 
     } catch (Exception e) {
       log.error("Shutdown Error", e);

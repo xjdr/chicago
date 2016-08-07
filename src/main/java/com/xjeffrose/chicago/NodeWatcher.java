@@ -6,7 +6,6 @@ import com.xjeffrose.chicago.client.*;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -15,7 +14,6 @@ import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.rocksdb.ReadOptions;
 
 public class NodeWatcher {
   private static final Logger log = LoggerFactory.getLogger(NodeWatcher.class);
@@ -27,7 +25,7 @@ public class NodeWatcher {
   private ChicagoClient chicagoClient;
   private TreeCacheInstance nodeList;
   private ZkClient zkClient;
-  private DBManager dbManager;
+  private RocksDBImpl rocksDbImpl;
   private ExecutorService replicationWorker = Executors.newFixedThreadPool(5);
   private String advertisedEndpoint;
 
@@ -40,10 +38,10 @@ public class NodeWatcher {
   /**
    * TODO: Refactor this into a constructor and a start method
    */
-  public void refresh(ZkClient zkClient, DBManager dbManager, String advertisedEndpoint) {
+  public void refresh(ZkClient zkClient, RocksDBImpl rocksDbImpl, String advertisedEndpoint) {
     nodeList = new TreeCacheInstance(zkClient, NODE_LIST_PATH);
     this.zkClient = zkClient;
-    this.dbManager = dbManager;
+    this.rocksDbImpl = rocksDbImpl;
     this.advertisedEndpoint = advertisedEndpoint;
     nodeList.getCache().getListenable().addListener(genericListener);
     try {
@@ -95,7 +93,7 @@ public class NodeWatcher {
 
       //todo: Need to do faster replication with multi threading and future listeners.
       //For all the column family present on this server.
-      dbManager.getColFams().parallelStream().forEach(cf -> {
+      rocksDbImpl.getColFams().parallelStream().forEach(cf -> {
         List<String> newS = rendezvousHash.get(cf.getBytes());
         List<String> oldS = rendezvousHashnOld.get(cf.getBytes());
         String bounceLockPath = "";
@@ -117,20 +115,20 @@ public class NodeWatcher {
                 zkClient.createLockPath(lockPath, advertisedEndpoint, "REPLICATION_LOCK");
                 ChicagoClient c = new ChicagoClient((String) s);
                 byte[] offset = new byte[]{};
-                List<byte[]> keys = dbManager.getKeys(cf.getBytes(), offset);
+                List<byte[]> keys = rocksDbImpl.getKeys(cf.getBytes(), offset);
                 // Start replicating all the keys to the new server.
                 while(!Arrays.equals(keys.get(keys.size()-1),offset)) {
                   for(byte[] k : keys){
                     log.debug("Writing key :"+ Longs.fromByteArray(k));
                     try {
-                      c.tsWrite(cf.getBytes(), k, dbManager.read(cf.getBytes(), k)).get().get(0);
+                      c.tsWrite(cf.getBytes(), k, rocksDbImpl.read(cf.getBytes(), k)).get().get(0);
                     } catch (Exception e) {
                       e.printStackTrace();
                       throw new ChicagoClientException(e.getCause().getMessage());
                     }
                     offset = k;
                   }
-                  keys=dbManager.getKeys(cf.getBytes(),offset);
+                  keys= rocksDbImpl.getKeys(cf.getBytes(),offset);
                 }
               } catch (ChicagoClientException e) {
                 log.error("Something bad happened while replication");

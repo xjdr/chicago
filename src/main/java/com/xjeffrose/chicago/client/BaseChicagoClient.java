@@ -8,6 +8,7 @@ import com.xjeffrose.chicago.ZkClient;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -39,7 +40,7 @@ abstract public class BaseChicagoClient {
   protected final AtomicInteger nodesAvailable = new AtomicInteger(0);
   protected static final Map<String, Long> lastOffsetMap = PlatformDependent.newConcurrentHashMap();
   protected final boolean single_server;
-  protected final RendezvousHash rendezvousHash;
+  protected final RendezvousHash<String> rendezvousHash;
   protected final ClientNodeWatcher clientNodeWatcher;
   protected final ChicagoBuffer chicagoBuffer;
   private CountDownLatch latch;
@@ -97,6 +98,25 @@ abstract public class BaseChicagoClient {
     }
   }
 
+  public BaseChicagoClient(List<EmbeddedChannel> hostPool, int quorum) throws InterruptedException {
+
+    this.single_server = false;
+    this.zkClient = null;
+    this.quorum = quorum;
+
+    ArrayList<String> nodeList = new ArrayList<>();
+    hostPool.stream().forEach(xs -> nodeList.add(xs.remoteAddress().toString()));
+    this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
+    clientNodeWatcher = null;
+    this.connectionPoolMgr = new ConnectionPoolManager(hostPool, futureMap);
+    this.chicagoBuffer = new ChicagoBuffer(connectionPoolMgr, this);
+    if (Epoll.isAvailable()) {
+      evg = new EpollEventLoopGroup(5);
+    } else {
+      evg = new NioEventLoopGroup(5);
+    }
+  }
+
   public void start() {
     try {
       if(!single_server) {
@@ -131,7 +151,7 @@ abstract public class BaseChicagoClient {
 
   public void stop() throws Exception {
     log.info("ChicagoClient stopping");
-    if(!single_server) {
+    if(!single_server && !(clientNodeWatcher == null)) {
       clientNodeWatcher.stop();
       connectionPoolMgr.stop();
       if (zkClient != null) {
@@ -151,7 +171,7 @@ abstract public class BaseChicagoClient {
 
   public List<String> getEffectiveNodes(byte[] key){
     List<String> hashList = rendezvousHash.get(key);
-    if(!single_server) {
+    if(!single_server && !(clientNodeWatcher == null)) {
       String path = REPLICATION_LOCK_PATH + "/" + new String(key);
       List<String> replicationList = clientNodeWatcher.getReplicationPathData(path);
       hashList.removeAll(replicationList);

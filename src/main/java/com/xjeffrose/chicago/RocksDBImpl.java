@@ -6,17 +6,12 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.util.internal.PlatformDependent;
 import java.io.File;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
-import javax.annotation.Nullable;
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.ColumnFamilyOptions;
@@ -28,18 +23,13 @@ import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
-import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
 import org.rocksdb.util.SizeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DBManager {
-  static {
-    RocksDB.loadLibrary();
-  }
-
-  private static final Logger log = LoggerFactory.getLogger(DBManager.class);
+public class RocksDBImpl implements AutoCloseable, DBInterface {
+  private static final Logger log = LoggerFactory.getLogger(RocksDBImpl.class);
 
   private final Options options = new Options();
   private final ReadOptions readOptions = new ReadOptions();
@@ -47,11 +37,14 @@ public class DBManager {
   private final Map<String, ColumnFamilyHandle> columnFamilies = PlatformDependent.newConcurrentHashMap();
   private final ChiConfig config;
   private ZkClient zkClient;
-  private final HashMap<String,AtomicLong> counter = new HashMap<>();
-
+  private final Map<String,AtomicLong> counter = PlatformDependent.newConcurrentHashMap();
   private RocksDB db;
 
-  public DBManager(ChiConfig config) {
+  static {
+    RocksDB.loadLibrary();
+  }
+
+  public RocksDBImpl(ChiConfig config) {
     this.config = config;
     //    RocksDB.loadLibrary();
     configOptions();
@@ -69,6 +62,29 @@ public class DBManager {
     } catch (RocksDBException e) {
       log.error("Could not load DB: " + config.getDbPath() + " " + e.getMessage());
       throw new RuntimeException(e);
+    }
+    //createColumnFamily(ChiUtil.defaultColFam.getBytes());
+  }
+
+  public RocksDBImpl() {
+    this.config = null;
+    configOptions();
+    configReadOptions();
+    configWriteOptions();
+
+    try {
+      File f = new File("/tmp/" + Integer.toString(new Random().nextInt(123456789)));
+      if (f.exists()) {
+        removeDB(f);
+      } else if (!f.exists()) {
+        f.mkdir();
+      }
+      this.db = RocksDB.open(options, f.getAbsolutePath());
+    } catch (RocksDBException e) {
+      log.error("Could not load DB: " + "For Temp File" + " " + e.getMessage());
+      throw new RuntimeException(e);
+    } catch (Exception e) {
+      e.printStackTrace();
     }
     //createColumnFamily(ChiUtil.defaultColFam.getBytes());
   }
@@ -101,16 +117,15 @@ public class DBManager {
         .setEnv(env);
     setCompactionOptions(options);
 
-
     options.setMemTableConfig(
         new HashLinkedListMemTableConfig()
             .setBucketCount(100000));
-
-
   }
 
   private void setCompactionOptions(Options options){
-    if(!config.isDatabaseMode()){
+    if (config == null) {
+
+    } else if(!config.isDatabaseMode()){
       options.setCompactionStyle(CompactionStyle.FIFO)
         .setMaxTableFilesSizeFIFO(config.getCompactionSize());
     }
@@ -149,14 +164,19 @@ public class DBManager {
     }
 
     ColumnFamilyOptions columnFamilyOptions = new ColumnFamilyOptions();
-    if(!config.isDatabaseMode()){
+    if (config == null) {
+      columnFamilyOptions
+          .setWriteBufferSize(1 * SizeUnit.GB)
+          .setMemtablePrefixBloomProbes(1)
+          .setMemTableConfig(new HashLinkedListMemTableConfig()
+              .setBucketCount(100000));
+    } else if(!config.isDatabaseMode()){
       columnFamilyOptions.setCompactionStyle(CompactionStyle.FIFO)
         .setMaxTableFilesSizeFIFO(config.getCompactionSize())
         .setWriteBufferSize(1 * SizeUnit.GB)
         .setMemtablePrefixBloomProbes(1)
         .setMemTableConfig(new HashLinkedListMemTableConfig()
-          .setBucketCount(100000));
-
+            .setBucketCount(100000));
     }
 
     ColumnFamilyDescriptor columnFamilyDescriptor = new ColumnFamilyDescriptor(name, columnFamilyOptions);
@@ -174,7 +194,8 @@ public class DBManager {
     }
   }
 
-  boolean write(byte[] colFam, byte[] key, byte[] value) {
+  @Override
+  public boolean write(byte[] colFam, byte[] key, byte[] value) {
     if (key == null) {
       log.error("Tried to write a null key");
       return false;
@@ -195,7 +216,8 @@ public class DBManager {
     }
   }
 
-  byte[] read(byte[] colFam, byte[] key) {
+  @Override
+  public byte[] read(byte[] colFam, byte[] key) {
     if (key == null) {
       log.error("Tried to read a null key");
       return null;
@@ -231,7 +253,8 @@ public class DBManager {
     return true;
   }
 
-  boolean delete(byte[] colFam, byte[] key) {
+  @Override
+  public boolean delete(byte[] colFam, byte[] key) {
     if (key == null) {
       log.error("Tried to delete a null key");
       return false;
@@ -316,7 +339,7 @@ public class DBManager {
     }
   }
 
-  public byte[] batchWrite(byte[] colFam, String value){
+  public byte[] batchWrite(byte[] colFam, byte[] value){
     if (value == null) {
       log.error("Tried to ts write a null value");
       return null;
@@ -377,7 +400,6 @@ public class DBManager {
           size += _v.length;
         }
 
-
         bb.writeBytes(ChiUtil.delimiter.getBytes());
         bb.writeBytes(lastOffset);
         log.info("Stream response from DB : " + (System.currentTimeMillis() - startTime) + "ms with last offset as " + Longs.fromByteArray(lastOffset));
@@ -407,5 +429,10 @@ public class DBManager {
       }
       return keySet;
     }
+  }
+
+  @Override
+  public void close() throws Exception {
+    destroy();
   }
 }
