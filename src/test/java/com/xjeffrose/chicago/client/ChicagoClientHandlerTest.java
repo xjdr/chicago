@@ -1,5 +1,6 @@
 package com.xjeffrose.chicago.client;
 
+import com.google.common.primitives.Booleans;
 import com.google.common.util.concurrent.SettableFuture;
 import com.xjeffrose.chicago.DefaultChicagoMessage;
 import com.xjeffrose.chicago.Op;
@@ -26,7 +27,7 @@ public class ChicagoClientHandlerTest {
       SettableFuture<byte[]> f = SettableFuture.create();
       futureMap.put(id, f);
       reqMap.put(id, f);
-      ch.writeInbound(new DefaultChicagoMessage(id, Op.RESPONSE, "ColFam".getBytes(), "Key".getBytes(), ("Val" + i).getBytes()));
+      ch.writeInbound(new DefaultChicagoMessage(id, Op.RESPONSE, "ColFam".getBytes(), Boolean.toString(true).getBytes(), ("Val" + i).getBytes()));
     }
 
     assertEquals(100, reqMap.size());

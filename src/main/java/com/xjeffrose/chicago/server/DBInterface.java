@@ -1,4 +1,4 @@
-package com.xjeffrose.chicago;
+package com.xjeffrose.chicago.server;
 
 public interface DBInterface {
 
@@ -8,9 +8,13 @@ public interface DBInterface {
 
   boolean delete(byte[] colFam, byte[] key);
 
+  boolean delete(byte[] colFam);
+
   byte[] tsWrite(byte[] colFam, byte[] val);
 
   byte[] batchWrite(byte[] colFam, byte[] val);
 
   byte[] stream(byte[] colFam, byte[] key);
+
+  byte[] tsWrite(byte[] colFam, byte[] key, byte[] val);
 }

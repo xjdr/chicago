@@ -1,6 +1,7 @@
-package com.xjeffrose.chicago;
+package com.xjeffrose.chicago.server;
 
 import com.google.common.primitives.Longs;
+import com.xjeffrose.chicago.ChiUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.util.internal.PlatformDependent;
@@ -70,6 +71,11 @@ public class InMemDBImpl implements DBInterface, AutoCloseable {
   }
 
   @Override
+  public boolean delete(byte[] colFam) {
+    return false;
+  }
+
+  @Override
   public byte[] tsWrite(byte[] colFam, byte[] val) {
     final long _offset;
     if (db.containsKey(Unpooled.buffer().writeBytes(colFam))) {
@@ -82,6 +88,11 @@ public class InMemDBImpl implements DBInterface, AutoCloseable {
     }
 
     return Longs.toByteArray(_offset);
+  }
+
+  @Override
+  public byte[] tsWrite(byte[] colFam, byte[] key, byte[] val) {
+    return new byte[0];
   }
 
   @Override

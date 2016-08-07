@@ -1,10 +1,10 @@
 package com.xjeffrose.chicago;
 
+import com.xjeffrose.chicago.server.ChiConfig;
 import java.nio.charset.Charset;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import com.xjeffrose.chicago.server.ChicagoServer;
 import org.apache.curator.RetryPolicy;

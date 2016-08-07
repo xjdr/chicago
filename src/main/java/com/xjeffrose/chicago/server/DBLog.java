@@ -1,8 +1,8 @@
-package com.xjeffrose.chicago;
+package com.xjeffrose.chicago.server;
 
+import com.xjeffrose.chicago.Op;
 import io.netty.util.internal.PlatformDependent;
 import java.util.Deque;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

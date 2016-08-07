@@ -1,6 +1,5 @@
-package com.xjeffrose.chicago;
+package com.xjeffrose.chicago.server;
 
-import com.xjeffrose.chicago.server.ChicagoServerPipeline;
 import com.xjeffrose.xio.application.Application;
 import com.xjeffrose.xio.bootstrap.ApplicationBootstrap;
 
@@ -209,8 +208,6 @@ public class DBRouter implements Closeable {
       .addServer("admin", (bs) -> bs.addToPipeline(new XioSslHttp1_1Pipeline()))
       .addServer("stats", (bs) -> bs.addToPipeline(new XioSslHttp1_1Pipeline()))
       .addServer("db", (bs) -> bs.addToPipeline(buildDbPipeline()))
-//      .addServer("election", (bs) -> bs.addToPipeline(buildElectionPipeline()))
-//      .addServer("rpc", (bs) -> bs.addToPipeline(buildRpcPipeline()))
       .build();
 
     //this.masterManager = new ChicagoMasterManager(config, application.instrumentation("election").boundAddress());

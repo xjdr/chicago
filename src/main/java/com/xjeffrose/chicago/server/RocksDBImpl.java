@@ -1,7 +1,8 @@
-package com.xjeffrose.chicago;
+package com.xjeffrose.chicago.server;
 
 import com.google.common.primitives.Longs;
-import com.xjeffrose.chicago.server.ChicagoServer;
+import com.xjeffrose.chicago.ChiUtil;
+import com.xjeffrose.chicago.ZkClient;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.util.internal.PlatformDependent;
@@ -238,7 +239,7 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
     }
   }
 
-  boolean delete(byte[] colFam){
+  public boolean delete(byte[] colFam){
     try{
       if (colFamilyExists(colFam)) {
         log.info("Deleting the column Family :"+ new String(colFam));

@@ -1,4 +1,4 @@
-package com.xjeffrose.chicago.client.tools;
+package com.xjeffrose.chicago.tools;
 
 import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.FutureCallback;

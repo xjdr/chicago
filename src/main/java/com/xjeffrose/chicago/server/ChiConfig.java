@@ -1,4 +1,4 @@
-package com.xjeffrose.chicago;
+package com.xjeffrose.chicago.server;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;

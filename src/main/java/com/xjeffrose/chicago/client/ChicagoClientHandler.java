@@ -38,7 +38,7 @@ class ChicagoClientHandler extends SimpleChannelInboundHandler<ChicagoMessage> {
       if (futureMap.containsKey(chicagoMessage.getId())) {
         //System.out.println("Got response for ID: "+ chicagoMessage.getId() + " response ="+ Longs.fromByteArray(
         //chicagoMessage.getVal()) + "ctx "+ ctx.toString());
-        if (chicagoMessage.getSuccess()) {
+        if (Boolean.valueOf(new String(chicagoMessage.getKey()))) {
           futureMap.get(chicagoMessage.getId()).set(chicagoMessage.getVal());
         } else {
           futureMap.get(chicagoMessage.getId()).setException(new ChicagoClientException("Request Failed"));

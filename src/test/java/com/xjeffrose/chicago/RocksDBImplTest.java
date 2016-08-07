@@ -2,6 +2,7 @@ package com.xjeffrose.chicago;
 
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
+import com.xjeffrose.chicago.server.RocksDBImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
