@@ -14,7 +14,5 @@ public interface ChicagoMessage extends ChicagoObject {
 
   boolean getSuccess();
 
-  void setSuccess();
-
   byte[] getColFam();
 }

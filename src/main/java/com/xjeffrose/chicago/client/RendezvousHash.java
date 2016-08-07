@@ -1,5 +1,6 @@
 package com.xjeffrose.chicago.client;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.hash.Funnel;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
@@ -24,12 +25,12 @@ public class RendezvousHash<N> {
   private final Funnel<N> nodeFunnel;
     private final int quorum;
 
-  private ConcurrentSkipListSet<N> nodeList;
+  private List<N> nodeList;
 
     public RendezvousHash(Funnel<N> nodeFunnel, Collection<N> init, int quorum) {
     this.hasher = Hashing.murmur3_128();
     this.nodeFunnel = nodeFunnel;
-    this.nodeList = new ConcurrentSkipListSet<>(init);
+    this.nodeList = ImmutableList.copyOf(init);
     this.quorum = quorum;
   }
 
@@ -63,9 +64,12 @@ public class RendezvousHash<N> {
     });
 
     for (int i = 0; i < quorum; i++) {
-      _nodeList.add(hashMap.remove(hashMap.keySet().stream().max(Long::compare).orElse(null)));
+      try {
+        _nodeList.add(hashMap.remove(hashMap.keySet().stream().max(Long::compare).orElse(null)));
+      } catch (NullPointerException e) {
+        return nodeList;
+      }
     }
-
     return _nodeList;
   }
 

@@ -17,6 +17,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutionException;
@@ -64,8 +65,8 @@ public class ChicagoClient extends BaseChicagoClient implements AutoCloseable {
     super(address);
   }
 
-  public ChicagoClient(List<EmbeddedChannel> hostPool, int quorum) throws InterruptedException {
-    super(hostPool, quorum);
+  ChicagoClient(List<EmbeddedChannel> hostPool, Map<UUID, SettableFuture<byte[]>> futureMap, int quorum) throws InterruptedException {
+    super(hostPool, futureMap, quorum);
   }
 
   public ByteBuf aggregatedStream(byte[] key, byte[] offset){
@@ -375,7 +376,6 @@ public class ChicagoClient extends BaseChicagoClient implements AutoCloseable {
 
             @Override
             public void onFailure(Throwable throwable) {
-
             }
           });
           futureMap.put(id, f);

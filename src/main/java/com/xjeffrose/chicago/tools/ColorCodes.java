@@ -1,8 +1,5 @@
 package com.xjeffrose.chicago.tools;
 
-/**
- * Created by root on 7/14/16.
- */
 public class ColorCodes {
   public static final String ANSI_RESET = "\u001B[0m";
   public static final String ANSI_BLACK = "\u001B[30m";

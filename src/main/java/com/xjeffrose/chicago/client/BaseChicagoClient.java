@@ -58,8 +58,7 @@ abstract public class BaseChicagoClient {
   protected final ZkClient zkClient;
   protected final ConnectionPoolManager connectionPoolMgr;
   protected int quorum;
-
-  protected Map<UUID, SettableFuture<byte[]>> futureMap = PlatformDependent.newConcurrentHashMap();
+  protected Map<UUID, SettableFuture<byte[]>> futureMap;
   protected EventLoopGroup evg;
 
 
@@ -71,6 +70,7 @@ abstract public class BaseChicagoClient {
     nodeList.add(address);
     this.rendezvousHash =  new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
     clientNodeWatcher = null;
+    this.futureMap = PlatformDependent.newConcurrentHashMap();
     this.connectionPoolMgr = new ConnectionPoolManager(address, futureMap);
     this.chicagoBuffer = new ChicagoBuffer(connectionPoolMgr, this);
     if (Epoll.isAvailable()) {
@@ -85,6 +85,7 @@ abstract public class BaseChicagoClient {
     this.single_server = false;
     this.zkClient = new ZkClient(zkConnectionString, false);
     this.quorum = quorum;
+    this.futureMap = PlatformDependent.newConcurrentHashMap();
 
     ArrayList<String> nodeList = new ArrayList<>();
     this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
@@ -98,11 +99,12 @@ abstract public class BaseChicagoClient {
     }
   }
 
-  public BaseChicagoClient(List<EmbeddedChannel> hostPool, int quorum) throws InterruptedException {
+  BaseChicagoClient(List<EmbeddedChannel> hostPool, Map<UUID, SettableFuture<byte[]>> futureMap, int quorum) throws InterruptedException {
 
     this.single_server = false;
     this.zkClient = null;
     this.quorum = quorum;
+    this.futureMap = futureMap;
 
     ArrayList<String> nodeList = new ArrayList<>();
     hostPool.stream().forEach(xs -> nodeList.add(xs.remoteAddress().toString()));

@@ -1,81 +1,64 @@
 package com.xjeffrose.chicago.client;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.xjeffrose.chicago.ChicagoMessage;
 import com.xjeffrose.chicago.ChicagoObjectDecoder;
 import com.xjeffrose.chicago.ChicagoObjectEncoder;
+import com.xjeffrose.chicago.DefaultChicagoMessage;
 import com.xjeffrose.chicago.Op;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.util.internal.PlatformDependent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.curator.test.TestingServer;
-import org.apache.zookeeper.CreateMode;
+import java.util.concurrent.CountDownLatch;
+import javax.annotation.Nullable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class ChicagoClientTest {
   private final static String NODE_LIST_PATH = "/chicago/node-list";
-  private EmbeddedChannel ch1 = new EmbeddedChannel(new ChicagoClientCodec());
-  private EmbeddedChannel ch2 = new EmbeddedChannel();
-  private EmbeddedChannel ch3 = new EmbeddedChannel();
+  private final Map<UUID, SettableFuture<byte[]>> futureMap = PlatformDependent.newConcurrentHashMap();
+  private EmbeddedChannel ch1 = new EmbeddedChannel(new ChannelInitializer<EmbeddedChannel>() {
+    @Override
+    protected void initChannel(EmbeddedChannel channel) throws Exception {
+      ChannelPipeline cp = channel.pipeline();
+      cp.addLast(new ChicagoClientCodec());
+      cp.addLast(new ChicagoClientHandler(futureMap));
+    }
+  });
 
   private ChicagoObjectDecoder decoder = new ChicagoObjectDecoder();
   private ChicagoObjectEncoder encoder = new ChicagoObjectEncoder();
-
-  private TestingServer zkServer;
-  private CuratorFramework curZkClient;
   private ChicagoClient chicagoClient;
 
   @Before
   public void setUp() throws Exception {
-//    try (TestingServer zkServer = new TestingServer(true)) {
-//      zkServer.start();
-//      try (CuratorFramework curZkClient = CuratorFrameworkFactory.newClient(zkServer.getConnectString(), new ExponentialBackoffRetry(5000, 3))) {
-//        curZkClient.start();
-//
-//        this.zkServer = zkServer;
-//        this.curZkClient = curZkClient;
-//
-//        Map<UUID, SettableFuture<byte[]>> futureMap = PlatformDependent.newConcurrentHashMap();
-        List<EmbeddedChannel> hostList = new ArrayList<EmbeddedChannel>();
-        hostList.add(ch1);
+    List<EmbeddedChannel> hostList = new ArrayList<EmbeddedChannel>();
+    hostList.add(ch1);
 
-        try (ChicagoClient chicagoClient = new ChicagoClient(hostList, 1)) {
-          this.chicagoClient = chicagoClient;
-        }
-//      }
-//    }
+    try (ChicagoClient chicagoClient = new ChicagoClient(hostList, futureMap, 1)) {
+      this.chicagoClient = chicagoClient;
+    }
   }
 
   @After
   public void tearDown() throws Exception {
-//    zkServer.stop();
-//    curZkClient.close();
     chicagoClient.close();
   }
-
-//  private void register(String path) {
-//    try {
-//      curZkClient
-//          .create()
-//          .creatingParentsIfNeeded()
-//          .withMode(CreateMode.EPHEMERAL)
-//          .forPath(path, null);
-//    } catch (Exception e) {
-//      e.printStackTrace();
-//    }
-//  }
 
   @Test
   public void aggregatedStream() throws Exception {
@@ -112,8 +95,8 @@ public class ChicagoClientTest {
   }
 
   @Test
-  public void write() throws Exception {
-    chicagoClient.write("ColFam".getBytes(), "Key".getBytes(), "Val".getBytes());
+  public void writeHappyReqPath() throws Exception {
+    ListenableFuture<List<byte[]>> clientResp = chicagoClient.write("ColFam".getBytes(), "Key".getBytes(), "Val".getBytes());
 
     ByteBuf bb = ch1.readOutbound();
     byte[] _bb = new byte[bb.readableBytes()];
@@ -125,6 +108,34 @@ public class ChicagoClientTest {
     assertEquals("Key", new String(chicagoMessage.getKey()));
     assertEquals("Val", new String(chicagoMessage.getVal()));
 
+  }
+
+  @Test
+  public void writeHappyRespPath() throws Exception {
+    ListenableFuture<List<byte[]>> clientResp = chicagoClient.write("ColFam".getBytes(), "Key".getBytes(), "Val".getBytes());
+
+    ByteBuf bb = ch1.readOutbound();
+    byte[] _bb = new byte[bb.readableBytes()];
+    bb.readBytes(_bb);
+    ChicagoMessage chicagoMessage = decoder.decode(_bb);
+
+    ch1.writeInbound(new DefaultChicagoMessage(chicagoMessage.getId(), Op.RESPONSE, "ColFam".getBytes(), Boolean.toString(true).getBytes(), null));
+    CountDownLatch latch = new CountDownLatch(1);
+    Futures.addCallback(clientResp, new FutureCallback<List<byte[]>>() {
+      @Override
+      public void onSuccess(@Nullable List<byte[]> bytes) {
+        assertNotNull(bytes);
+        latch.countDown();
+      }
+
+      @Override
+      public void onFailure(Throwable throwable) {
+        assertTrue(false);
+        latch.countDown();
+      }
+    });
+
+    latch.await();
   }
 
 

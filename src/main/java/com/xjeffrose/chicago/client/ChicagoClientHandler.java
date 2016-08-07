@@ -29,10 +29,6 @@ class ChicagoClientHandler extends SimpleChannelInboundHandler<ChicagoMessage> {
   }
 
   @Override
-  public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-  }
-
-  @Override
   protected void channelRead0(ChannelHandlerContext ctx, ChicagoMessage chicagoMessage) throws Exception {
     if (chicagoMessage != null) {
       if (futureMap.containsKey(chicagoMessage.getId())) {
