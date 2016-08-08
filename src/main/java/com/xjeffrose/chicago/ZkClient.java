@@ -18,7 +18,7 @@ import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ZkClient {
+public class ZkClient  implements  AutoCloseable {
   private static final Logger log = LoggerFactory.getLogger(ZkClient.class.getName());
 
   private LeaderSelector leaderSelector;
@@ -85,7 +85,6 @@ public class ZkClient {
 
   public void start() throws InterruptedException {
     client.start();
-    //client.blockUntilConnected();
   }
 
   public void stop() throws Exception {
@@ -230,4 +229,9 @@ public class ZkClient {
       }
     }
   };
+
+  @Override
+  public void close() throws Exception {
+    stop();
+  }
 }

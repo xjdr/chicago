@@ -234,20 +234,20 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
   }
 
   public void resetIfOverflow(AtomicLong l, String colFam){
-    if(l.get() < 0 || l.get() == Long.MIN_VALUE){
+    if (l.get() < 0 || l.get() == Long.MIN_VALUE){
       l.set(0);
     }
   }
 
   public boolean delete(byte[] colFam){
-    try{
+    try {
       if (colFamilyExists(colFam)) {
         log.info("Deleting the column Family :"+ new String(colFam));
         ColumnFamilyHandle ch = columnFamilies.remove(new String(colFam));
         db.dropColumnFamily(ch);
         counter.remove(new String(colFam));
       }
-    }catch (RocksDBException e) {
+    } catch (RocksDBException e) {
       e.printStackTrace();
       return false;
     }
@@ -271,7 +271,7 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
   }
 
   List<byte[]> getKeys(ReadOptions readOptions) {
-    try(RocksIterator i = db.newIterator(readOptions)) {
+    try (RocksIterator i = db.newIterator(readOptions)) {
       List<byte[]> keySet = new ArrayList();
       i.seekToFirst();
 
@@ -366,7 +366,6 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
     }
     return ts;
   }
-
 
   public byte[] stream(byte[] colFam) {
     byte[] offset = new byte[]{};
