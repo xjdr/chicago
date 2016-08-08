@@ -39,7 +39,7 @@ public class ChicagoClient extends BaseChicagoClient implements AutoCloseable {
 
   /*
    * Happy Path:
-   * Delete -> send message to all (3) available nodes wait for all (3) responses to be true.
+   * (deprecated) Delete -> send message to all (3) available nodes wait for all (3) responses to be true.
    * Write -> send message to all (3) available nodes wait for all (3) responses to be true.
    * Read -> send message to all (3) available nodes, wait for 1 node to reply, all other (2) replies are dropped.
    *
@@ -51,8 +51,6 @@ public class ChicagoClient extends BaseChicagoClient implements AutoCloseable {
    * Reading from a node that hasn't been able to receive writes
    * Write fails, some nodes think that they have good data until they're told that they don't
    * interleaved writes from two different clients for the same key
-   *
-   *
    *
    *
    * two phase commit with multiple nodes
@@ -513,10 +511,12 @@ public class ChicagoClient extends BaseChicagoClient implements AutoCloseable {
     return chicagoBuffer.append(key , value);
   }
 
+  @Deprecated
   public ListenableFuture<List<byte[]>> delete(byte[] key) throws ChicagoClientTimeoutException, ChicagoClientException, InterruptedException, TimeoutException, ExecutionException {
     return delete(ChiUtil.defaultColFam.getBytes(), key);
   }
 
+  @Deprecated
   public ListenableFuture<List<byte[]>> delete(byte[] colFam, byte[] key) throws ChicagoClientTimeoutException, ChicagoClientException, InterruptedException, TimeoutException, ExecutionException {
     return _delete(colFam, key, 0);
   }
