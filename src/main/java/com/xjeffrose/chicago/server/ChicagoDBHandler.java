@@ -63,7 +63,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
         msg.getId(),
         Op.RESPONSE,
         msg.getColFam(),
-        Boolean.toString(db.write(msg.getColFam(), msg.getKey(), encoder.encode(msg))).getBytes(),
+        Boolean.toString(db.write(msg.getColFam(), msg.getKey(), encoder.encode(ctx, msg, true))).getBytes(),
         null
       )
     ).addListener(writeComplete);
@@ -96,7 +96,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
             Op.RESPONSE,
             msg.getColFam(),
             Boolean.toString(true).getBytes(),
-            db.tsWrite(msg.getColFam(), encoder.encode(msg))
+            db.tsWrite(msg.getColFam(), encoder.encode(ctx, msg, true))
           )
         ).addListener(writeComplete);
       }
@@ -107,7 +107,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
           Op.RESPONSE,
           msg.getColFam(),
           Boolean.toString(true).getBytes(),
-          db.tsWrite(msg.getColFam(), msg.getKey(), encoder.encode(msg))
+          db.tsWrite(msg.getColFam(), msg.getKey(), encoder.encode(ctx, msg, true))
         )
       ).addListener(writeComplete);
     }

@@ -39,7 +39,7 @@ public class ChicagoObjectDecoder extends ByteToMessageDecoder {
   }
 
   private ChicagoMessage _decode(ByteBuf msg) {
-    final byte[] hash = new byte[4];
+    //    final byte[] hash = new byte[4];
     final byte[] id = new byte[36];
     final byte[] op = new byte[4];
     final byte[] colFamSize = new byte[4];
@@ -47,8 +47,8 @@ public class ChicagoObjectDecoder extends ByteToMessageDecoder {
     final byte[] valSize = new byte[4];
 
     // Determine the operation type
-    msg.readBytes(hash, 0, hash.length);
-    HashCode hashCode = HashCode.fromBytes(hash);
+    // msg.readBytes(hash, 0, hash.length);
+    //HashCode hashCode = HashCode.fromBytes(hash);
 
     // Determine the message ID
     msg.readBytes(id, 0, id.length);
@@ -116,13 +116,13 @@ public class ChicagoObjectDecoder extends ByteToMessageDecoder {
     trailing = trailing + valSize.length;
     System.arraycopy(val, 0, msgArray, trailing, val.length);
 
-    HashCode messageHash = Hashing.murmur3_32().hashBytes(msgArray);
+    //HashCode messageHash = Hashing.murmur3_32().hashBytes(msgArray);
 
-    if (hashCode.equals(messageHash)) {
-      _msg.setDecoderResult(DecoderResult.SUCCESS);
-    } else {
-      _msg.setDecoderResult(DecoderResult.failure(new ChicagoDecodeException()));
-    }
+    //if (hashCode.equals(messageHash)) {
+     _msg.setDecoderResult(DecoderResult.SUCCESS);
+     //} else {
+     // _msg.setDecoderResult(DecoderResult.failure(new ChicagoDecodeException()));
+     //}
 
     return _msg;
   }
