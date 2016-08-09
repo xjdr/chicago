@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 
 /*
- * | checksum | id | op | ColFam | keySize | key | valSize | val |
+ * | id | op | ColFam | keySize | key | valSize | val |
  *
  */
 
@@ -39,7 +39,7 @@ public class ChicagoObjectDecoder extends ByteToMessageDecoder {
   }
 
   private ChicagoMessage _decode(ByteBuf msg) {
-    final byte[] hash = new byte[4];
+    //    final byte[] hash = new byte[4];
     final byte[] id = new byte[36];
     final byte[] op = new byte[4];
     final byte[] colFamSize = new byte[4];
@@ -47,8 +47,8 @@ public class ChicagoObjectDecoder extends ByteToMessageDecoder {
     final byte[] valSize = new byte[4];
 
     // Determine the operation type
-    msg.readBytes(hash, 0, hash.length);
-    HashCode hashCode = HashCode.fromBytes(hash);
+    // msg.readBytes(hash, 0, hash.length);
+    //HashCode hashCode = HashCode.fromBytes(hash);
 
     // Determine the message ID
     msg.readBytes(id, 0, id.length);
@@ -91,38 +91,40 @@ public class ChicagoObjectDecoder extends ByteToMessageDecoder {
 
     try {
       _msg = new DefaultChicagoMessage(UUID.fromString(new String(id)), Op.fromInt(Ints.fromByteArray(op)), colFam, key, val);
-    } catch (IllegalArgumentException e) {
-      //      log.error("Failure during Decode: ", e);
-      _msg = new DefaultChicagoMessage(null, Op.fromInt(Ints.fromByteArray(op)), colFam, key, val);
-    }
-
-    int msgSize = id.length + op.length + colFamSize.length + colFam.length + keySize.length + key.length + valSize.length + val.length;
-    byte[] msgArray = new byte[msgSize];
-
-    int trailing = 0;
-    System.arraycopy(id, 0, msgArray, trailing, id.length);
-    trailing = trailing + id.length;
-    System.arraycopy(op, 0, msgArray, trailing, op.length);
-    trailing = trailing + op.length;
-    System.arraycopy(colFamSize, 0, msgArray, trailing, colFamSize.length);
-    trailing = trailing + colFamSize.length;
-    System.arraycopy(colFam, 0, msgArray, trailing, colFam.length);
-    trailing = trailing + colFam.length;
-    System.arraycopy(keySize, 0, msgArray, trailing, keySize.length);
-    trailing = trailing + keySize.length;
-    System.arraycopy(key, 0, msgArray, trailing, key.length);
-    trailing = trailing + key.length;
-    System.arraycopy(valSize, 0, msgArray, trailing, valSize.length);
-    trailing = trailing + valSize.length;
-    System.arraycopy(val, 0, msgArray, trailing, val.length);
-
-    HashCode messageHash = Hashing.murmur3_32().hashBytes(msgArray);
-
-    if (hashCode.equals(messageHash)) {
       _msg.setDecoderResult(DecoderResult.SUCCESS);
-    } else {
-      _msg.setDecoderResult(DecoderResult.failure(new ChicagoDecodeException()));
+    } catch (IllegalArgumentException e) {
+      log.error("Failure during Decode: ", e);
+      _msg = new DefaultChicagoMessage(null, Op.fromInt(Ints.fromByteArray(op)), colFam, key, val);
+      _msg.setDecoderResult(DecoderResult.failure(e));
     }
+
+    // int msgSize = id.length + op.length + colFamSize.length + colFam.length + keySize.length + key.length + valSize.length + val.length;
+    // byte[] msgArray = new byte[msgSize];
+
+    // int trailing = 0;
+    // System.arraycopy(id, 0, msgArray, trailing, id.length);
+    // trailing = trailing + id.length;
+    // System.arraycopy(op, 0, msgArray, trailing, op.length);
+    // trailing = trailing + op.length;
+    // System.arraycopy(colFamSize, 0, msgArray, trailing, colFamSize.length);
+    // trailing = trailing + colFamSize.length;
+    // System.arraycopy(colFam, 0, msgArray, trailing, colFam.length);
+    // trailing = trailing + colFam.length;
+    // System.arraycopy(keySize, 0, msgArray, trailing, keySize.length);
+    // trailing = trailing + keySize.length;
+    // System.arraycopy(key, 0, msgArray, trailing, key.length);
+    // trailing = trailing + key.length;
+    // System.arraycopy(valSize, 0, msgArray, trailing, valSize.length);
+    // trailing = trailing + valSize.length;
+    // System.arraycopy(val, 0, msgArray, trailing, val.length);
+
+    //HashCode messageHash = Hashing.murmur3_32().hashBytes(msgArray);
+
+    //if (hashCode.equals(messageHash)) {
+    //     _msg.setDecoderResult(DecoderResult.SUCCESS);
+     //} else {
+     // _msg.setDecoderResult(DecoderResult.failure(new ChicagoDecodeException()));
+     //}
 
     return _msg;
   }

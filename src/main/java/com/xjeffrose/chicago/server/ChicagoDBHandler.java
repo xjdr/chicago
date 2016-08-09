@@ -71,7 +71,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
   }
 
   private void handleWrite(ChannelHandlerContext ctx, ChicagoMessage msg, ChannelFutureListener writeComplete) {
-    ListenableFuture<Boolean> future = db.write(msg.getColFam(), msg.getKey(), encoder.encode(msg));
+    ListenableFuture<Boolean> future = db.write(msg.getColFam(), msg.getKey(), encoder.encode(ctx, msg, true));
     Futures.addCallback(future, new FutureCallback<Boolean>() {
       @Override
       public void onSuccess(Boolean result) {
@@ -131,7 +131,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
           }
         }, ctx.executor());
       } else {
-        ListenableFuture<byte[]> future = db.tsWrite(msg.getColFam(), null, encoder.encode(msg));
+        ListenableFuture<byte[]> future = db.tsWrite(msg.getColFam(), null, encoder.encode(ctx, msg, true));
         Futures.addCallback(future, new FutureCallback<byte[]>() {
           @Override
           public void onSuccess(byte[] result) {
@@ -151,7 +151,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
         }, ctx.executor());
       }
     } else {
-      ListenableFuture<byte[]> future = db.tsWrite(msg.getColFam(), msg.getKey(), encoder.encode(msg));
+      ListenableFuture<byte[]> future = db.tsWrite(msg.getColFam(), msg.getKey(), encoder.encode(ctx, msg, true));
       Futures.addCallback(future, new FutureCallback<byte[]>() {
         @Override
         public void onSuccess(byte[] result) {
@@ -173,7 +173,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
   }
 
   private void handleStreamingRead(ChannelHandlerContext ctx, ChicagoMessage msg, ChannelFutureListener writeComplete) {
-    ListenableFuture<byte[]> future = db.stream(msg.getColFam(), msg.getVal());
+    ListenableFuture<byte[]> future = db.stream(msg.getColFam(), encoder.encode(ctx, msg, true));
     Futures.addCallback(future, new FutureCallback<byte[]>() {
       @Override
       public void onSuccess(byte[] result) {

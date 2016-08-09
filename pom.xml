@@ -115,24 +115,24 @@
             </exclusions>
             <scope>test</scope>
         </dependency>
-<dependency>
-    <groupId>org.slf4j</groupId>
-    <artifactId>slf4j-api</artifactId>
-    <version>1.7.21</version>
-</dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.21</version>
+        </dependency>
 
-<dependency>
-  <groupId>ch.qos.logback</groupId>
-  <artifactId>logback-classic</artifactId>
-  <version>1.1.7</version>
-  <scope>test</scope>
- </dependency>
- <dependency>
-  <groupId>ch.qos.logback</groupId>
-  <artifactId>logback-core</artifactId>
-  <version>1.1.7</version>
-  <scope>test</scope>
- </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.1.7</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>1.1.7</version>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
@@ -140,25 +140,39 @@
             <version>2.4.1</version>
             <scope>test</scope>
         </dependency>
-<!--
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-log4j12</artifactId>
-        <version>1.7.5</version>
-      </dependency>
--->
-      <dependency>
-        <groupId>com.beust</groupId>
-        <artifactId>jcommander</artifactId>
-        <version>1.48</version>
-      </dependency>
+        <!--
+              <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>1.7.5</version>
+              </dependency>
+        -->
+        <dependency>
+            <groupId>com.beust</groupId>
+            <artifactId>jcommander</artifactId>
+            <version>1.48</version>
+        </dependency>
         <dependency>
             <groupId>org.rocksdb</groupId>
             <artifactId>rocksdbjni</artifactId>
             <version>4.8.0</version>
         </dependency>
-    </dependencies>
 
+    <dependency>
+        <groupId>com.intel.chimera</groupId>
+        <artifactId>chimera</artifactId>
+        <version>0.9.2</version>
+        <!--<type>jar</type>-->
+        <!--<scope>compile</scope>-->
+    </dependency>
+    <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <version>1.16.10</version>
+        <!--<type>jar</type>-->
+        <!--<scope>compile</scope>-->
+    </dependency>
+    </dependencies>
     <build>
         <plugins>
 
@@ -172,13 +186,17 @@
                 </configuration>
             </plugin>
 
-<!--
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>2.4.1</version>
                 <configuration>
-
+                    <transformers>
+                        <transformer
+                                implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                            <resource>reference.conf</resource>
+                        </transformer>
+                    </transformers>
                 </configuration>
                 <executions>
                     <execution>
@@ -189,7 +207,6 @@
                     </execution>
                 </executions>
             </plugin>
--->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>

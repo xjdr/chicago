@@ -1,4 +1,5 @@
-echo 'Runn:ing Chicago'
+echo 'Running Chicago'
+cd $(dirname $0)
 java  -ea                         \
   $JAVA_OPTS                      \
   -Djava.net.preferIPv4Stack=true \
@@ -16,4 +17,4 @@ java  -ea                         \
   -Xms1024M                       \
   -Xmx12G                         \
   -server                         \
-  -cp 3rdParty/rocksdbjni-4.8.0-osx.jar:target/chicago-0.3.0-SNAPSHOT.jar com.xjeffrose.chicago.server.Chicago application.conf
+  -cp ../target/chicago-0.4.0-SNAPSHOT.jar:../config com.xjeffrose.chicago.server.Chicago 
