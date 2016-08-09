@@ -2,6 +2,9 @@ package com.xjeffrose.chicago;
 
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+import com.xjeffrose.chicago.server.ChiConfig;
 import com.xjeffrose.chicago.server.RocksDBImpl;
 import org.junit.After;
 import org.junit.Before;
@@ -14,10 +17,12 @@ import static org.junit.Assert.assertTrue;
 public class RocksDBImplTest {
 
   private RocksDBImpl rocksDbImpl;
+  Config settings = ConfigFactory.load();
+  ChiConfig config = new ChiConfig(settings.getConfig("chicago.application"));
 
   @Before
   public void setUp() throws Exception {
-    this.rocksDbImpl = new RocksDBImpl();
+    this.rocksDbImpl = new RocksDBImpl(config);
   }
 
   @After

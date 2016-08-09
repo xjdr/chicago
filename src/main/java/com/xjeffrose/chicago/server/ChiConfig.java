@@ -33,6 +33,8 @@ public class ChiConfig {
   @Getter
   private boolean databaseMode;
   @Getter
+  private boolean encryptAtRest;
+  @Getter
   private List<String> witnessList;
 //  private ZkClient zkClient;
 
@@ -48,6 +50,7 @@ public class ChiConfig {
     this.compactionSize = conf.getMemorySize("settings.compactionSize").toBytes();
     this.databaseMode = conf.getBoolean("settings.databaseMode");
     this.witnessList = conf.getStringList("settings.witnessList");
+    this.encryptAtRest =  conf.getBoolean("settings.encryptAtRest");
   }
 
   /*

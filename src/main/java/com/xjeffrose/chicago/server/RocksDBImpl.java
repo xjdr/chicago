@@ -2,17 +2,18 @@ package com.xjeffrose.chicago.server;
 
 import com.google.common.primitives.Longs;
 import com.xjeffrose.chicago.ChiUtil;
+import com.xjeffrose.chicago.DBEncryptionHandler;
 import com.xjeffrose.chicago.ZkClient;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.util.internal.PlatformDependent;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
-
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.ColumnFamilyOptions;
@@ -32,18 +33,19 @@ import org.slf4j.LoggerFactory;
 public class RocksDBImpl implements AutoCloseable, DBInterface {
   private static final Logger log = LoggerFactory.getLogger(RocksDBImpl.class);
 
+  static {
+    RocksDB.loadLibrary();
+  }
+
   private final Options options = new Options();
   private final ReadOptions readOptions = new ReadOptions();
   private final WriteOptions writeOptions = new WriteOptions();
   private final Map<String, ColumnFamilyHandle> columnFamilies = PlatformDependent.newConcurrentHashMap();
   private final ChiConfig config;
+  private final Map<String, AtomicLong> counter = PlatformDependent.newConcurrentHashMap();
   private ZkClient zkClient;
-  private final Map<String,AtomicLong> counter = PlatformDependent.newConcurrentHashMap();
   private RocksDB db;
-
-  static {
-    RocksDB.loadLibrary();
-  }
+  private DBEncryptionHandler encryptionHandler;
 
   public RocksDBImpl(ChiConfig config) {
     this.config = config;
@@ -63,6 +65,10 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
     } catch (RocksDBException e) {
       log.error("Could not load DB: " + config.getDbPath() + " " + e.getMessage());
       throw new RuntimeException(e);
+    }
+
+    if (config.isEncryptAtRest()) {
+      encryptionHandler = new DBEncryptionHandler();
     }
     //createColumnFamily(ChiUtil.defaultColFam.getBytes());
   }
@@ -90,7 +96,7 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
     //createColumnFamily(ChiUtil.defaultColFam.getBytes());
   }
 
-  public void setZkClient(ZkClient zkClient){
+  public void setZkClient(ZkClient zkClient) {
     this.zkClient = zkClient;
   }
 
@@ -123,12 +129,12 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
             .setBucketCount(100000));
   }
 
-  private void setCompactionOptions(Options options){
+  private void setCompactionOptions(Options options) {
     if (config == null) {
 
-    } else if(!config.isDatabaseMode()){
+    } else if (!config.isDatabaseMode()) {
       options.setCompactionStyle(CompactionStyle.FIFO)
-        .setMaxTableFilesSizeFIFO(config.getCompactionSize());
+          .setMaxTableFilesSizeFIFO(config.getCompactionSize());
     }
   }
 
@@ -148,7 +154,7 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
   boolean deleteColumnFamily(byte[] _name) {
     final String name = new String(_name);
     try {
-      if(colFamilyExists(_name)) {
+      if (colFamilyExists(_name)) {
         db.dropColumnFamily(columnFamilies.get(name));
         columnFamilies.remove(name);
       }
@@ -160,7 +166,7 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
   }
 
   private synchronized boolean createColumnFamily(byte[] name) {
-    if (colFamilyExists(name)){
+    if (colFamilyExists(name)) {
       return true;
     }
 
@@ -171,13 +177,13 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
           .setMemtablePrefixBloomProbes(1)
           .setMemTableConfig(new HashLinkedListMemTableConfig()
               .setBucketCount(100000));
-    } else if(!config.isDatabaseMode()){
+    } else if (!config.isDatabaseMode()) {
       columnFamilyOptions.setCompactionStyle(CompactionStyle.FIFO)
-        .setMaxTableFilesSizeFIFO(config.getCompactionSize())
-        .setWriteBufferSize(1 * SizeUnit.GB)
-        .setMemtablePrefixBloomProbes(1)
-        .setMemTableConfig(new HashLinkedListMemTableConfig()
-            .setBucketCount(100000));
+          .setMaxTableFilesSizeFIFO(config.getCompactionSize())
+          .setWriteBufferSize(1 * SizeUnit.GB)
+          .setMemtablePrefixBloomProbes(1)
+          .setMemTableConfig(new HashLinkedListMemTableConfig()
+              .setBucketCount(100000));
     }
 
     ColumnFamilyDescriptor columnFamilyDescriptor = new ColumnFamilyDescriptor(name, columnFamilyOptions);
@@ -186,7 +192,7 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
       columnFamilies.put(new String(name), db.createColumnFamily(columnFamilyDescriptor));
       counter.put(new String(name), new AtomicLong(0));
       if (zkClient != null) {
-        zkClient.createIfNotExist(ChicagoServer.NODE_LOCK_PATH+ "/" + new String(name), "");
+        zkClient.createIfNotExist(ChicagoServer.NODE_LOCK_PATH + "/" + new String(name), "");
       }
       return true;
     } catch (RocksDBException e) {
@@ -209,9 +215,13 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
       }
     }
     try {
-      db.put(columnFamilies.get(new String(colFam)), writeOptions, key, value);
+      if (config.isEncryptAtRest()) {
+        db.put(columnFamilies.get(new String(colFam)), writeOptions, key, encryptionHandler.encrypt(value));
+      } else {
+        db.put(columnFamilies.get(new String(colFam)), writeOptions, key, value);
+      }
       return true;
-    } catch (RocksDBException e) {
+    } catch (RocksDBException | IOException e) {
       log.error("Error writing record: " + new String(key), e);
       return false;
     }
@@ -224,25 +234,28 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
       return null;
     } else {
       try {
-        byte[] res = db.get(columnFamilies.get(new String(colFam)), readOptions, key);
-        return res;
-      } catch (RocksDBException e) {
+        if (config.isEncryptAtRest()) {
+          return encryptionHandler.decrypt(db.get(columnFamilies.get(new String(colFam)), readOptions, key));
+        } else {
+          return db.get(columnFamilies.get(new String(colFam)), readOptions, key);
+        }
+      } catch (RocksDBException | IOException e) {
         log.error("Error getting record: " + new String(key), e);
         return null;
       }
     }
   }
 
-  public void resetIfOverflow(AtomicLong l, String colFam){
-    if (l.get() < 0 || l.get() == Long.MIN_VALUE){
+  public void resetIfOverflow(AtomicLong l, String colFam) {
+    if (l.get() < 0 || l.get() == Long.MIN_VALUE) {
       l.set(0);
     }
   }
 
-  public boolean delete(byte[] colFam){
+  public boolean delete(byte[] colFam) {
     try {
       if (colFamilyExists(colFam)) {
-        log.info("Deleting the column Family :"+ new String(colFam));
+        log.info("Deleting the column Family :" + new String(colFam));
         ColumnFamilyHandle ch = columnFamilies.remove(new String(colFam));
         db.dropColumnFamily(ch);
         counter.remove(new String(colFam));
@@ -288,7 +301,7 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
     db.close();
   }
 
-  public byte[] tsWrite(byte[] colFam, byte[] key, byte[] value){
+  public byte[] tsWrite(byte[] colFam, byte[] key, byte[] value) {
     if (key == null) {
       log.error("Tried to write a null key");
       return null;
@@ -300,19 +313,23 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
     }
     try {
       //Insert Key/Value only if it does not exists.
-      if (!db.keyMayExist(readOptions,columnFamilies.get(new String(colFam)),key, new StringBuffer())){
+      if (!db.keyMayExist(readOptions, columnFamilies.get(new String(colFam)), key, new StringBuffer())) {
         //Set the AtomicInteger for the colFam if the key is bigger than the already set value.
         if (Longs.fromByteArray(key) > counter.get(new String(colFam)).get()) {
           counter.get(new String(colFam)).set(Longs.fromByteArray(key) + 1);
-          resetIfOverflow(counter.get(new String(colFam)),new String(colFam));
+          resetIfOverflow(counter.get(new String(colFam)), new String(colFam));
         }
-        if(Longs.fromByteArray(key) %1000 == 0) {
+        if (Longs.fromByteArray(key) % 1000 == 0) {
           log.info("colFam/key reached : " + new String(colFam) + " " + Longs.fromByteArray(key));
         }
-        db.put(columnFamilies.get(new String(colFam)), writeOptions, key, value);
+        if (config.isEncryptAtRest()) {
+          db.put(columnFamilies.get(new String(colFam)), writeOptions, key, encryptionHandler.encrypt(value));
+        } else {
+          db.put(columnFamilies.get(new String(colFam)), writeOptions, key, value);
+        }
       }
       return key;
-    } catch (RocksDBException e) {
+    } catch (RocksDBException | IOException e) {
       log.error("Error writing record: " + new String(key), e);
       return null;
     }
@@ -328,19 +345,24 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
     }
     try {
       byte[] ts = Longs.toByteArray(counter.get(new String(colFam)).getAndIncrement());
-      if(Longs.fromByteArray(ts)%1000 == 0) {
-        log.info("key reached " + Longs.fromByteArray(ts) + " for colFam "+ new String(colFam));
+      if (Longs.fromByteArray(ts) % 1000 == 0) {
+        log.info("key reached " + Longs.fromByteArray(ts) + " for colFam " + new String(colFam));
       }
-      resetIfOverflow(counter.get(new String(colFam)),new String(colFam));
-      db.put(columnFamilies.get(new String(colFam)), writeOptions, ts, value);
+      resetIfOverflow(counter.get(new String(colFam)), new String(colFam));
+      if (config.isEncryptAtRest()) {
+        db.put(columnFamilies.get(new String(colFam)), writeOptions, ts, encryptionHandler.encrypt(value));
+      } else {
+        db.put(columnFamilies.get(new String(colFam)), writeOptions, ts, value);
+      }
+
       return ts;
-    } catch (RocksDBException e) {
+    } catch (RocksDBException | IOException e) {
       log.error("Error writing record: " + new String(colFam), e);
       return null;
     }
   }
 
-  public byte[] batchWrite(byte[] colFam, byte[] value){
+  public byte[] batchWrite(byte[] colFam, byte[] value) {
     if (value == null) {
       log.error("Tried to ts write a null value");
       return null;
@@ -351,15 +373,19 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
 //    long returnVal = counter.get(new String(colFam)).get() + noOfRecords;
     String[] values = new String(value).split(ChiUtil.delimiter);
     byte[] ts = new byte[0];
-    for( String val : values){
+    for (String val : values) {
       ts = Longs.toByteArray(counter.get(new String(colFam)).getAndIncrement());
-      if(Longs.fromByteArray(ts)%1000 == 0) {
-        log.info("key reached " + Longs.fromByteArray(ts) + " for colFam "+ new String(colFam));
+      if (Longs.fromByteArray(ts) % 1000 == 0) {
+        log.info("key reached " + Longs.fromByteArray(ts) + " for colFam " + new String(colFam));
       }
-      resetIfOverflow(counter.get(new String(colFam)),new String(colFam));
+      resetIfOverflow(counter.get(new String(colFam)), new String(colFam));
       try {
-        db.put(columnFamilies.get(new String(colFam)), writeOptions, ts, val.getBytes());
-      } catch (RocksDBException e) {
+        if (config.isEncryptAtRest()) {
+          db.put(columnFamilies.get(new String(colFam)), writeOptions, ts, encryptionHandler.encrypt(val.getBytes()));
+        } else {
+          db.put(columnFamilies.get(new String(colFam)), writeOptions, ts, val.getBytes());
+        }
+      } catch (RocksDBException | IOException e) {
         log.error("Error writing record: " + new String(colFam), e);
         return null;
       }
@@ -390,7 +416,18 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
         int size = 0;
 
         while (i.isValid() && size < ChiUtil.MaxBufferSize) {
-          byte[] v = i.value();
+          byte[] v;
+          try {
+            if (config.isEncryptAtRest()) {
+              v = encryptionHandler.decrypt(i.value());
+
+            } else {
+              v = i.value();
+            }
+          } catch (IOException e) {
+            log.error("Error getting record: " + new String(colFam), e);
+            v = new byte[0];
+          }
           byte[] _v = new byte[v.length + 1];
           System.arraycopy(v, 0, _v, 0, v.length);
           System.arraycopy(new byte[]{'\0'}, 0, _v, v.length, 1);
@@ -410,11 +447,11 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
     }
   }
 
-  public List<String> getColFams(){
+  public List<String> getColFams() {
     return new ArrayList<>(columnFamilies.keySet());
   }
 
-  public List<byte[]> getKeys(byte[] colFam, byte[] offset){
+  public List<byte[]> getKeys(byte[] colFam, byte[] offset) {
     try (RocksIterator i = db.newIterator(columnFamilies.get(new String(colFam)), readOptions)) {
       List<byte[]> keySet = new ArrayList();
       if (offset.length == 0) {
