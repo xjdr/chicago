@@ -40,8 +40,8 @@ public class RocksDBImpl implements AutoCloseable, StorageProvider {
   private final ReadOptions readOptions = new ReadOptions();
   private final WriteOptions writeOptions = new WriteOptions();
   private final Map<String, ColumnFamilyHandle> columnFamilies = PlatformDependent.newConcurrentHashMap();
-  private final ChiConfig config;
   private final Map<String, AtomicLong> counter = PlatformDependent.newConcurrentHashMap();
+  private ChiConfig config;
   private ZkClient zkClient;
   private RocksDB db;
 
@@ -52,21 +52,14 @@ public class RocksDBImpl implements AutoCloseable, StorageProvider {
     configReadOptions();
     configWriteOptions();
 
-    try {
-      File f = new File(config.getDbPath());
-      if (f.exists() && !config.isGraceFullStart()) {
-        removeDB(f);
-      } else if (!f.exists()) {
-        if (!f.mkdir()) {
-          log.error("Unable to create DB");
-        }
-        ;
-      }
 
-      this.db = RocksDB.open(options, config.getDbPath());
-    } catch (RocksDBException e) {
-      log.error("Could not load DB: " + config.getDbPath() + " " + e.getMessage());
-      throw new RuntimeException(e);
+    File f = new File(config.getDbPath());
+    if (f.exists() && !config.isGraceFullStart()) {
+      removeDB(f);
+    } else if (!f.exists()) {
+      if (!f.mkdir()) {
+        log.error("Unable to create DB");
+      }
     }
 
     //createColumnFamily(ChiUtil.defaultColFam.getBytes());
@@ -299,11 +292,6 @@ public class RocksDBImpl implements AutoCloseable, StorageProvider {
     }
   }
 
-  @Override
-  public void stop() {
-    db.close();
-  }
-
 
   public byte[] tsWrite(byte[] colFam, byte[] value) {
     if (value == null) {
@@ -419,7 +407,16 @@ public class RocksDBImpl implements AutoCloseable, StorageProvider {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() {
     destroy();
+  }
+
+  @Override
+  public void open() {
+    try {
+      this.db = RocksDB.open(options, config.getDbPath());
+    } catch (RocksDBException e) {
+      log.error("Unable to open RocksDB ", e);
+    }
   }
 }

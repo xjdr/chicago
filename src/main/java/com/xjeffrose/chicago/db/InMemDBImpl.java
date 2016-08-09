@@ -129,13 +129,12 @@ public class InMemDBImpl implements StorageProvider, AutoCloseable {
   }
 
   @Override
-  public void close() throws Exception {
-    stop();
+  public void close() {
+    db.clear();
   }
 
-
   @Override
-  public void stop() {
-    db.clear();
+  public void open() {
+
   }
 }

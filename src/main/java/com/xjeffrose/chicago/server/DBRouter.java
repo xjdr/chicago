@@ -44,7 +44,6 @@ public class DBRouter implements Closeable {
     this.chicagoPaxosHandler = new ChicagoPaxosHandler(offset, q, sessionCoordinator, qCount);
   }
 
-
   private ChicagoServerPipeline buildDbPipeline() {
     return new ChicagoServerPipeline("db") {
       @Override
@@ -79,7 +78,6 @@ public class DBRouter implements Closeable {
   public void close() throws IOException {
     application.close();
     manager.stopAsync().awaitTerminated();
-    db.stop();
   }
 
   public void stop() {

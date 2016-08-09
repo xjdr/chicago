@@ -120,7 +120,13 @@ public class EncryptedStorageProvider implements StorageProvider {
   }
 
   @Override
-  public void stop() {
-    db.stop();
+  public void close() {
+    db.close();
   }
+
+  @Override
+  public void open() {
+    db.open();
+  }
+
 }

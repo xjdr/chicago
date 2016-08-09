@@ -23,6 +23,7 @@ public class RocksDBImplTest {
   @Before
   public void setUp() throws Exception {
     this.rocksDbImpl = new RocksDBImpl(config);
+    this.rocksDbImpl.open();
   }
 
   @After

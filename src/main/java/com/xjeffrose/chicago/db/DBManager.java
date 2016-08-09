@@ -208,9 +208,11 @@ public class DBManager extends AbstractExecutionThreadService {
   }
 
   private void openDatabase() {
+    backend.open();
   }
 
   private void closeDatabase() {
+    backend.close();
   }
 
   private void post(Message message) {
