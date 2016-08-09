@@ -1,5 +1,6 @@
 package com.xjeffrose.chicago.server;
 
+import com.xjeffrose.chicago.db.DBManager;
 import com.xjeffrose.xio.application.Application;
 import com.xjeffrose.xio.bootstrap.ApplicationBootstrap;
 
@@ -17,6 +18,7 @@ public class DBRouter implements Closeable {
   //TODO(JR): Make this concurrent to applow for parallel streams
   private final ChiConfig config;
   private final RocksDBImpl rocksDbImpl;
+  private final DBManager manager;
   private final DBLog dbLog;
   //private ChicagoMasterManager masterManager;
   private final ChannelHandler handler;
@@ -25,8 +27,9 @@ public class DBRouter implements Closeable {
   public DBRouter(ChiConfig config, RocksDBImpl rocksDbImpl, DBLog dbLog) {
     this.config = config;
     this.rocksDbImpl = rocksDbImpl;
+    manager = new DBManager(rocksDbImpl);
     this.dbLog = dbLog;
-    this.handler = new ChicagoDBHandler(rocksDbImpl, dbLog);
+    this.handler = new ChicagoDBHandler(manager, dbLog);
     //config.setDbRouter(this);
   }
   /*
@@ -204,6 +207,8 @@ public class DBRouter implements Closeable {
 
 
   public void run() {
+    manager.startAsync().awaitRunning();
+
     application = new ApplicationBootstrap("chicago.application")
       .addServer("admin", (bs) -> bs.addToPipeline(new XioSslHttp1_1Pipeline()))
       .addServer("stats", (bs) -> bs.addToPipeline(new XioSslHttp1_1Pipeline()))
@@ -253,6 +258,7 @@ public class DBRouter implements Closeable {
     x.stop();
     serverDefSet.clear();
     */
+    manager.stopAsync().awaitTerminated();
     rocksDbImpl.destroy();
   }
 
