@@ -45,7 +45,7 @@ public class EncryptedStorageProvider implements StorageProvider {
     }
   }
 
-  public byte[] encrypt(byte[] raw) {
+  byte[] encrypt(byte[] raw) {
     try {
       ByteArrayOutputStream os = new ByteArrayOutputStream();
       CryptoOutputStream cos = new CryptoOutputStream(os, cipher, 4096, key, iv);
@@ -62,7 +62,7 @@ public class EncryptedStorageProvider implements StorageProvider {
     return null;
   }
 
-  public byte[] decrypt(byte[] encryptedData) {
+  byte[] decrypt(byte[] encryptedData) {
     try {
       final byte[] decryptedData = new byte[encryptedData.length];
       CryptoInputStream cis = null;

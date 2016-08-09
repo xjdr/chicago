@@ -1,4 +1,4 @@
-package com.xjeffrose.chicago;
+package com.xjeffrose.chicago.db;
 
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
