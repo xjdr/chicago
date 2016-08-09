@@ -1,6 +1,5 @@
 package com.xjeffrose.chicago.db;
 
-import com.xjeffrose.chicago.server.DBInterface;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,12 +9,12 @@ import java.util.concurrent.ExecutionException;
 
 public class DBManagerUnitTest {
 
-  DBInterface backend;
+  StorageProvider backend;
   DBManager manager;
 
   @Before
   public void setUp() {
-    backend = mock(DBInterface.class);
+    backend = mock(StorageProvider.class);
     manager = new DBManager(backend);
     manager.startAsync().awaitRunning();
   }

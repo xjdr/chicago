@@ -1,7 +1,8 @@
-package com.xjeffrose.chicago.server;
+package com.xjeffrose.chicago.db;
 
 import com.google.common.primitives.Longs;
 import com.xjeffrose.chicago.ChiUtil;
+import com.xjeffrose.chicago.server.ChiConfig;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.util.internal.PlatformDependent;
@@ -9,9 +10,13 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Slf4j
-public class InMemDBImpl implements DBInterface, AutoCloseable {
+public class InMemDBImpl implements StorageProvider, AutoCloseable {
+  private static final Logger log = LoggerFactory.getLogger(InMemDBImpl.class);
+
 
   private final Map<ByteBuf, Map<ByteBuf, byte[]>> db = PlatformDependent.newConcurrentHashMap();
   private final AtomicLong offset = new AtomicLong();
@@ -129,6 +134,12 @@ public class InMemDBImpl implements DBInterface, AutoCloseable {
 
   @Override
   public void close() throws Exception {
+    stop();
+  }
+
+
+  @Override
+  public void stop() {
     db.clear();
   }
 }

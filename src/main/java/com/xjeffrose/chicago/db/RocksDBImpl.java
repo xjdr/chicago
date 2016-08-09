@@ -1,18 +1,17 @@
-package com.xjeffrose.chicago.server;
+package com.xjeffrose.chicago.db;
 
 import com.google.common.primitives.Longs;
 import com.xjeffrose.chicago.ChiUtil;
-import com.xjeffrose.chicago.DBEncryptionHandler;
 import com.xjeffrose.chicago.ZkClient;
+import com.xjeffrose.chicago.server.ChiConfig;
+import com.xjeffrose.chicago.server.ChicagoServer;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.util.internal.PlatformDependent;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
@@ -30,7 +29,7 @@ import org.rocksdb.util.SizeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RocksDBImpl implements AutoCloseable, DBInterface {
+public class RocksDBImpl implements AutoCloseable, StorageProvider {
   private static final Logger log = LoggerFactory.getLogger(RocksDBImpl.class);
 
   static {
@@ -45,7 +44,7 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
   private final Map<String, AtomicLong> counter = PlatformDependent.newConcurrentHashMap();
   private ZkClient zkClient;
   private RocksDB db;
-  private DBEncryptionHandler encryptionHandler;
+
 
   public RocksDBImpl(ChiConfig config) {
     this.config = config;
@@ -58,9 +57,10 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
       if (f.exists() && !config.isGraceFullStart()) {
         removeDB(f);
       } else if (!f.exists()) {
-        if(!f.mkdir()) {
+        if (!f.mkdir()) {
           log.error("Unable to create DB");
-        };
+        }
+        ;
       }
 
       this.db = RocksDB.open(options, config.getDbPath());
@@ -69,9 +69,6 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
       throw new RuntimeException(e);
     }
 
-    if (config.isEncryptAtRest()) {
-      encryptionHandler = new DBEncryptionHandler();
-    }
     //createColumnFamily(ChiUtil.defaultColFam.getBytes());
   }
 
@@ -194,13 +191,9 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
       }
     }
     try {
-      if (config.isEncryptAtRest()) {
-        db.put(columnFamilies.get(new String(colFam)), writeOptions, key, encryptionHandler.encrypt(value));
-      } else {
-        db.put(columnFamilies.get(new String(colFam)), writeOptions, key, value);
-      }
+      db.put(columnFamilies.get(new String(colFam)), writeOptions, key, value);
       return true;
-    } catch (RocksDBException | IOException e) {
+    } catch (RocksDBException e) {
       log.error("Error writing record: " + new String(key), e);
       return false;
     }
@@ -213,12 +206,8 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
       return null;
     } else {
       try {
-        if (config.isEncryptAtRest()) {
-          return encryptionHandler.decrypt(db.get(columnFamilies.get(new String(colFam)), readOptions, key));
-        } else {
-          return db.get(columnFamilies.get(new String(colFam)), readOptions, key);
-        }
-      } catch (RocksDBException | IOException e) {
+        return db.get(columnFamilies.get(new String(colFam)), readOptions, key);
+      } catch (RocksDBException e) {
         log.error("Error getting record: " + new String(key), e);
         return null;
       }
@@ -301,17 +290,18 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
         if (Longs.fromByteArray(key) % 1000 == 0) {
           log.info("colFam/key reached : " + new String(colFam) + " " + Longs.fromByteArray(key));
         }
-        if (config.isEncryptAtRest()) {
-          db.put(columnFamilies.get(new String(colFam)), writeOptions, key, encryptionHandler.encrypt(value));
-        } else {
-          db.put(columnFamilies.get(new String(colFam)), writeOptions, key, value);
-        }
+        db.put(columnFamilies.get(new String(colFam)), writeOptions, key, value);
       }
       return key;
-    } catch (RocksDBException | IOException e) {
+    } catch (RocksDBException e) {
       log.error("Error writing record: " + new String(key), e);
       return null;
     }
+  }
+
+  @Override
+  public void stop() {
+    db.close();
   }
 
 
@@ -328,14 +318,10 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
         log.info("key reached " + Longs.fromByteArray(ts) + " for colFam " + new String(colFam));
       }
       resetIfOverflow(counter.get(new String(colFam)), new String(colFam));
-      if (config.isEncryptAtRest()) {
-        db.put(columnFamilies.get(new String(colFam)), writeOptions, ts, encryptionHandler.encrypt(value));
-      } else {
-        db.put(columnFamilies.get(new String(colFam)), writeOptions, ts, value);
-      }
+      db.put(columnFamilies.get(new String(colFam)), writeOptions, ts, value);
 
       return ts;
-    } catch (RocksDBException | IOException e) {
+    } catch (RocksDBException e) {
       log.error("Error writing record: " + new String(colFam), e);
       return null;
     }
@@ -359,12 +345,8 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
       }
       resetIfOverflow(counter.get(new String(colFam)), new String(colFam));
       try {
-        if (config.isEncryptAtRest()) {
-          db.put(columnFamilies.get(new String(colFam)), writeOptions, ts, encryptionHandler.encrypt(val.getBytes()));
-        } else {
-          db.put(columnFamilies.get(new String(colFam)), writeOptions, ts, val.getBytes());
-        }
-      } catch (RocksDBException | IOException e) {
+        db.put(columnFamilies.get(new String(colFam)), writeOptions, ts, val.getBytes());
+      } catch (RocksDBException e) {
         log.error("Error writing record: " + new String(colFam), e);
         return null;
       }
@@ -395,18 +377,7 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
         int size = 0;
 
         while (i.isValid() && size < ChiUtil.MaxBufferSize) {
-          byte[] v;
-          try {
-            if (config.isEncryptAtRest()) {
-              v = encryptionHandler.decrypt(i.value());
-
-            } else {
-              v = i.value();
-            }
-          } catch (IOException e) {
-            log.error("Error getting record: " + new String(colFam), e);
-            v = new byte[0];
-          }
+          byte[] v = i.value();
           byte[] _v = new byte[v.length + 1];
           System.arraycopy(v, 0, _v, 0, v.length);
           System.arraycopy(new byte[]{'\0'}, 0, _v, v.length, 1);

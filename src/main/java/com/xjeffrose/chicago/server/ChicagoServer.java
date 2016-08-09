@@ -1,5 +1,9 @@
 package com.xjeffrose.chicago.server;
 
+import com.xjeffrose.chicago.db.EncryptedStorageProvider;
+import com.xjeffrose.chicago.db.InMemDBImpl;
+import com.xjeffrose.chicago.db.RocksDBImpl;
+import com.xjeffrose.chicago.db.StorageProvider;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,15 +20,30 @@ public class ChicagoServer {
   private final RocksDBImpl rocksDbImpl;
   private final NodeWatcher nodeWatcher;
   private final DBRouter dbRouter;
-  public final DBLog dbLog = new DBLog();
 
   public ChicagoServer(ChiConfig config) {
     this.config = config;
     zkClient = new ZkClient(config.getZkHosts(),true);
     rocksDbImpl = new RocksDBImpl(config);
     nodeWatcher = new NodeWatcher(NODE_LIST_PATH, NODE_LOCK_PATH, config.getQuorum());
-    dbRouter = new DBRouter(config, rocksDbImpl, dbLog);
+    dbRouter = new DBRouter(getStorageProvider(config));
 //    config.setZkClient(zkClient);
+  }
+
+  private StorageProvider getStorageProvider(ChiConfig config) {
+    if (config.isEncryptAtRest()) {
+      if (config.isDatabaseMode()) {
+        return new EncryptedStorageProvider(new RocksDBImpl(config));
+      } else {
+        return new EncryptedStorageProvider(new InMemDBImpl());
+      }
+    } else {
+      if (config.isDatabaseMode()) {
+        return new RocksDBImpl(config);
+      } else {
+        return new InMemDBImpl();
+      }
+    }
   }
 
   public void start() throws Exception {
