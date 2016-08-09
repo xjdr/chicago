@@ -49,7 +49,6 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
 
   public RocksDBImpl(ChiConfig config) {
     this.config = config;
-    //    RocksDB.loadLibrary();
     configOptions();
     configReadOptions();
     configWriteOptions();
@@ -59,8 +58,11 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
       if (f.exists() && !config.isGraceFullStart()) {
         removeDB(f);
       } else if (!f.exists()) {
-        f.mkdir();
+        if(!f.mkdir()) {
+          log.error("Unable to create DB");
+        };
       }
+
       this.db = RocksDB.open(options, config.getDbPath());
     } catch (RocksDBException e) {
       log.error("Could not load DB: " + config.getDbPath() + " " + e.getMessage());
@@ -69,29 +71,6 @@ public class RocksDBImpl implements AutoCloseable, DBInterface {
 
     if (config.isEncryptAtRest()) {
       encryptionHandler = new DBEncryptionHandler();
-    }
-    //createColumnFamily(ChiUtil.defaultColFam.getBytes());
-  }
-
-  public RocksDBImpl() {
-    this.config = null;
-    configOptions();
-    configReadOptions();
-    configWriteOptions();
-
-    try {
-      File f = new File("/tmp/" + Integer.toString(new Random().nextInt(123456789)));
-      if (f.exists()) {
-        removeDB(f);
-      } else if (!f.exists()) {
-        f.mkdir();
-      }
-      this.db = RocksDB.open(options, f.getAbsolutePath());
-    } catch (RocksDBException e) {
-      log.error("Could not load DB: " + "For Temp File" + " " + e.getMessage());
-      throw new RuntimeException(e);
-    } catch (Exception e) {
-      e.printStackTrace();
     }
     //createColumnFamily(ChiUtil.defaultColFam.getBytes());
   }
