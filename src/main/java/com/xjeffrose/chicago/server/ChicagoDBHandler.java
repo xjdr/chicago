@@ -21,11 +21,9 @@ import org.slf4j.LoggerFactory;
 @ChannelHandler.Sharable
 public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage> {
   private static final Logger log = LoggerFactory.getLogger(ChicagoDBHandler.class);
-
   private final DBManager db;
-  private final ChicagoObjectEncoder encoder = new ChicagoObjectEncoder();
 
-  public ChicagoDBHandler(DBManager db, DBLog dbLog) {
+  public ChicagoDBHandler(DBManager db) {
     this.db = db;
   }
 
@@ -71,7 +69,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
   }
 
   private void handleWrite(ChannelHandlerContext ctx, ChicagoMessage msg, ChannelFutureListener writeComplete) {
-    ListenableFuture<Boolean> future = db.write(msg.getColFam(), msg.getKey(), encoder.encode(ctx, msg, true));
+    ListenableFuture<Boolean> future = db.write(msg.getColFam(), msg.getKey(), msg.getVal());
     Futures.addCallback(future, new FutureCallback<Boolean>() {
       @Override
       public void onSuccess(Boolean result) {
@@ -131,7 +129,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
           }
         }, ctx.executor());
       } else {
-        ListenableFuture<byte[]> future = db.tsWrite(msg.getColFam(), null, encoder.encode(ctx, msg, true));
+        ListenableFuture<byte[]> future = db.tsWrite(msg.getColFam(), null, msg.getVal());
         Futures.addCallback(future, new FutureCallback<byte[]>() {
           @Override
           public void onSuccess(byte[] result) {
@@ -151,7 +149,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
         }, ctx.executor());
       }
     } else {
-      ListenableFuture<byte[]> future = db.tsWrite(msg.getColFam(), msg.getKey(), encoder.encode(ctx, msg, true));
+      ListenableFuture<byte[]> future = db.tsWrite(msg.getColFam(), msg.getKey(), msg.getVal());
       Futures.addCallback(future, new FutureCallback<byte[]>() {
         @Override
         public void onSuccess(byte[] result) {
@@ -173,7 +171,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
   }
 
   private void handleStreamingRead(ChannelHandlerContext ctx, ChicagoMessage msg, ChannelFutureListener writeComplete) {
-    ListenableFuture<byte[]> future = db.stream(msg.getColFam(), encoder.encode(ctx, msg, true));
+    ListenableFuture<byte[]> future = db.stream(msg.getColFam(), msg.getVal());
     Futures.addCallback(future, new FutureCallback<byte[]>() {
       @Override
       public void onSuccess(byte[] result) {

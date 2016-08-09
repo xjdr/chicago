@@ -4,7 +4,7 @@ import com.google.common.hash.Funnels;
 import com.google.common.primitives.Longs;
 import com.xjeffrose.chicago.client.*;
 
-import com.xjeffrose.chicago.server.RocksDBImpl;
+import com.xjeffrose.chicago.db.RocksDBImpl;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;

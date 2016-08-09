@@ -1,11 +1,11 @@
-package com.xjeffrose.chicago;
+package com.xjeffrose.chicago.db;
 
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.chicago.server.ChiConfig;
-import com.xjeffrose.chicago.server.RocksDBImpl;
+import com.xjeffrose.chicago.db.RocksDBImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,6 +23,7 @@ public class RocksDBImplTest {
   @Before
   public void setUp() throws Exception {
     this.rocksDbImpl = new RocksDBImpl(config);
+    this.rocksDbImpl.open();
   }
 
   @After

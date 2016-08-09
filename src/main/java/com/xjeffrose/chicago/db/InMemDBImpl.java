@@ -1,7 +1,8 @@
-package com.xjeffrose.chicago.server;
+package com.xjeffrose.chicago.db;
 
 import com.google.common.primitives.Longs;
 import com.xjeffrose.chicago.ChiUtil;
+import com.xjeffrose.chicago.server.ChiConfig;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.util.internal.PlatformDependent;
@@ -11,7 +12,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class InMemDBImpl implements DBInterface, AutoCloseable {
+public class InMemDBImpl implements StorageProvider, AutoCloseable {
 
   private final Map<ByteBuf, Map<ByteBuf, byte[]>> db = PlatformDependent.newConcurrentHashMap();
   private final AtomicLong offset = new AtomicLong();
@@ -59,7 +60,7 @@ public class InMemDBImpl implements DBInterface, AutoCloseable {
   public boolean delete(byte[] colFam, byte[] key) {
     if (db.containsKey(Unpooled.buffer().writeBytes(colFam))) {
       if (db.get(Unpooled.buffer().writeBytes(colFam)).containsKey(Unpooled.buffer().writeBytes(key))) {
-         db.get(Unpooled.buffer().writeBytes(colFam)).remove(Unpooled.buffer().writeBytes(key));
+        db.get(Unpooled.buffer().writeBytes(colFam)).remove(Unpooled.buffer().writeBytes(key));
         return true;
       } else {
         log.error("No such key " + new String(key) + " in colFam " + new String(colFam));
@@ -100,14 +101,14 @@ public class InMemDBImpl implements DBInterface, AutoCloseable {
     final long[] _offset = new long[1];
     String[] values = new String(val).split(ChiUtil.delimiter);
     Arrays.stream(values).forEach(xs -> {
-    if (db.containsKey(Unpooled.buffer().writeBytes(colFam))) {
-      _offset[0] = offset.getAndIncrement();
-      db.get(Unpooled.buffer().writeBytes(colFam)).put(Unpooled.buffer().writeBytes(Longs.toByteArray(_offset[0])), val);
-    } else {
-      db.put(Unpooled.buffer().writeBytes(colFam), PlatformDependent.newConcurrentHashMap());
-      _offset[0] = offset.getAndIncrement();
-      db.get(Unpooled.buffer().writeBytes(colFam)).put(Unpooled.buffer().writeBytes(Longs.toByteArray(_offset[0])), val);
-    }
+      if (db.containsKey(Unpooled.buffer().writeBytes(colFam))) {
+        _offset[0] = offset.getAndIncrement();
+        db.get(Unpooled.buffer().writeBytes(colFam)).put(Unpooled.buffer().writeBytes(Longs.toByteArray(_offset[0])), val);
+      } else {
+        db.put(Unpooled.buffer().writeBytes(colFam), PlatformDependent.newConcurrentHashMap());
+        _offset[0] = offset.getAndIncrement();
+        db.get(Unpooled.buffer().writeBytes(colFam)).put(Unpooled.buffer().writeBytes(Longs.toByteArray(_offset[0])), val);
+      }
     });
 
     return Longs.toByteArray(_offset[0]);
@@ -128,7 +129,12 @@ public class InMemDBImpl implements DBInterface, AutoCloseable {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() {
     db.clear();
+  }
+
+  @Override
+  public void open() {
+
   }
 }

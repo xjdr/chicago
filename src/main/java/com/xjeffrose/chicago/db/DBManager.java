@@ -2,10 +2,8 @@ package com.xjeffrose.chicago.db;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
-import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
-import com.xjeffrose.chicago.server.DBInterface;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -203,16 +201,18 @@ public class DBManager extends AbstractExecutionThreadService {
 
   private final AtomicBoolean running = new AtomicBoolean(false);
   private final BlockingQueue<Message> queue = new LinkedBlockingQueue<Message>();
-  private final DBInterface backend;
+  private final StorageProvider backend;
 
-  public DBManager(DBInterface backend) {
+  public DBManager(StorageProvider backend) {
     this.backend = backend;
   }
 
   private void openDatabase() {
+    backend.open();
   }
 
   private void closeDatabase() {
+    backend.close();
   }
 
   private void post(Message message) {

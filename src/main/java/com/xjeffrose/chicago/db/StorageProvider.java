@@ -1,6 +1,6 @@
-package com.xjeffrose.chicago.server;
+package com.xjeffrose.chicago.db;
 
-public interface DBInterface {
+public interface StorageProvider extends AutoCloseable {
 
   boolean write(byte[] colFam, byte[] key, byte[] val);
 
@@ -17,4 +17,8 @@ public interface DBInterface {
   byte[] stream(byte[] colFam, byte[] key);
 
   byte[] tsWrite(byte[] colFam, byte[] key, byte[] val);
+
+  void close();
+
+  void open();
 }

@@ -1,7 +1,7 @@
-package com.xjeffrose.chicago;
+package com.xjeffrose.chicago.db;
 
 import com.google.common.primitives.Longs;
-import com.xjeffrose.chicago.server.InMemDBImpl;
+import com.xjeffrose.chicago.db.InMemDBImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
