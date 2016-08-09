@@ -8,8 +8,13 @@ import com.xjeffrose.chicago.server.ChiConfig;
 import com.xjeffrose.chicago.db.RocksDBImpl;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -17,11 +22,21 @@ import static org.junit.Assert.assertTrue;
 public class RocksDBImplTest {
 
   private RocksDBImpl rocksDbImpl;
-  Config settings = ConfigFactory.load();
-  ChiConfig config = new ChiConfig(settings.getConfig("chicago.application"));
+
+  @Rule
+  public TemporaryFolder tmp = new TemporaryFolder();
 
   @Before
   public void setUp() throws Exception {
+    File db_filename = new File(tmp.newFolder("chicago"), "rocks.db");
+
+    Map<String, Object> mapping = new HashMap<>();
+    mapping.put("settings.dbPath", db_filename.getPath());
+
+    Config defaults = ConfigFactory.load().getConfig("chicago.application");
+    Config overrides = ConfigFactory.parseMap(mapping);
+    ChiConfig config = new ChiConfig(overrides.withFallback(defaults));
+
     this.rocksDbImpl = new RocksDBImpl(config);
     this.rocksDbImpl.open();
   }
