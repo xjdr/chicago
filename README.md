@@ -1,11 +1,9 @@
 Chicago
 =======
 
-[![Circle
-CI](https://circleci.com/gh/xjdr/chicago.svg?style=svg)](https://circleci.com/gh/xjdr/chicago)
+[![CircleCI](https://circleci.com/gh/xjdr/chicago/tree/default.svg?style=svg)](https://circleci.com/gh/xjdr/chicago/tree/default)
 
-[![Coverage
-Status](https://coveralls.io/repos/xjdr/chicago/badge.svg?branch=develop&service=github)](https://coveralls.io/github/xjdr/chicago?branch=develop)
+[![Coverage Status](https://coveralls.io/repos/xjdr/chicago/badge.svg?branch=develop&service=github)](https://coveralls.io/github/xjdr/chicago?branch=develop)
 
 High performance distributed K/V store, built on [xio](https://github.com/xjdr/xio)
 and [rocksdb](https://github.com/facebook/rocksdb). Chicago was written for use in our
