@@ -2,6 +2,7 @@
 
 
 ** TODO Buffer Returns from TS Stream to 16k                            :Now:
+** TODO Make the maxBufferSize as configurable                     :Now:
 ** TODO API to return node from key (maybe?)                      :Strategic:
 ** TODO Make a rest endpoint that exposes a chicago client        :Strategic:
 ** TODO Can you perform reasonable LBing with a dumb client?      :Strategic:
