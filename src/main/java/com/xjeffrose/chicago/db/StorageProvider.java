@@ -1,5 +1,8 @@
 package com.xjeffrose.chicago.db;
 
+import com.xjeffrose.chicago.ZkClient;
+import java.util.List;
+
 public interface StorageProvider extends AutoCloseable {
 
   boolean write(byte[] colFam, byte[] key, byte[] val);
@@ -21,4 +24,11 @@ public interface StorageProvider extends AutoCloseable {
   void close();
 
   void open();
+
+  void setZkClient(ZkClient zkClient);
+
+  List<byte[]> getKeys(byte[] colFam, byte[] offset);
+
+  List<String> getColFams();
+
 }

@@ -5,11 +5,15 @@ import com.intel.chimera.cipher.CipherTransformation;
 import com.intel.chimera.stream.CryptoInputStream;
 import com.intel.chimera.stream.CryptoOutputStream;
 import com.intel.chimera.utils.Utils;
+import com.xjeffrose.chicago.ZkClient;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 import lombok.extern.slf4j.Slf4j;
+
+import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
 
 @Slf4j
 public class EncryptedStorageProvider implements StorageProvider {
@@ -129,4 +133,15 @@ public class EncryptedStorageProvider implements StorageProvider {
     db.open();
   }
 
+  @Override public void setZkClient(ZkClient zkClient) {
+    db.setZkClient(zkClient);
+  }
+
+  @Override public List<byte[]> getKeys(byte[] colFam, byte[] offset) {
+    return db.getKeys(colFam,offset);
+  }
+
+  @Override public List<String> getColFams() {
+    return getColFams();
+  }
 }

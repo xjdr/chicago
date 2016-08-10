@@ -7,6 +7,7 @@ import com.google.common.hash.Hashing;
 import com.google.common.primitives.Longs;
 import io.netty.util.internal.PlatformDependent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -30,7 +31,7 @@ public class RendezvousHash<N> {
     public RendezvousHash(Funnel<N> nodeFunnel, Collection<N> init, int quorum) {
     this.hasher = Hashing.murmur3_128();
     this.nodeFunnel = nodeFunnel;
-    this.nodeList = ImmutableList.copyOf(init);
+    this.nodeList = new ArrayList<N>(init);
     this.quorum = quorum;
   }
 

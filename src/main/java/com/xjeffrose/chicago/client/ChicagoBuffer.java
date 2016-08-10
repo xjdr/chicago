@@ -41,8 +41,6 @@ public class ChicagoBuffer {
       public void run() {
         try {
           flush();
-        } catch (ChicagoClientTimeoutException e) {
-          e.printStackTrace();
         } catch (ChicagoClientException e) {
           e.printStackTrace();
         }
@@ -81,7 +79,7 @@ public class ChicagoBuffer {
     return cfb;
   }
 
-  public void flush() throws ChicagoClientTimeoutException, ChicagoClientException {
+  public void flush() throws ChicagoClientException {
     List<ColFamBufferRequest> colFamBufferRequests = new ArrayList<>();
     synchronized (chicagoMessageMap) {
       chicagoMessageMap.forEach((k, v) -> {

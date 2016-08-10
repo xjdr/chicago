@@ -17,16 +17,16 @@ public class ChicagoServer {
 
   public final ChiConfig config;
   private ZkClient zkClient;
-  private final RocksDBImpl rocksDbImpl;
+  private final StorageProvider db;
   private final NodeWatcher nodeWatcher;
   private final DBRouter dbRouter;
 
   public ChicagoServer(ChiConfig config) {
     this.config = config;
     zkClient = new ZkClient(config.getZkHosts(),true);
-    rocksDbImpl = new RocksDBImpl(config);
+    db = getStorageProvider(config);
     nodeWatcher = new NodeWatcher(NODE_LIST_PATH, NODE_LOCK_PATH, config.getQuorum());
-    dbRouter = new DBRouter(getStorageProvider(config));
+    dbRouter = new DBRouter(db);
 //    config.setZkClient(zkClient);
   }
 
@@ -56,8 +56,8 @@ public class ChicagoServer {
     zkClient.register(NODE_LIST_PATH, config, dbRouter.getDBBoundInetAddress());
     zkClient.electLeader(ELECTION_PATH);
     zkClient.createIfNotExist(NODE_LOCK_PATH,"");
-    nodeWatcher.refresh(zkClient, rocksDbImpl, getDBAddress());
-    rocksDbImpl.setZkClient(zkClient);
+    nodeWatcher.refresh(zkClient, db, getDBAddress());
+    db.setZkClient(zkClient);
   }
 
   public void stop() {
@@ -69,7 +69,7 @@ public class ChicagoServer {
       }
       zkClient = null;
       dbRouter.close();
-      rocksDbImpl.destroy();
+      db.close();
 
     } catch (Exception e) {
       log.error("Shutdown Error", e);

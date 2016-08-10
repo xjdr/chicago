@@ -5,6 +5,7 @@ import com.google.common.primitives.Longs;
 import com.xjeffrose.chicago.client.*;
 
 import com.xjeffrose.chicago.db.RocksDBImpl;
+import com.xjeffrose.chicago.db.StorageProvider;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
@@ -26,7 +27,7 @@ public class NodeWatcher {
   private ChicagoClient chicagoClient;
   private TreeCacheInstance nodeList;
   private ZkClient zkClient;
-  private RocksDBImpl rocksDbImpl;
+  private StorageProvider db;
   private ExecutorService replicationWorker = Executors.newFixedThreadPool(5);
   private String advertisedEndpoint;
 
@@ -39,10 +40,10 @@ public class NodeWatcher {
   /**
    * TODO: Refactor this into a constructor and a start method
    */
-  public void refresh(ZkClient zkClient, RocksDBImpl rocksDbImpl, String advertisedEndpoint) {
+  public void refresh(ZkClient zkClient, StorageProvider db, String advertisedEndpoint) {
     nodeList = new TreeCacheInstance(zkClient, NODE_LIST_PATH);
     this.zkClient = zkClient;
-    this.rocksDbImpl = rocksDbImpl;
+    this.db = db;
     this.advertisedEndpoint = advertisedEndpoint;
     nodeList.getCache().getListenable().addListener(genericListener);
     try {
@@ -94,7 +95,7 @@ public class NodeWatcher {
 
       //todo: Need to do faster replication with multi threading and future listeners.
       //For all the column family present on this server.
-      rocksDbImpl.getColFams().parallelStream().forEach(cf -> {
+      db.getColFams().parallelStream().forEach(cf -> {
         List<String> newS = rendezvousHash.get(cf.getBytes());
         List<String> oldS = rendezvousHashnOld.get(cf.getBytes());
         String bounceLockPath = "";
@@ -115,21 +116,22 @@ public class NodeWatcher {
               try {
                 zkClient.createLockPath(lockPath, advertisedEndpoint, "REPLICATION_LOCK");
                 ChicagoClient c = new ChicagoClient((String) s);
+                c.startAndWaitForNodes(1);
                 byte[] offset = new byte[]{};
-                List<byte[]> keys = rocksDbImpl.getKeys(cf.getBytes(), offset);
+                List<byte[]> keys = db.getKeys(cf.getBytes(), offset);
                 // Start replicating all the keys to the new server.
                 while(!Arrays.equals(keys.get(keys.size()-1),offset)) {
                   for(byte[] k : keys){
                     log.debug("Writing key :"+ Longs.fromByteArray(k));
                     try {
-                      c.tsWrite(cf.getBytes(), k, rocksDbImpl.read(cf.getBytes(), k)).get().get(0);
+                      c.tsWrite(cf.getBytes(), k, db.read(cf.getBytes(), k)).get();
                     } catch (Exception e) {
                       e.printStackTrace();
                       throw new ChicagoClientException(e.getCause().getMessage());
                     }
                     offset = k;
                   }
-                  keys= rocksDbImpl.getKeys(cf.getBytes(),offset);
+                  keys= db.getKeys(cf.getBytes(),offset);
                 }
               } catch (ChicagoClientException e) {
                 log.error("Something bad happened while replication");

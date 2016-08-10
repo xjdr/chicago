@@ -2,18 +2,10 @@ package com.xjeffrose.chicago.server;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import com.xjeffrose.xio.core.XioMetrics;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.rocksdb.util.SizeUnit;
 
 @Slf4j
 @ToString
@@ -51,6 +43,38 @@ public class ChiConfig {
     this.databaseMode = conf.getBoolean("settings.databaseMode");
     this.witnessList = conf.getStringList("settings.witnessList");
     this.encryptAtRest =  conf.getBoolean("settings.encryptAtRest");
+  }
+
+  public String getZkHosts() {
+    return zkHosts;
+  }
+
+  public Config getConf() {
+    return conf;
+  }
+
+  public String getDbPath() {
+    return dbPath;
+  }
+
+  public int getQuorum() {
+    return quorum;
+  }
+
+  public boolean isGraceFullStart() {
+    return graceFullStart;
+  }
+
+  public long getCompactionSize() {
+    return compactionSize;
+  }
+
+  public boolean isDatabaseMode() {
+    return databaseMode;
+  }
+
+  public List<String> getWitnessList() {
+    return witnessList;
   }
 
   /*
