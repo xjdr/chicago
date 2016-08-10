@@ -12,8 +12,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 import lombok.extern.slf4j.Slf4j;
-
-import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Slf4j
 public class EncryptedStorageProvider implements StorageProvider {

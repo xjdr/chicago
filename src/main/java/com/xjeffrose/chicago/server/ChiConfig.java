@@ -45,38 +45,6 @@ public class ChiConfig {
     this.encryptAtRest =  conf.getBoolean("settings.encryptAtRest");
   }
 
-  public String getZkHosts() {
-    return zkHosts;
-  }
-
-  public Config getConf() {
-    return conf;
-  }
-
-  public String getDbPath() {
-    return dbPath;
-  }
-
-  public int getQuorum() {
-    return quorum;
-  }
-
-  public boolean isGraceFullStart() {
-    return graceFullStart;
-  }
-
-  public long getCompactionSize() {
-    return compactionSize;
-  }
-
-  public boolean isDatabaseMode() {
-    return databaseMode;
-  }
-
-  public List<String> getWitnessList() {
-    return witnessList;
-  }
-
   /*
   public void setChannelStats(Map<XioServerDef, XioMetrics> channelStats) {
     this.channelStats = channelStats;
