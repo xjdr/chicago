@@ -2,11 +2,13 @@ package com.xjeffrose.chicago.db;
 
 import com.google.common.primitives.Longs;
 import com.xjeffrose.chicago.ChiUtil;
+import com.xjeffrose.chicago.ZkClient;
 import com.xjeffrose.chicago.server.ChiConfig;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.util.internal.PlatformDependent;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,7 @@ public class InMemDBImpl implements StorageProvider, AutoCloseable {
 
   private final Map<ByteBuf, Map<ByteBuf, byte[]>> db = PlatformDependent.newConcurrentHashMap();
   private final AtomicLong offset = new AtomicLong();
+  private ZkClient zkClient;
   private final ChiConfig config;
 
   public InMemDBImpl() {
@@ -24,6 +27,18 @@ public class InMemDBImpl implements StorageProvider, AutoCloseable {
 
   public InMemDBImpl(ChiConfig config) {
     this.config = config;
+  }
+
+  public void setZkClient(ZkClient zkClient) {
+    this.zkClient = zkClient;
+  }
+
+  @Override public List<byte[]> getKeys(byte[] colFam, byte[] offset) {
+    return null;
+  }
+
+  @Override public List<String> getColFams() {
+    return null;
   }
 
   @Override

@@ -42,9 +42,10 @@ public class ConnectionPoolManager {
   private static final Logger log = LoggerFactory.getLogger(ConnectionPoolManager.class);
   private final static String NODE_LIST_PATH = "/chicago/node-list";
   private static final long TIMEOUT = 1000;
-  protected static int MAX_RETRY = 3;
+  protected static int MAX_RETRY = 20;
   private static boolean TIMEOUT_ENABLED = true;
-
+  private boolean singleClient = false;
+  private String singleClientServer;
   private final Map<String, Channel> connectionMap = PlatformDependent.newConcurrentHashMap();
   private final NioEventLoopGroup workerLoop = new NioEventLoopGroup(5,
       new ThreadFactoryBuilder()
@@ -72,6 +73,7 @@ public class ConnectionPoolManager {
     connect(new InetSocketAddress(hostname.split(":")[0], Integer.parseInt(hostname.split(":")[1])));
     this.futureMap = futureMap;
     this.handler = new ChicagoClientHandler(futureMap);
+    this.singleClient = true;
   }
 
   public ConnectionPoolManager(List<EmbeddedChannel> hostPool, Map<UUID, SettableFuture<byte[]>> futureMap) {
@@ -112,10 +114,10 @@ public class ConnectionPoolManager {
   public synchronized void checkConnection() {
     List<String> reconnectNodes = new ArrayList<>();
     buildNodeList().forEach(s -> {
-      if (connectionMap.get(s) == null) {
+      if (connectionMap.containsKey(s) && connectionMap.get(s) == null) {
         log.debug("Channel not present for " + s);
         reconnectNodes.add(s);
-      } else if (connectionMap.get(s) != null && !connectionMap.get(s).isWritable()) {
+      } else if (connectionMap.containsKey(s) && connectionMap.get(s) != null && !connectionMap.get(s).isWritable()) {
         log.debug("Channel not writeable for " + s);
         reconnectNodes.add(s);
       }
@@ -132,12 +134,20 @@ public class ConnectionPoolManager {
   }
 
   private List<String> buildNodeList() {
-    List<String> l = zkClient.list(NODE_LIST_PATH);
-    if (l == null) {
-      return buildNodeList();
-    } else {
-      return l;
+    List<String> l = new ArrayList<>();
+    if(singleClient){
+      l.add(singleClientServer);
+    }else {
+      l = zkClient.list(NODE_LIST_PATH);
+      if (l == null) {
+        return buildNodeList();
+      }
     }
+    return l;
+  }
+
+  public int getConnectionMapSize(){
+    return connectionMap.size();
   }
 
   private InetSocketAddress address(String node) {
@@ -172,22 +182,7 @@ public class ConnectionPoolManager {
     return f;
   }
 
-  //  private ChannelFuture _getNode(String node, long startTime) throws ChicagoClientTimeoutException, InterruptedException {
   private void _getNode(SettableFuture<Channel> f, String node) throws ChicagoClientTimeoutException, InterruptedException {
-
-  while (!connectionMap.containsKey(node)) {
-//      if (TIMEOUT_ENABLED && (System.currentTimeMillis() - startTime) > TIMEOUT) {
-//        Thread.currentThread().interrupt();
-//        System.out.println("Cannot get connection for node "+ node +" connectionMap ="+ connectionMap.keySet().toString());
-//        throw new ChicagoClientTimeoutException();
-//      }
-//      try {
-//        Thread.sleep(0, 250);
-//      } catch (InterruptedException e) {
-//        e.printStackTrace();
-//      }
-    }
-
     if (connectionMap.containsKey(node)) {
       Channel ch = connectionMap.get(node);
       if (ch.isWritable()) {
@@ -216,7 +211,7 @@ public class ConnectionPoolManager {
           _getNode(f, node, retry++);
         }
       } else {
-        Thread.sleep(0, 250);
+        Thread.sleep(10);
         checkConnection();
         _getNode(f, node, retry++);
       }

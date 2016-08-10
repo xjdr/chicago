@@ -137,17 +137,20 @@ abstract public class BaseChicagoClient {
   }
 
   public void startAndWaitForNodes(int count, long timeout) {
-    if(!single_server) {
-      try {
+    try {
+      if(!single_server) {
         latch = new CountDownLatch(count);
         start();
-        latch.await(timeout,TimeUnit.MILLISECONDS);
+        latch.await(timeout, TimeUnit.MILLISECONDS);
         for (String node : buildNodeList()) {
           rendezvousHash.add(node);
         }
-      } catch (Exception e) {
-        throw new RuntimeException(e);
       }
+      while(connectionPoolMgr.getConnectionMapSize() < count){
+        Thread.sleep(0,500);
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -172,7 +175,7 @@ abstract public class BaseChicagoClient {
   }
 
   public List<String> getEffectiveNodes(byte[] key){
-    List<String> hashList = rendezvousHash.get(key);
+    List<String> hashList = new ArrayList<>(rendezvousHash.get(key));
     if(!single_server && !(clientNodeWatcher == null)) {
       String path = REPLICATION_LOCK_PATH + "/" + new String(key);
       List<String> replicationList = clientNodeWatcher.getReplicationPathData(path);
