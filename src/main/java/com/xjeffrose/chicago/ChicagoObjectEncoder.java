@@ -24,6 +24,10 @@ public class ChicagoObjectEncoder extends MessageToMessageEncoder<Object> {
   public ChicagoObjectEncoder() {
   }
 
+  public ByteBuf encode(ChicagoMessage msg) {
+    return encode(msg.getId(), msg.getOp(), msg.getColFam(), msg.getKey(), msg.getVal());
+  }
+
   public ByteBuf encode(ChannelHandlerContext ctx, ChicagoMessage msg) {
     return encode(ctx, msg.getId(), msg.getOp(), msg.getColFam(), msg.getKey(), msg.getVal());
   }
