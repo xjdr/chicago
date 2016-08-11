@@ -29,11 +29,15 @@ public class ConnectionManager {
     blockAndAwaitPool();
   }
 
-
   private void buildConnectionMap(List<String> nodeList, ChannelHandler handler, EventLoopGroup workerLoop) {
     nodeList.stream().forEach(xs -> {
       RequestMuxer<ChicagoMessage> mux = new RequestMuxer<>(xs, handler, workerLoop);
-      mux.start();
+      try {
+        mux.start();
+      } catch (Exception e) {
+        //TODO(JR): Determine best course for recovery here
+        e.printStackTrace();
+      }
       connectionMap.put(xs, mux);
     });
   }
@@ -62,13 +66,13 @@ public class ConnectionManager {
       connectionMap.get(addr).write(msg, f);
       return f;
     } else {
-      rebuilConnectionMap(connectionMap);
+      rebuildConnectionMap(addr, connectionMap);
       blockAndAwaitPool();
       return write(addr, msg);
     }
   }
 
-  private void rebuilConnectionMap(Map<String, RequestMuxer<ChicagoMessage>> connectionMap) {
-
+  private void rebuildConnectionMap(String addr, Map<String, RequestMuxer<ChicagoMessage>> connectionMap) {
+    connectionMap.get(addr).rebuildConnectionQ();
   }
 }

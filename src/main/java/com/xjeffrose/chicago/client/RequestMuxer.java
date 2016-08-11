@@ -3,7 +3,6 @@ package com.xjeffrose.chicago.client;
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.SettableFuture;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -11,7 +10,6 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.EventLoopGroup;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
-import io.netty.util.concurrent.SingleThreadEventExecutor;
 import java.net.InetSocketAddress;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
@@ -76,8 +74,23 @@ public class RequestMuxer<T> {
     }
   }
 
+  void rebuildConnectionQ() {
+    rebuildConnectionQ(this.connectionQ);
+  }
 
-  private void rebuildInitialConnectionQ(LinkedBlockingDeque<ChannelFuture> connectionQ) {
+  private void rebuildConnectionQ(LinkedBlockingDeque<ChannelFuture> connectionQ) {
+    connectionQ.stream().forEach(xs -> {
+      ChannelFuture cf = connectionQ.pollFirst();
+      if (cf.channel().isWritable()) {
+        try {
+          connectionQ.putLast(cf);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      } else {
+        connector.connect(address(addr));
+      }
+    });
   }
 
   private boolean blockAndAwaitPool(long timeout, TimeUnit timeUnit) {
@@ -110,7 +123,7 @@ public class RequestMuxer<T> {
     try {
       cf = connectionQ.poll(250, TimeUnit.MILLISECONDS);
     } catch (InterruptedException e) {
-      rebuildInitialConnectionQ(connectionQ);
+      rebuildConnectionQ(connectionQ);
       blockAndAwaitPool();
       try {
         cf = connectionQ.poll(250, TimeUnit.MILLISECONDS);
@@ -124,12 +137,12 @@ public class RequestMuxer<T> {
         return cf.channel();
       } else {
         connectionQ.remove(cf);
-        rebuildInitialConnectionQ(connectionQ);
+        rebuildConnectionQ(connectionQ);
         return requestNode();
       }
     } else {
       connectionQ.remove(cf);
-      rebuildInitialConnectionQ(connectionQ);
+      rebuildConnectionQ(connectionQ);
       return requestNode();
     }
   }
@@ -156,5 +169,4 @@ public class RequestMuxer<T> {
     private final T msg;
     private final SettableFuture<Boolean> f;
   }
-
 }
