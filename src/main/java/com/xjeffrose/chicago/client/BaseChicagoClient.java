@@ -181,6 +181,7 @@ abstract public class BaseChicagoClient {
       List<String> replicationList = clientNodeWatcher.getReplicationPathData(path);
       hashList.removeAll(replicationList);
     }
+
     return hashList;
   }
 }
