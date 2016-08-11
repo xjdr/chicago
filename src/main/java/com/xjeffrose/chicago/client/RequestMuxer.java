@@ -1,7 +1,9 @@
 package com.xjeffrose.chicago.client;
 
+import com.google.common.util.concurrent.AbstractExecutionThreadService;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.SettableFuture;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -9,9 +11,11 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.EventLoopGroup;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
+import io.netty.util.concurrent.SingleThreadEventExecutor;
 import java.net.InetSocketAddress;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +27,7 @@ public class RequestMuxer<T> {
   private final String addr;
   private final ChicagoConnector connector;
   private final EventLoopGroup workerLoop;
+  private final AtomicBoolean isRunning = new AtomicBoolean();
   private final LinkedBlockingDeque<ChannelFuture> connectionQ = new LinkedBlockingDeque<>();
   private final LinkedBlockingDeque<MuxedMessage<T>> messageQ = new LinkedBlockingDeque<MuxedMessage<T>>();
 
@@ -33,11 +38,21 @@ public class RequestMuxer<T> {
 
   }
 
-  public void start() {
+  public void start() throws Exception {
     buildInitialConnectionQ();
     blockAndAwaitPool();
+    isRunning.set(true);
 
-    workerLoop.submit(() -> drainMessageQ());
+    new AbstractExecutionThreadService() {
+      @Override
+      protected void run() throws Exception {
+        drainMessageQ();
+      }
+    }.run();
+  }
+
+  public void shutdownGracefully() {
+    isRunning.set(false);
   }
 
   private InetSocketAddress address(String node) {
@@ -84,8 +99,10 @@ public class RequestMuxer<T> {
   }
 
   public void write(T sendReq, SettableFuture<Boolean> f) {
-    final MuxedMessage<T> mm = new MuxedMessage<>(sendReq, f);
-    messageQ.addLast(mm);
+    if (isRunning.get()) {
+      final MuxedMessage<T> mm = new MuxedMessage<>(sendReq, f);
+      messageQ.addLast(mm);
+    }
   }
 
   private Channel requestNode() {
@@ -118,7 +135,7 @@ public class RequestMuxer<T> {
   }
 
   private void drainMessageQ() {
-    while (true) {
+    while (isRunning.get()) {
       final MuxedMessage<T> mm = messageQ.poll();
       requestNode().writeAndFlush(mm.getMsg()).addListener(new GenericFutureListener<Future<? super Void>>() {
         @Override
