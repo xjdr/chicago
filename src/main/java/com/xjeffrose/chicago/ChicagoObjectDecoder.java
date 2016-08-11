@@ -31,13 +31,10 @@ public class ChicagoObjectDecoder extends ByteToMessageDecoder {
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
     // Populate the output List
-    ChicagoMessage cm = _decode(msg);
 
-    if(cm == null) {
-      return;
+    while (msg.readableBytes() > 50) {
+      out.add(_decode(msg));
     }
-
-    out.add(cm);
   }
 
   private ChicagoMessage _decode(ByteBuf msg) {

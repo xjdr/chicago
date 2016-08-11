@@ -28,14 +28,6 @@ public class ChicagoObjectEncoder extends MessageToMessageEncoder<Object> {
     return encode(ctx, msg.getId(), msg.getOp(), msg.getColFam(), msg.getKey(), msg.getVal());
   }
 
-  public byte[] encode(ChannelHandlerContext ctx, ChicagoMessage msg, boolean returnArray) {
-    ByteBuf _bb = encode(ctx, msg.getId(), msg.getOp(), msg.getColFam(), msg.getKey(), msg.getVal());
-     byte[] thisIsStupid = new byte[_bb.readableBytes()];
-     _bb.getBytes(0, thisIsStupid);
-
-     return thisIsStupid;
-  }
-
   public ByteBuf encode(UUID _id, Op _op, byte[] colFam, byte[] key, byte[] val) {
     return encode(null, _id, _op, colFam, key, val);
   }
