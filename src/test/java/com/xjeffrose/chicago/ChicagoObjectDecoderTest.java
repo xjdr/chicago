@@ -4,13 +4,11 @@ import com.xjeffrose.chicago.db.DBManager;
 import com.xjeffrose.chicago.db.InMemDBImpl;
 import com.xjeffrose.chicago.db.StorageProvider;
 import com.xjeffrose.chicago.server.ChicagoDBHandler;
-import fixtures.TestCtx;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.embedded.EmbeddedChannel;
-import java.util.List;
 import java.util.UUID;
 import org.junit.Test;
 
