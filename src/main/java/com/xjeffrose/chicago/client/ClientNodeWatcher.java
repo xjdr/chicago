@@ -5,7 +5,6 @@ import com.xjeffrose.chicago.ZkClient;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.ChildData;
@@ -29,7 +28,7 @@ public class ClientNodeWatcher {
   private ZkClient zkClient;
   private RendezvousHash rendezvousHash;
   private final Listener listener;
-  private ConnectionPoolManager connectionPoolManager;
+  private ConnectionPoolManagerX connectionPoolManagerX;
 
   public ClientNodeWatcher(ZkClient zkClient, RendezvousHash rendezvousHash, Listener listener) {
     nodeList = new TreeCacheInstance(zkClient, NODE_LIST_PATH);
@@ -56,8 +55,8 @@ public class ClientNodeWatcher {
     }
   }
 
-  public void registerConnectionPoolManager(ConnectionPoolManager connectionPoolManager){
-    this.connectionPoolManager = connectionPoolManager;
+  public void registerConnectionPoolManager(ConnectionPoolManagerX connectionPoolManagerX){
+    this.connectionPoolManagerX = connectionPoolManagerX;
   }
 
   public void stop() {
@@ -69,8 +68,8 @@ public class ClientNodeWatcher {
   private void nodeAdded(String path) {
     String[] _path = path.split("/");
     rendezvousHash.add(_path[_path.length - 1]);
-    if(connectionPoolManager != null){
-      connectionPoolManager.checkConnection();
+    if(connectionPoolManagerX != null){
+      connectionPoolManagerX.checkConnection();
     }
   }
 
@@ -124,7 +123,7 @@ public class ClientNodeWatcher {
           }
           break;
         case CONNECTION_RECONNECTED:
-          connectionPoolManager.checkConnection();
+          connectionPoolManagerX.checkConnection();
         default: {
           log.info("Zk " + event.getType().name());
         }
