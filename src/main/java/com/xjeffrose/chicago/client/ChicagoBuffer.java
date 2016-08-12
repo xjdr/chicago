@@ -51,7 +51,6 @@ public class ChicagoBuffer {
   public ListenableFuture<List<byte[]>> append(byte[] colFam, byte[] value) {
     synchronized (chicagoMessageMap) {
       ColFamBufferRequest bufferRequest = getOrCreate(colFam);
-      //System.out.println("Writing to"  + bufferRequest.toString());
       bufferRequest.addValue(value);
       return bufferRequest.listListenableFuture();
     }
@@ -96,34 +95,34 @@ public class ChicagoBuffer {
         .stream()
         .forEach(colFamBufferRequest -> {
           byte[] colFam = colFamBufferRequest.getColFam();
-          byte[] value = colFamBufferRequest.getConsolidatedValue();
-
-          //Create a Chicago Message appending all the values together.
-          //DefaultChicagoMessage chicagoMessage = new DefaultChicagoMessage(id, Op.TS_WRITE,colFam,key,value);
-          //System.out.println("Wrtitng colFam=" + new String(colFam));
-          for (String node : colFamBufferRequest.getNodes()) {
-            if (node == null) {
-            } else {
-              Channel ch = null;
-              try {
-                ch = connectionPoolMgr.getNode(node).get(TIMEOUT, TimeUnit.MILLISECONDS);
-              } catch (ChicagoClientTimeoutException e) {
-                e.printStackTrace();
-              } catch (InterruptedException e) {
-                e.printStackTrace();
-              } catch (ExecutionException e) {
-                e.printStackTrace();
-              } catch (TimeoutException e) {
-                e.printStackTrace();
+          colFamBufferRequest.getNodes().parallelStream().forEach(node -> {
+              //Create a Chicago Message appending all the values together.
+              //System.out.println("Wrtitng colFam=" + new String(colFam));
+              if (node == null) {
+              } else {
+                Channel ch = null;
+                try {
+                  ch = connectionPoolMgr.getNode(node).get(TIMEOUT, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException e) {
+                  e.printStackTrace();
+                } catch (ExecutionException e) {
+                  e.printStackTrace();
+                } catch (TimeoutException e) {
+                  e.printStackTrace();
+                } catch (ChicagoClientTimeoutException e) {
+                  e.printStackTrace();
+                }
+                if (ch.isWritable()) {
+                  for(byte[] val : colFamBufferRequest.getValues()) {
+                    UUID id = UUID.randomUUID();
+                    connectionPoolMgr.addToFutureMap(id, colFamBufferRequest.getFuture(node));
+                    ch.write(new DefaultChicagoMessage(id, Op.TS_WRITE, colFam, null, val));
+                  }
+                }
+                ch.flush();
+                connectionPoolMgr.releaseChannel(node,ch);
               }
-              if (ch.isWritable()) {
-                UUID id = UUID.randomUUID();
-                connectionPoolMgr.addToFutureMap(id, colFamBufferRequest.getFuture(node));
-                    ch.writeAndFlush(new DefaultChicagoMessage(id, Op.TS_WRITE, colFam, null, value));
-                connectionPoolMgr.releaseChannel(node, ch);
-              }
-            }
-          }
+          });
         });
   }
 }

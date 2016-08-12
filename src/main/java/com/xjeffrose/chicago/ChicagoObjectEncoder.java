@@ -102,7 +102,10 @@ public class ChicagoObjectEncoder extends MessageToMessageEncoder<Object> {
     if (msg instanceof ChicagoMessage) {
       //out.add(ctx.alloc().directBuffer().writeBytes(encode(ChannelHandlerContext ctx, (ChicagoMessage) msg)));
       out.add(encode(ctx, (ChicagoMessage) msg));
-
+    } else if (msg instanceof ByteBuf) {
+      ByteBuf bb = ctx.alloc().directBuffer();
+      bb.writeBytes(((ByteBuf)msg).readBytes(((ByteBuf) msg).readableBytes()));
+      out.add(bb);
     } else {
       log.error("Object not an instance of ChicagoMessage: " + msg);
     }

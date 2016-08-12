@@ -17,7 +17,7 @@ public interface StorageProvider extends AutoCloseable {
 
   byte[] batchWrite(byte[] colFam, byte[] val);
 
-  byte[] stream(byte[] colFam, byte[] key);
+  List<DBRecord> stream(byte[] colFam, byte[] key);
 
   byte[] tsWrite(byte[] colFam, byte[] key, byte[] val);
 
