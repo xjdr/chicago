@@ -38,7 +38,7 @@ public class ChicagoObjectDecoder extends ByteToMessageDecoder {
     // Populate the output List
     List<ChicagoMessage> messages = new ArrayList<>();
 
-    while (msg.readableBytes() > 50) {;
+    while (msg.readableBytes() > 50) {
       out.add(_decode(msg));
     }
 
