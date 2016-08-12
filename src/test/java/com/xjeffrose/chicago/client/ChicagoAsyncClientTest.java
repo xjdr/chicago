@@ -62,7 +62,7 @@ public class ChicagoAsyncClientTest {
 
     assertEquals(Op.READ, chicagoMessage.getOp());
     assertEquals("colFam", new String(chicagoMessage.getColFam()));
-    assertEquals("ley", new String(chicagoMessage.getKey()));
+    assertEquals("key", new String(chicagoMessage.getKey()));
   }
 
 
