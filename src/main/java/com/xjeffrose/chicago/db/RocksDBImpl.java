@@ -5,6 +5,7 @@ import com.xjeffrose.chicago.ChiUtil;
 import com.xjeffrose.chicago.ZkClient;
 import com.xjeffrose.chicago.server.ChiConfig;
 import com.xjeffrose.chicago.server.ChicagoServer;
+import com.xjeffrose.chicago.server.DBRouter;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.util.internal.PlatformDependent;
@@ -342,14 +343,14 @@ public class RocksDBImpl implements AutoCloseable, StorageProvider {
     return ts;
   }
 
-  public byte[] stream(byte[] colFam) {
+  public List<DBRecord> stream(byte[] colFam) {
     byte[] offset = new byte[]{};
     return stream(colFam, offset);
   }
 
-  public byte[] stream(byte[] colFam, byte[] offset) {
+  public List<DBRecord> stream(byte[] colFam, byte[] offset) {
     long startTime = System.currentTimeMillis();
-
+    List<DBRecord> values = new ArrayList<>();
     log.info("Requesting stream");
     if (colFamilyExists(colFam)) {
       try (RocksIterator i = db.newIterator(columnFamilies.get(new String(colFam)), readOptions)) {
@@ -365,20 +366,19 @@ public class RocksDBImpl implements AutoCloseable, StorageProvider {
         int size = 0;
 
         while (i.isValid() && size < ChiUtil.MaxBufferSize) {
-          byte[] v = i.value();
-          byte[] _v = new byte[v.length + 1];
-          System.arraycopy(v, 0, _v, 0, v.length);
-          System.arraycopy(new byte[]{'\0'}, 0, _v, v.length, 1);
-          bb.writeBytes(_v);
+          values.add(new DBRecord(colFam,i.key(),i.value()));
+//          byte[] v = i.value();
+//          byte[] _v = new byte[v.length + 1];
+//          System.arraycopy(v, 0, _v, 0, v.length);
+//          System.arraycopy(new byte[]{'\0'}, 0, _v, v.length, 1);
+//          bb.writeBytes(_v);
           lastOffset = i.key();
+          size += colFam.length + i.key().length + i.value().length;
           i.next();
-          size += _v.length;
         }
 
-        bb.writeBytes(ChiUtil.delimiter.getBytes());
-        bb.writeBytes(lastOffset);
         log.info("Stream response from DB : " + (System.currentTimeMillis() - startTime) + "ms with last offset as " + Longs.fromByteArray(lastOffset));
-        return bb.array();
+        return values;
       }
     } else {
       return null;

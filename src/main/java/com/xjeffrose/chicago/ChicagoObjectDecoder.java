@@ -3,13 +3,18 @@ package com.xjeffrose.chicago;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.google.common.primitives.Ints;
+import com.xjeffrose.chicago.server.Chicago;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.DecoderResult;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,9 +36,31 @@ public class ChicagoObjectDecoder extends ByteToMessageDecoder {
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
     // Populate the output List
+    List<ChicagoMessage> messages = new ArrayList<>();
 
-    while (msg.readableBytes() > 50) {
+    while (msg.readableBytes() > 50) {;
       out.add(_decode(msg));
+    }
+
+    if(out.size() > 1 && ((ChicagoMessage)out.get(0)).getOp() == Op.STREAM_RESPONSE ){
+      byte[] lastOffset = null;
+      UUID id = ((ChicagoMessage)out.get(0)).getId();
+      Op op = ((ChicagoMessage)out.get(0)).getOp();
+      byte[] colFam = ((ChicagoMessage)out.get(0)).getColFam();
+      byte[] key = ((ChicagoMessage)out.get(0)).getKey();
+      ByteBuf bb = Unpooled.buffer();
+      for(Object cm : out){
+        lastOffset = ((ChicagoMessage)cm).getKey();
+        bb.writeBytes(((ChicagoMessage)cm).getVal());
+        bb.writeBytes(new byte[]{'\0'});
+      }
+      bb.writeBytes(ChiUtil.delimiter.getBytes());
+      bb.writeBytes(lastOffset);
+      out.clear();
+      byte[] val = bb.array();
+      ChicagoMessage cm = new DefaultChicagoMessage(id,op,colFam,Boolean.toString(true).getBytes(),bb.array());
+      cm.setDecoderResult(DecoderResult.SUCCESS);
+      out.add(cm);
     }
   }
 

@@ -3,6 +3,8 @@ package com.xjeffrose.chicago.db;
 import com.google.common.primitives.Longs;
 import org.junit.Test;
 
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -31,10 +33,10 @@ public class EncryptedStorageProviderTest {
   @Test
   public void tsWriteAndStream() throws Exception {
     long offset = Longs.fromByteArray(db.tsWrite("colFam".getBytes(), "val".getBytes()));
-    byte[] resp = db.stream("colFam".getBytes(), Longs.toByteArray(offset));
+    List<DBRecord> records = db.stream("colFam".getBytes(), Longs.toByteArray(offset));
 
     assertEquals(0, offset);
-    assertEquals("val", new String(resp));
+    assertEquals("val", new String(records.get(0).getValue()));
   }
 
   @Test
