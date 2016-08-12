@@ -79,12 +79,6 @@ public class ChicagoAsyncClient implements Client {
 
   }
 
-//  public ChicagoAsyncClient(String zkConnectionString) {
-//    this.zkClient = new ZkClient(zkConnectionString, false);
-//    this.futureMap = PlatformDependent.newConcurrentHashMap();
-//    this.handler = new ChicagoClientHandler(futureMap);
-//  }
-
   @Override
   public void start() {
     if (zkClient != null) {
@@ -228,7 +222,65 @@ public class ChicagoAsyncClient implements Client {
 
   @Override
   public ListenableFuture<byte[]> tsWrite(byte[] topic, byte[] val) {
-    return null;
+
+    List<SettableFuture<byte[]>> futureList = new ArrayList<>();
+    SettableFuture<byte[]> respFuture = SettableFuture.create();
+    List<String> nodes = rendezvousHash.get(topic);
+    nodes.stream().forEach(xs -> {
+      UUID id = UUID.randomUUID();
+      SettableFuture<byte[]> f = SettableFuture.create();
+      futureMap.put(id, f);
+      Futures.addCallback(f, new FutureCallback<byte[]>() {
+        @Override
+        public void onSuccess(@Nullable byte[] bytes) {
+          f.set(bytes);
+        }
+
+        @Override
+        public void onFailure(Throwable throwable) {
+          f.setException(throwable);
+        }
+      });
+
+      Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.TS_WRITE, topic, null, val)), new FutureCallback<Boolean>() {
+        @Override
+        public void onSuccess(@Nullable Boolean aBoolean) {
+          futureList.add(f);
+        }
+
+        @Override
+        public void onFailure(Throwable throwable) {
+          Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.TS_WRITE, topic, null, val)), new FutureCallback<Boolean>() {
+            @Override
+            public void onSuccess(@Nullable Boolean aBoolean) {
+              futureList.add(f);
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+
+            }
+          });
+        }
+      });
+    });
+
+    Futures.addCallback(Futures.successfulAsList(futureList), new FutureCallback<List<byte[]>>() {
+      @Override
+      public void onSuccess(@Nullable List<byte[]> bytes) {
+        respFuture.set(bytes.get(0));
+      }
+
+      @Override
+      public void onFailure(Throwable throwable) {
+        try {
+          respFuture.set(tsWrite(topic, val).get(TIMEOUT, TimeUnit.MILLISECONDS));
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+          respFuture.setException(e);
+        }
+      }
+    });
+    return respFuture;
   }
 
   @Override
@@ -238,7 +290,54 @@ public class ChicagoAsyncClient implements Client {
 
   @Override
   public ListenableFuture<byte[]> stream(byte[] topic, byte[] offset) {
-    return null;
+    List<String> nodes = rendezvousHash.get(topic);
+    UUID id = UUID.randomUUID();
+    SettableFuture<byte[]> f = SettableFuture.create();
+    futureMap.put(id, f);
+    Futures.addCallback(f, new FutureCallback<byte[]>() {
+      @Override
+      public void onSuccess(@Nullable byte[] bytes) {
+        f.set(bytes);
+      }
+
+      @Override
+      public void onFailure(Throwable throwable) {
+        f.setException(throwable);
+      }
+    });
+
+    Futures.addCallback(connectionManager.write(nodes.get(0), new DefaultChicagoMessage(id, Op.STREAM, topic, null, offset)), new FutureCallback<Boolean>() {
+      @Override
+      public void onSuccess(@Nullable Boolean aBoolean) {
+
+      }
+
+      @Override
+      public void onFailure(Throwable throwable) {
+
+      }
+    });
+
+    workerLoop.schedule(() -> {
+      Futures.addCallback(connectionManager.write(nodes.get(1), new DefaultChicagoMessage(id, Op.STREAM, topic, null, offset)), new FutureCallback<Boolean>() {
+        @Override
+        public void onSuccess(@Nullable Boolean aBoolean) {
+
+        }
+
+        @Override
+        public void onFailure(Throwable throwable) {
+          try {
+            f.set(stream(topic, offset).get(TIMEOUT, TimeUnit.MILLISECONDS));
+          } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            f.setException(throwable);
+          }
+        }
+      });
+    }, 2, TimeUnit.MILLISECONDS);
+
+    return f;
+
   }
 
   @Override

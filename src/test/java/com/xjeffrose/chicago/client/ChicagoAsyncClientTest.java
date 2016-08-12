@@ -6,17 +6,13 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.xjeffrose.chicago.ChicagoMessage;
 import com.xjeffrose.chicago.ChicagoObjectDecoder;
-import com.xjeffrose.chicago.ChicagoObjectEncoder;
 import com.xjeffrose.chicago.DefaultChicagoMessage;
 import com.xjeffrose.chicago.Op;
-import com.xjeffrose.chicago.server.Chicago;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.util.internal.PlatformDependent;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -25,10 +21,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class ChicagoAsyncClientTest {
-  private final static String NODE_LIST_PATH = "/chicago/node-list";
   private final Map<UUID, SettableFuture<byte[]>> futureMap = PlatformDependent.newConcurrentHashMap();
   private EmbeddedChannel ch1 = new EmbeddedChannel(new ChannelInitializer<EmbeddedChannel>() {
     @Override
@@ -40,7 +36,6 @@ public class ChicagoAsyncClientTest {
   });
 
   private ChicagoObjectDecoder decoder = new ChicagoObjectDecoder();
-  private ChicagoObjectEncoder encoder = new ChicagoObjectEncoder();
   private ChicagoAsyncClient chicagoClient;
 
   @Before
@@ -83,19 +78,19 @@ public class ChicagoAsyncClientTest {
     ch1.writeInbound(new DefaultChicagoMessage(chicagoMessage.getId(), Op.RESPONSE, "colFam".getBytes(), Boolean.toString(true).getBytes(), "val".getBytes()));
     CountDownLatch latch = new CountDownLatch(1);
     Futures.addCallback(clientResp, new FutureCallback<byte[]>() {
-          @Override
-          public void onSuccess(@Nullable byte[] bytes) {
-            assertEquals("val", new String(bytes));
-            latch.countDown();
-          }
+      @Override
+      public void onSuccess(@Nullable byte[] bytes) {
+        assertEquals("val", new String(bytes));
+        latch.countDown();
+      }
 
-          @Override
-          public void onFailure(Throwable throwable) {
-            assertTrue(false);
-          }
-        });
+      @Override
+      public void onFailure(Throwable throwable) {
+        assertTrue(false);
+      }
+    });
 
-        latch.await();
+    latch.await();
   }
 
   @Test
@@ -139,10 +134,18 @@ public class ChicagoAsyncClientTest {
     latch.await();
   }
 
-
   @Test
   public void tsWrite() throws Exception {
+    chicagoClient.tsWrite("colFam".getBytes(), "val".getBytes());
 
+    ByteBuf bb = ch1.readOutbound();
+    byte[] _bb = new byte[bb.readableBytes()];
+    bb.readBytes(_bb);
+    ChicagoMessage chicagoMessage = decoder.decode(_bb);
+
+    assertEquals(Op.TS_WRITE, chicagoMessage.getOp());
+    assertEquals("colFam", new String(chicagoMessage.getColFam()));
+    assertEquals("val", new String(chicagoMessage.getVal()));
   }
 
   @Test
@@ -152,7 +155,16 @@ public class ChicagoAsyncClientTest {
 
   @Test
   public void stream() throws Exception {
+    chicagoClient.stream("topic".getBytes(), "offset".getBytes());
 
+    ByteBuf bb = ch1.readOutbound();
+    byte[] _bb = new byte[bb.readableBytes()];
+    bb.readBytes(_bb);
+    ChicagoMessage chicagoMessage = decoder.decode(_bb);
+
+    assertEquals(Op.STREAM, chicagoMessage.getOp());
+    assertEquals("topic", new String(chicagoMessage.getColFam()));
+    assertEquals("offset", new String(chicagoMessage.getVal()));
   }
 
 }
