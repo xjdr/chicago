@@ -12,13 +12,13 @@ import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class ConnectionManager {
-  private List<String> nodeList;
+public class ConnectionPoolManagerImpl implements ConnectionPoolManager {
   private final ChannelHandler handler;
   private final EventLoopGroup workerLoop;
   private final Map<String, RequestMuxer<ChicagoMessage>> connectionMap = PlatformDependent.newConcurrentHashMap();
+  private List<String> nodeList;
 
-  public ConnectionManager(List<String> nodeList, ChannelHandler handler, EventLoopGroup workerLoop) {
+  public ConnectionPoolManagerImpl(List<String> nodeList, ChannelHandler handler, EventLoopGroup workerLoop) {
     this.nodeList = nodeList;
     this.handler = handler;
     this.workerLoop = workerLoop;
@@ -60,6 +60,7 @@ public class ConnectionManager {
     return true;
   }
 
+  @Override
   public ListenableFuture<Boolean> write(String addr, ChicagoMessage msg) {
     if (connectionMap.containsKey(addr)) {
       SettableFuture<Boolean> f = SettableFuture.create();

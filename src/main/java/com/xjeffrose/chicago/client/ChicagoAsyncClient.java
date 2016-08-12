@@ -1,5 +1,6 @@
 package com.xjeffrose.chicago.client;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.hash.Funnels;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -10,6 +11,7 @@ import com.xjeffrose.chicago.DefaultChicagoMessage;
 import com.xjeffrose.chicago.Op;
 import com.xjeffrose.chicago.ZkClient;
 import io.netty.channel.ChannelHandler;
+import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.internal.PlatformDependent;
 import java.net.InetSocketAddress;
@@ -18,15 +20,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ChicagoAsyncClient implements Client {
-  public final static String REPLICATION_LOCK_PATH = "/chicago/replication-lock";
-  protected final static String NODE_LIST_PATH = "/chicago/node-list";
-  protected static final long TIMEOUT = 3000;
+  private final static String REPLICATION_LOCK_PATH = "/chicago/replication-lock";
+  private final static String NODE_LIST_PATH = "/chicago/node-list";
+  private final static long TIMEOUT = 3000;
 
   private final ZkClient zkClient;
   private final Map<UUID, SettableFuture<byte[]>> futureMap;
@@ -36,22 +40,50 @@ public class ChicagoAsyncClient implements Client {
           .setNameFormat("chicagoClient-nioEventLoopGroup-%d")
           .build()
   );
-  private ConnectionManager connectionManager;
+
+  private ConnectionPoolManager connectionManager;
   private RendezvousHash<String> rendezvousHash;
+  private int quorum = 3;
+  private EmbeddedChannel ech = null;
 
 
   public ChicagoAsyncClient(InetSocketAddress addr) {
+    this(addr, 3);
+  }
+
+  public ChicagoAsyncClient(InetSocketAddress addr, int q) {
     this.zkClient = null;
     this.futureMap = PlatformDependent.newConcurrentHashMap();
     this.handler = new ChicagoClientHandler(futureMap);
+    this.quorum = q;
   }
 
   public ChicagoAsyncClient(String zkConnectionString) {
+    this(zkConnectionString, 3);
+  }
+
+  public ChicagoAsyncClient(String zkConnectionString, int q) {
     this.zkClient = new ZkClient(zkConnectionString, false);
     this.futureMap = PlatformDependent.newConcurrentHashMap();
     this.handler = new ChicagoClientHandler(futureMap);
+    this.quorum = q;
+  }
+
+  ChicagoAsyncClient(EmbeddedChannel ech, Map<UUID, SettableFuture<byte[]>> futureMap, int q) {
+    // This constructor is for testing only
+    this.ech = ech;
+    this.zkClient = null;
+    this.futureMap = futureMap;
+    this.handler = new ChicagoClientHandler(futureMap);
+    this.quorum = q;
 
   }
+
+//  public ChicagoAsyncClient(String zkConnectionString) {
+//    this.zkClient = new ZkClient(zkConnectionString, false);
+//    this.futureMap = PlatformDependent.newConcurrentHashMap();
+//    this.handler = new ChicagoClientHandler(futureMap);
+//  }
 
   @Override
   public void start() {
@@ -62,10 +94,16 @@ public class ChicagoAsyncClient implements Client {
         e.printStackTrace();
       }
     }
-    List<String> nodeList = buildNodeList();
-    connectionManager = new ConnectionManager(nodeList, handler, workerLoop);
-    connectionManager.start();
-    rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, 3);
+
+    if (ech != null) {
+      connectionManager = new EmbeddedConnectionManager(ech);
+      rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), ImmutableList.of(ech.toString()), 3);
+    } else {
+      List<String> nodeList = buildNodeList();
+      connectionManager = new ConnectionPoolManagerImpl(nodeList, handler, workerLoop);
+      connectionManager.start();
+      rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, 3);
+    }
 
   }
 
@@ -113,7 +151,11 @@ public class ChicagoAsyncClient implements Client {
 
         @Override
         public void onFailure(Throwable throwable) {
-
+          try {
+            f.set(read(colFam, key).get(TIMEOUT, TimeUnit.MILLISECONDS));
+          } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            f.setException(throwable);
+          }
         }
       });
     }, 2, TimeUnit.MILLISECONDS);
@@ -142,7 +184,7 @@ public class ChicagoAsyncClient implements Client {
         }
       });
 
-      Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.READ, colFam, key, null)), new FutureCallback<Boolean>() {
+      Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.WRITE, colFam, key, val)), new FutureCallback<Boolean>() {
         @Override
         public void onSuccess(@Nullable Boolean aBoolean) {
           futureList.add(f);
@@ -150,7 +192,7 @@ public class ChicagoAsyncClient implements Client {
 
         @Override
         public void onFailure(Throwable throwable) {
-          Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.READ, colFam, key, null)), new FutureCallback<Boolean>() {
+          Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.WRITE, colFam, key, val)), new FutureCallback<Boolean>() {
             @Override
             public void onSuccess(@Nullable Boolean aBoolean) {
               futureList.add(f);
@@ -173,9 +215,13 @@ public class ChicagoAsyncClient implements Client {
 
       @Override
       public void onFailure(Throwable throwable) {
-        respFuture.setException(throwable);
+        try {
+          respFuture.set(write(colFam, key, val).get(TIMEOUT, TimeUnit.MILLISECONDS));
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+          respFuture.setException(e);
+        }
       }
-    };
+    });
 
     return respFuture;
   }

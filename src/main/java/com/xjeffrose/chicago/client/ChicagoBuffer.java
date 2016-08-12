@@ -6,9 +6,7 @@ import com.xjeffrose.chicago.ChiUtil;
 import com.xjeffrose.chicago.DefaultChicagoMessage;
 import com.xjeffrose.chicago.Op;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import io.netty.util.internal.PlatformDependent;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
@@ -24,7 +22,7 @@ import static com.xjeffrose.chicago.client.BaseChicagoClient.TIMEOUT;
 
 
 public class ChicagoBuffer {
-  private final ConnectionPoolManager connectionPoolMgr;
+  private final ConnectionPoolManagerX connectionPoolMgr;
   private final BaseChicagoClient chicagoClient;
   private final ScheduledExecutorService flushExecutor = Executors
       .newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
@@ -32,7 +30,7 @@ public class ChicagoBuffer {
           .build());
   private final Map<String, Deque<ColFamBufferRequest>> chicagoMessageMap = PlatformDependent.newConcurrentHashMap();
 
-  public ChicagoBuffer(ConnectionPoolManager connectionPoolMgr, BaseChicagoClient chicagoClient) {
+  public ChicagoBuffer(ConnectionPoolManagerX connectionPoolMgr, BaseChicagoClient chicagoClient) {
     this.connectionPoolMgr = connectionPoolMgr;
     this.chicagoClient = chicagoClient;
 
