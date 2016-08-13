@@ -14,6 +14,7 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -95,11 +96,14 @@ public class RocksDBImplTest {
     for (int i = 0; i < 100000; i++) {
       assertEquals(i, Longs.fromByteArray(rocksDbImpl.tsWrite("ColFam".getBytes(), ("Val" + i).getBytes())));
     }
-
+    List<DBRecord> records = rocksDbImpl.stream("ColFam".getBytes(), Ints.toByteArray(0));
+    for(DBRecord record : records){
+      assertNotNull(record.getValue());
+    }
 //    for (int i = 0; i < 100000; i++) {
-    final String result = new String(rocksDbImpl.stream("ColFam".getBytes(), Ints.toByteArray(0)));
+    //final String result = new String(rocksDbImpl.stream("ColFam".getBytes(), Ints.toByteArray(0)));
 //    final String[] resultBA = result.split(ChiUtil.delimiter);
-      assertNotNull(result);
+      //assertNotNull(result);
 //    assertEquals(100000, resultBA.length);
 //    assertEquals("Val12345", resultBA[12344]);
 //    assertEquals(100000, result.length);
