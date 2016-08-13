@@ -1,5 +1,6 @@
 package com.xjeffrose.chicago.tools;
 
+import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -221,7 +222,7 @@ public class WritePerformanceAsync {
 
     @Override
     public void onSuccess(@Nullable byte[] bytes) {
-      System.out.println("Got response :" + success.incrementAndGet());
+      System.out.println("Got response :" + Longs.fromByteArray(bytes));
       long now = System.currentTimeMillis();
       int latency = (int) (now - start);
       this.stats.record(iteration, latency, nbytes, now);
