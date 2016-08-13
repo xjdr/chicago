@@ -41,12 +41,11 @@ public class RequestMuxer<T> {
     blockAndAwaitPool();
     isRunning.set(true);
 
-    new AbstractExecutionThreadService() {
-      @Override
-      protected void run() throws Exception {
+    workerLoop.schedule(() -> {
+      if (messageQ.size() > 0) {
         drainMessageQ();
       }
-    }.run();
+    }, 200, TimeUnit.MILLISECONDS);
   }
 
   public void shutdownGracefully() {
