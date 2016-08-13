@@ -18,6 +18,7 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -59,10 +60,10 @@ public class ChicagoConnector {
         .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
         .option(ChannelOption.TCP_NODELAY, true)
         .group(workerLoop)
-        .channel(SocketChannel.class)
-        .handler(new ChannelInitializer<SocketChannel>() {
+        .channel(NioSocketChannel.class)
+        .handler(new ChannelInitializer<NioSocketChannel>() {
           @Override
-          protected void initChannel(SocketChannel channel) throws Exception {
+          protected void initChannel(NioSocketChannel channel) throws Exception {
             ChannelPipeline cp = channel.pipeline();
             cp.addLast(new XioSecurityHandlerImpl(true).getEncryptionHandler());
             //cp.addLast(new XioIdleDisconnectHandler(20, 20, 20));
