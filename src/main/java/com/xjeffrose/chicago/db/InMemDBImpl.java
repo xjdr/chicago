@@ -7,6 +7,8 @@ import com.xjeffrose.chicago.server.ChiConfig;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.util.internal.PlatformDependent;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -130,10 +132,13 @@ public class InMemDBImpl implements StorageProvider, AutoCloseable {
   }
 
   @Override
-  public byte[] stream(byte[] colFam, byte[] key) {
+  public List<DBRecord> stream(byte[] colFam, byte[] key) {
+    //todo: Need to fix stream similar to rocksDB.
+    List<DBRecord> values = new ArrayList<>();
     if (db.containsKey(Unpooled.buffer().writeBytes(colFam))) {
       if (db.get(Unpooled.buffer().writeBytes(colFam)).containsKey(Unpooled.buffer().writeBytes(key))) {
-        return db.get(Unpooled.buffer().writeBytes(colFam)).get(Unpooled.buffer().writeBytes(key));
+        values.add(new DBRecord(colFam,key,db.get(Unpooled.buffer().writeBytes(colFam)).get(Unpooled.buffer().writeBytes(key))));
+        return values;
       } else {
         log.error("No such key " + new String(key) + " in colFam " + new String(colFam));
       }

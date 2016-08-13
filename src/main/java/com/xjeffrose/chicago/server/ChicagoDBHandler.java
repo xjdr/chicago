@@ -9,11 +9,16 @@ import com.xjeffrose.chicago.ChicagoObjectEncoder;
 import com.xjeffrose.chicago.DefaultChicagoMessage;
 import com.xjeffrose.chicago.Op;
 import com.xjeffrose.chicago.db.DBManager;
+import com.xjeffrose.chicago.db.DBRecord;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+
+import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -171,19 +176,16 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
   }
 
   private void handleStreamingRead(ChannelHandlerContext ctx, ChicagoMessage msg, ChannelFutureListener writeComplete) {
-    ListenableFuture<byte[]> future = db.stream(msg.getColFam(), msg.getVal());
-    Futures.addCallback(future, new FutureCallback<byte[]>() {
+    ListenableFuture<List<DBRecord>> future = db.stream(msg.getColFam(), msg.getVal());
+    Futures.addCallback(future, new FutureCallback<List<DBRecord>>() {
       @Override
-      public void onSuccess(byte[] result) {
-        ctx.writeAndFlush(
-          new DefaultChicagoMessage(
-            msg.getId(),
-            Op.RESPONSE,
-            msg.getColFam(),
-            Boolean.toString(true).getBytes(),
-            result
-          )
-        ).addListener(writeComplete);
+      public void onSuccess(List<DBRecord> result) {
+        ByteBuf bb = Unpooled.buffer();
+        ChicagoObjectEncoder encoder = new ChicagoObjectEncoder();
+        for(DBRecord record : result) {
+          bb.writeBytes(encoder.encode(new DefaultChicagoMessage(msg.getId(),Op.STREAM_RESPONSE,msg.getColFam(),record.getKey(),record.getValue())));
+        }
+        ctx.writeAndFlush(bb).addListener(writeComplete);
       }
       @Override
       public void onFailure(Throwable error) {

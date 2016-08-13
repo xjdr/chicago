@@ -114,8 +114,12 @@ public class EncryptedStorageProvider implements StorageProvider {
   }
 
   @Override
-  public byte[] stream(byte[] colFam, byte[] key) {
-    return decrypt(db.stream(colFam, key));
+  public List<DBRecord> stream(byte[] colFam, byte[] key) {
+    List<DBRecord> records  = db.stream(colFam, key);
+    for(DBRecord record : records){
+      record.setValue(decrypt(record.getValue()));
+    }
+    return records;
   }
 
   @Override

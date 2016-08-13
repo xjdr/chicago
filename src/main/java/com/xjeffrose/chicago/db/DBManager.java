@@ -180,9 +180,9 @@ public class DBManager extends AbstractExecutionThreadService {
   class StreamingReadMessage extends Message {
     final byte[] colFam;
     final byte[] key;
-    final SettableFuture<byte[]> promise;
+    final SettableFuture<List<DBRecord>> promise;
 
-    StreamingReadMessage(byte[] colFam, byte[] key, SettableFuture<byte[]> promise) {
+    StreamingReadMessage(byte[] colFam, byte[] key, SettableFuture<List<DBRecord>> promise) {
       this.colFam = colFam;
       this.key = key;
       this.promise = promise;
@@ -314,8 +314,8 @@ public class DBManager extends AbstractExecutionThreadService {
     return promise;
   }
 
-  public ListenableFuture<byte[]> stream(byte[] colFam, byte[] key) {
-    SettableFuture<byte[]> promise = SettableFuture.create();
+  public ListenableFuture<List<DBRecord>> stream(byte[] colFam, byte[] key) {
+    SettableFuture<List<DBRecord>> promise = SettableFuture.create();
     post(new StreamingReadMessage(colFam, key, promise));
     return promise;
   }
