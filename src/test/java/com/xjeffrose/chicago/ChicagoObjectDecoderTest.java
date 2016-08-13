@@ -6,37 +6,49 @@ import com.xjeffrose.chicago.db.StorageProvider;
 import com.xjeffrose.chicago.server.ChicagoDBHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
 import io.netty.channel.embedded.EmbeddedChannel;
+import java.nio.charset.Charset;
 import java.util.UUID;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
+@RunWith(MockitoJUnitRunner.class)
 public class ChicagoObjectDecoderTest {
+
+  ChicagoObjectEncoder encoder;
+  ChicagoObjectDecoder decoder;
+
+  @Before
+  public void beforeMethod() {
+    encoder = new ChicagoObjectEncoder();
+    decoder = new ChicagoObjectDecoder();
+  }
+
   @Test
   public void decode() throws Exception {
-    ChicagoObjectEncoder encoder = new ChicagoObjectEncoder();
     StorageProvider db = new InMemDBImpl();
     DBManager dbManager = new DBManager(db);
     dbManager.startAsync().awaitRunning();
 
+    EmbeddedChannel ch1 = new EmbeddedChannel(decoder, new ChicagoDBHandler(dbManager));
 
-    EmbeddedChannel ch1 = new EmbeddedChannel(new ChannelInitializer<EmbeddedChannel>() {
-      @Override
-      protected void initChannel(EmbeddedChannel channel) throws Exception {
-        ChannelPipeline cp = channel.pipeline();
-        cp.addLast(new ChicagoObjectDecoder());
-        cp.addLast(new ChicagoDBHandler(dbManager));
-      }
-    });
-
-    ChicagoMessage cm1 = new DefaultChicagoMessage(UUID.randomUUID(), Op.WRITE, "colfFam".getBytes(), "key1".getBytes(), "val1".getBytes());
-    ChicagoMessage cm2 = new DefaultChicagoMessage(UUID.randomUUID(), Op.WRITE, "colfFam".getBytes(), "key2".getBytes(), "val2".getBytes());
-    ChicagoMessage cm3 = new DefaultChicagoMessage(UUID.randomUUID(), Op.WRITE, "colfFam".getBytes(), "key3".getBytes(), "val3".getBytes());
-    ChicagoMessage cm4 = new DefaultChicagoMessage(UUID.randomUUID(), Op.WRITE, "colfFam".getBytes(), "key4".getBytes(), "val4".getBytes());
-
+    ChicagoMessage cm1 =
+      new DefaultChicagoMessage(UUID.randomUUID(), Op.WRITE, "colfFam".getBytes(),
+        "key1".getBytes(), "val1".getBytes());
+    ChicagoMessage cm2 =
+      new DefaultChicagoMessage(UUID.randomUUID(), Op.WRITE, "colfFam".getBytes(),
+        "key2".getBytes(), "val2".getBytes());
+    ChicagoMessage cm3 =
+      new DefaultChicagoMessage(UUID.randomUUID(), Op.WRITE, "colfFam".getBytes(),
+        "key3".getBytes(), "val3".getBytes());
+    ChicagoMessage cm4 =
+      new DefaultChicagoMessage(UUID.randomUUID(), Op.WRITE, "colfFam".getBytes(),
+        "key4".getBytes(), "val4".getBytes());
 
     ByteBuf bb = Unpooled.buffer();
 
@@ -53,8 +65,259 @@ public class ChicagoObjectDecoderTest {
     assertEquals("val2", new String(db.read("colfFam".getBytes(), "key2".getBytes())));
     assertEquals("val3", new String(db.read("colfFam".getBytes(), "key3".getBytes())));
     assertEquals("val4", new String(db.read("colfFam".getBytes(), "key4".getBytes())));
-
-
   }
 
+  @Test
+  public void testDecode_oneBigMessage() {
+    EmbeddedChannel channel = new EmbeddedChannel(decoder);
+
+    ChicagoMessage cm1 =
+      new DefaultChicagoMessage(UUID.randomUUID(), Op.WRITE, "colfFam".getBytes(),
+        "key1".getBytes(), "val1".getBytes());
+    ChicagoMessage cm2 =
+      new DefaultChicagoMessage(UUID.randomUUID(), Op.WRITE, "colfFam".getBytes(),
+        "key2".getBytes(), "val2".getBytes());
+    ChicagoMessage cm3 =
+      new DefaultChicagoMessage(UUID.randomUUID(), Op.WRITE, "colfFam".getBytes(),
+        "key3".getBytes(), "val3".getBytes());
+    ChicagoMessage cm4 =
+      new DefaultChicagoMessage(UUID.randomUUID(), Op.WRITE, "colfFam".getBytes(),
+        "key4".getBytes(), "val4".getBytes());
+
+    ByteBuf message1 = Unpooled.buffer();
+    message1.writeBytes(encoder.encode(cm1));
+    message1.writeBytes(encoder.encode(cm2));
+    message1.writeBytes(encoder.encode(cm3));
+    message1.writeBytes(encoder.encode(cm4));
+
+    channel.writeInbound(message1);
+
+    assertEquals(getFirstMessageString(channel), 4, channel.inboundMessages().size());
+    assertEquals(cm1, channel.inboundMessages().poll());
+    assertEquals(cm2, channel.inboundMessages().poll());
+    assertEquals(cm3, channel.inboundMessages().poll());
+    assertEquals(cm4, channel.inboundMessages().poll());
+  }
+
+  @Test
+  public void testDecode_multipleMessages() {
+    EmbeddedChannel channel = new EmbeddedChannel(decoder);
+
+    ChicagoMessage cm1 =
+      new DefaultChicagoMessage(UUID.randomUUID(), Op.WRITE, "colfFam".getBytes(),
+        "key1".getBytes(), "val1".getBytes());
+    ChicagoMessage cm2 =
+      new DefaultChicagoMessage(UUID.randomUUID(), Op.WRITE, "colfFam".getBytes(),
+        "key2".getBytes(), "val2".getBytes());
+    ChicagoMessage cm3 =
+      new DefaultChicagoMessage(UUID.randomUUID(), Op.WRITE, "colfFam".getBytes(),
+        "key3".getBytes(), "val3".getBytes());
+    ChicagoMessage cm4 =
+      new DefaultChicagoMessage(UUID.randomUUID(), Op.WRITE, "colfFam".getBytes(),
+        "key4".getBytes(), "val4".getBytes());
+
+    ByteBuf message1 = Unpooled.buffer();
+    message1.writeBytes(encoder.encode(cm1));
+    message1.writeBytes(encoder.encode(cm2));
+
+    ByteBuf message2 = Unpooled.buffer();
+    message2.writeBytes(encoder.encode(cm3));
+    message2.writeBytes(encoder.encode(cm4));
+
+    channel.writeInbound(message1);
+    channel.writeInbound(message2);
+
+    assertEquals(getFirstMessageString(channel), 4, channel.inboundMessages().size());
+    assertEquals(cm1, channel.inboundMessages().poll());
+    assertEquals(cm2, channel.inboundMessages().poll());
+    assertEquals(cm3, channel.inboundMessages().poll());
+    assertEquals(cm4, channel.inboundMessages().poll());
+  }
+
+  @Test
+  public void testDecode_multipleMessagesSameID() {
+    EmbeddedChannel channel = new EmbeddedChannel(decoder);
+
+    UUID sharedId = UUID.randomUUID();
+    ChicagoMessage cm1 =
+      new DefaultChicagoMessage(sharedId, Op.WRITE, "colfFam".getBytes(), "key1".getBytes(),
+        "val1".getBytes());
+    ChicagoMessage cm2 =
+      new DefaultChicagoMessage(sharedId, Op.WRITE, "colfFam".getBytes(), "key2".getBytes(),
+        "val2".getBytes());
+    ChicagoMessage cm3 =
+      new DefaultChicagoMessage(sharedId, Op.WRITE, "colfFam".getBytes(), "key3".getBytes(),
+        "val3".getBytes());
+    ChicagoMessage cm4 =
+      new DefaultChicagoMessage(sharedId, Op.WRITE, "colfFam".getBytes(), "key4".getBytes(),
+        "val4".getBytes());
+
+    ByteBuf message1 = Unpooled.buffer();
+    message1.writeBytes(encoder.encode(cm1));
+    message1.writeBytes(encoder.encode(cm2));
+
+    ByteBuf message2 = Unpooled.buffer();
+    message2.writeBytes(encoder.encode(cm3));
+    message2.writeBytes(encoder.encode(cm4));
+
+    channel.writeInbound(message1);
+    channel.writeInbound(message2);
+
+    assertEquals(getFirstMessageString(channel), 4, channel.inboundMessages().size());
+    assertEquals(cm1, channel.inboundMessages().poll());
+    assertEquals(cm2, channel.inboundMessages().poll());
+    assertEquals(cm3, channel.inboundMessages().poll());
+    assertEquals(cm4, channel.inboundMessages().poll());
+  }
+
+  @Test
+  public void testDecode_streamMultipleMessages() {
+    EmbeddedChannel channel = new EmbeddedChannel(decoder);
+
+    ChicagoMessage cm1 =
+      new DefaultChicagoMessage(UUID.randomUUID(), Op.STREAM_RESPONSE, "colfFam".getBytes(),
+        "key1".getBytes(), "val1".getBytes());
+    ChicagoMessage cm2 =
+      new DefaultChicagoMessage(UUID.randomUUID(), Op.STREAM_RESPONSE, "colfFam".getBytes(),
+        "key2".getBytes(), "val2".getBytes());
+    ChicagoMessage cm3 =
+      new DefaultChicagoMessage(UUID.randomUUID(), Op.STREAM_RESPONSE, "colfFam".getBytes(),
+        "key3".getBytes(), "val3".getBytes());
+    ChicagoMessage cm4 =
+      new DefaultChicagoMessage(UUID.randomUUID(), Op.STREAM_RESPONSE, "colfFam".getBytes(),
+        "key4".getBytes(), "val4".getBytes());
+
+    ByteBuf message1 = Unpooled.buffer();
+    message1.writeBytes(encoder.encode(cm1));
+    message1.writeBytes(encoder.encode(cm2));
+
+    ByteBuf message2 = Unpooled.buffer();
+    message2.writeBytes(encoder.encode(cm3));
+    message2.writeBytes(encoder.encode(cm4));
+
+    channel.writeInbound(message1);
+    channel.writeInbound(message2);
+
+    assertEquals(getFirstMessageString(channel), 4, channel.inboundMessages().size());
+    assertStreamResponse(channel, cm1);
+    assertStreamResponse(channel, cm2);
+    assertStreamResponse(channel, cm3);
+    assertStreamResponse(channel, cm4);
+  }
+
+  @Test
+  public void testDecode_streamMultipleMessagesSameId() {
+    EmbeddedChannel channel = new EmbeddedChannel(decoder);
+
+    UUID sharedId = UUID.randomUUID();
+    ChicagoMessage cm1 =
+      new DefaultChicagoMessage(sharedId, Op.STREAM_RESPONSE, "colfFam".getBytes(),
+        "key1".getBytes(), "val1".getBytes());
+    ChicagoMessage cm2 =
+      new DefaultChicagoMessage(sharedId, Op.STREAM_RESPONSE, "colfFam".getBytes(),
+        "key2".getBytes(), "val2".getBytes());
+    ChicagoMessage cm3 =
+      new DefaultChicagoMessage(sharedId, Op.STREAM_RESPONSE, "colfFam".getBytes(),
+        "key3".getBytes(), "val3".getBytes());
+    ChicagoMessage cm4 =
+      new DefaultChicagoMessage(sharedId, Op.STREAM_RESPONSE, "colfFam".getBytes(),
+        "key4".getBytes(), "val4".getBytes());
+
+    ByteBuf message1 = Unpooled.buffer();
+    message1.writeBytes(encoder.encode(cm1));
+    message1.writeBytes(encoder.encode(cm2));
+
+    ByteBuf message2 = Unpooled.buffer();
+    message2.writeBytes(encoder.encode(cm3));
+    message2.writeBytes(encoder.encode(cm4));
+
+    channel.writeInbound(message1);
+    channel.writeInbound(message2);
+
+    // I think a stream termination message needs to exist for this test to work.
+    assertEquals(getFirstMessageString(channel), 1, channel.inboundMessages().size());
+    assertStreamResponse(channel, cm1, cm2, cm3, cm4);
+  }
+
+  @Test
+  public void testDecode_streamOneBigMessage() {
+    EmbeddedChannel channel = new EmbeddedChannel(decoder);
+
+    ChicagoMessage cm1 =
+      new DefaultChicagoMessage(UUID.randomUUID(), Op.STREAM_RESPONSE, "colfFam".getBytes(),
+        "key1".getBytes(), "val1".getBytes());
+    ChicagoMessage cm2 =
+      new DefaultChicagoMessage(UUID.randomUUID(), Op.STREAM_RESPONSE, "colfFam".getBytes(),
+        "key2".getBytes(), "val2".getBytes());
+    ChicagoMessage cm3 =
+      new DefaultChicagoMessage(UUID.randomUUID(), Op.STREAM_RESPONSE, "colfFam".getBytes(),
+        "key3".getBytes(), "val3".getBytes());
+    ChicagoMessage cm4 =
+      new DefaultChicagoMessage(UUID.randomUUID(), Op.STREAM_RESPONSE, "colfFam".getBytes(),
+        "key4".getBytes(), "val4".getBytes());
+
+    ByteBuf message1 = Unpooled.buffer();
+    message1.writeBytes(encoder.encode(cm1));
+    message1.writeBytes(encoder.encode(cm2));
+    message1.writeBytes(encoder.encode(cm3));
+    message1.writeBytes(encoder.encode(cm4));
+
+    channel.writeInbound(message1);
+
+    assertEquals(getFirstMessageString(channel), 4, channel.inboundMessages().size());
+    assertStreamResponse(channel, cm1);
+    assertStreamResponse(channel, cm2);
+    assertStreamResponse(channel, cm3);
+    assertStreamResponse(channel, cm4);
+  }
+
+  @Test
+  public void testDecode_streamOneBigMessageSameId() {
+    EmbeddedChannel channel = new EmbeddedChannel(decoder);
+
+    UUID sharedId = UUID.randomUUID();
+    ChicagoMessage cm1 =
+      new DefaultChicagoMessage(sharedId, Op.STREAM_RESPONSE, "colfFam".getBytes(),
+        "key1".getBytes(), "val1".getBytes());
+    ChicagoMessage cm2 =
+      new DefaultChicagoMessage(sharedId, Op.STREAM_RESPONSE, "colfFam".getBytes(),
+        "key2".getBytes(), "val2".getBytes());
+    ChicagoMessage cm3 =
+      new DefaultChicagoMessage(sharedId, Op.STREAM_RESPONSE, "colfFam".getBytes(),
+        "key3".getBytes(), "val3".getBytes());
+    ChicagoMessage cm4 =
+      new DefaultChicagoMessage(sharedId, Op.STREAM_RESPONSE, "colfFam".getBytes(),
+        "key4".getBytes(), "val4".getBytes());
+
+    ByteBuf message1 = Unpooled.buffer();
+    message1.writeBytes(encoder.encode(cm1));
+    message1.writeBytes(encoder.encode(cm2));
+    message1.writeBytes(encoder.encode(cm3));
+    message1.writeBytes(encoder.encode(cm4));
+
+    channel.writeInbound(message1);
+
+    assertEquals(getFirstMessageString(channel), 1, channel.inboundMessages().size());
+    assertStreamResponse(channel, cm1, cm2, cm3, cm4);
+  }
+
+  private void assertStreamResponse(EmbeddedChannel channel, ChicagoMessage... inputMessages) {
+    ChicagoMessage chicagoMessage = (ChicagoMessage) channel.inboundMessages().poll();
+    ChicagoMessage cm1 = inputMessages[0];
+    assertEquals(cm1.getId(), chicagoMessage.getId());
+    assertArrayEquals(cm1.getColFam(), chicagoMessage.getColFam());
+    assertEquals(cm1.getOp(), chicagoMessage.getOp());
+    assertArrayEquals("true".getBytes(), chicagoMessage.getKey());
+    ByteBuf expectedValue = Unpooled.buffer();
+    for (ChicagoMessage cm : inputMessages) {
+      expectedValue.writeBytes(cm.getVal()).writeByte(0);
+    }
+    expectedValue.writeCharSequence(ChiUtil.delimiter, Charset.forName("UTF-8"));
+    expectedValue.writeBytes(inputMessages[inputMessages.length-1].getKey());
+    assertArrayEquals(expectedValue.array(), chicagoMessage.getVal());
+  }
+
+  String getFirstMessageString(EmbeddedChannel channel) {
+    return channel.inboundMessages().peek().toString();
+  }
 }
