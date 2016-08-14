@@ -2,7 +2,7 @@ package com.xjeffrose.chicago.client;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.Funnels;
-import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -269,8 +269,7 @@ public class ChicagoAsyncClient implements Client {
     Futures.addCallback(Futures.successfulAsList(futureList), new FutureCallback<List<byte[]>>() {
       @Override
       public void onSuccess(@Nullable List<byte[]> bytes) {
-//        respFuture.set(bytes.get(0));
-        respFuture.set(Ints.toByteArray(0));
+        respFuture.set(Longs.toByteArray(0));
       }
 
       @Override
