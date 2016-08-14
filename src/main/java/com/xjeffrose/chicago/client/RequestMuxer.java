@@ -16,6 +16,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -23,10 +25,12 @@ public class RequestMuxer<T> {
   private static final int POOL_SIZE = 4;
 
   private final String addr;
-  private final ChicagoConnector connector;
+  @Setter
+  private ChicagoConnector connector;
   private final EventLoopGroup workerLoop;
   private final AtomicBoolean isRunning = new AtomicBoolean();
   private final LinkedBlockingDeque<ChannelFuture> connectionQ = new LinkedBlockingDeque<>();
+  @Getter
   private final LinkedBlockingDeque<MuxedMessage<T>> messageQ = new LinkedBlockingDeque<MuxedMessage<T>>();
 
   public RequestMuxer(String addr, ChannelHandler handler, EventLoopGroup workerLoop) {
@@ -41,11 +45,11 @@ public class RequestMuxer<T> {
     blockAndAwaitPool();
     isRunning.set(true);
 
-    workerLoop.schedule(() -> {
+    workerLoop.scheduleAtFixedRate(() -> {
       if (messageQ.size() > 0) {
         drainMessageQ();
       }
-    }, 200, TimeUnit.MILLISECONDS);
+    }, 0 ,200, TimeUnit.MILLISECONDS);
   }
 
   public void shutdownGracefully() {
@@ -147,19 +151,21 @@ public class RequestMuxer<T> {
   }
 
   private void drainMessageQ() {
-    while (isRunning.get()) {
-      final MuxedMessage<T> mm = messageQ.poll();
-      requestNode().writeAndFlush(mm.getMsg()).addListener(new GenericFutureListener<Future<? super Void>>() {
-        @Override
-        public void operationComplete(Future<? super Void> future) throws Exception {
-          if (future.isSuccess()) {
-            mm.getF().set(true);
-          } else {
-            mm.getF().set(false);
-            mm.getF().setException(future.cause());
+    if (isRunning.get()) {
+      while(messageQ.peek() != null) {
+        final MuxedMessage<T> mm = messageQ.poll();
+        requestNode().writeAndFlush(mm.getMsg()).addListener(new GenericFutureListener<Future<? super Void>>() {
+          @Override
+          public void operationComplete(Future<? super Void> future) throws Exception {
+            if (future.isSuccess()) {
+              mm.getF().set(true);
+            } else {
+              mm.getF().set(false);
+              mm.getF().setException(future.cause());
+            }
           }
-        }
-      });
+        });
+      }
     }
   }
 
@@ -168,4 +174,5 @@ public class RequestMuxer<T> {
     private final T msg;
     private final SettableFuture<Boolean> f;
   }
+
 }
