@@ -375,14 +375,14 @@ public class RocksDBImpl implements AutoCloseable, StorageProvider {
 
         //Insert the last offset with delimiter.
         ByteBuf bb = Unpooled.buffer();
-        if(values > 0) {
+        if(values.size() > 0) {
           bb.writeBytes(lastRecord.getValue());
           bb.writeBytes(ChiUtil.delimiter.getBytes());
-          bb.writableBytes(lastOffset);
+          bb.writeBytes(lastOffset);
           lastRecord.setValue(bb.array());
         }else{
           bb.writeBytes(ChiUtil.delimiter.getBytes());
-          bb.writableBytes(lastOffset);
+          bb.writeBytes(lastOffset);
           values.add(new DBRecord(colFam,lastOffset,bb.array()));
         }
 
