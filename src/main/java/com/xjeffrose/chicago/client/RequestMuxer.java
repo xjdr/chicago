@@ -56,7 +56,7 @@ public class RequestMuxer<T> {
           messageQ.forEach(xs -> {
             drainMessageQ();
             try {
-              Thread.sleep(0, 250);
+              Thread.sleep(0, 12);
             } catch (InterruptedException e) {
               e.printStackTrace();
             }
