@@ -23,7 +23,13 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RequestMuxer<T> {
+  // WARNING!!!!!!!
+  // This is the magic required to prevent deadlocks.
+  // DO NOT CHANGE THIS VALUE or risk undoing all the
+  // magic held therein...
+  private static final int MAGIC_NUMBER = 5;
   private static final int POOL_SIZE = 4;
+
 
   private final String addr;
   private final EventLoopGroup workerLoop;
@@ -119,7 +125,7 @@ public class RequestMuxer<T> {
 
   public void write(T sendReq, SettableFuture<Boolean> f) {
     if (isRunning.get()) {
-      if (counter.incrementAndGet() % 3 == 0) {
+      if (counter.incrementAndGet() % MAGIC_NUMBER == 0) {
         try {
           Thread.sleep(0, 1);
           counter.set(0);
@@ -151,7 +157,6 @@ public class RequestMuxer<T> {
   private void drainMessageQ() {
     if (isRunning.get() && messageQ.size() > 0) {
       final MuxedMessage<T> mm = messageQ.pollFirst();
-//      requestNode().write(mm.getMsg()).addListener(new GenericFutureListener<Future<? super Void>>() {
       requestNode().writeAndFlush(mm.getMsg()).addListener(new GenericFutureListener<Future<? super Void>>() {
         @Override
         public void operationComplete(Future<? super Void> future) throws Exception {
