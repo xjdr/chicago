@@ -28,7 +28,7 @@ public class RequestMuxer<T> {
   // DO NOT CHANGE THIS VALUE or risk undoing all the
   // magic held therein...
   private static final int MAGIC_NUMBER = 23;
-  private static final int POOL_SIZE = 12;
+  private static final int POOL_SIZE = 4;
 
   private final String addr;
   private final EventLoopGroup workerLoop;
@@ -52,11 +52,11 @@ public class RequestMuxer<T> {
     blockAndAwaitPool();
     isRunning.set(true);
 
-//    workerLoop.scheduleAtFixedRate(() -> {
-//      if(messageQ.size() > 0){
-//        drainMessageQ();
-//      }
-//    },0,12,TimeUnit.MILLISECONDS);
+    workerLoop.scheduleAtFixedRate(() -> {
+      if(messageQ.size() > 0){
+        drainMessageQ();
+      }
+    },0,12,TimeUnit.MILLISECONDS);
 
     workerLoop.scheduleAtFixedRate(() -> {
       if(connectionRebuild.get()){
@@ -138,17 +138,19 @@ public class RequestMuxer<T> {
 
   public void write(T sendReq, SettableFuture<Boolean> f) {
     if (isRunning.get()) {
-//      messageQ.addLast(new MuxedMessage<>(sendReq,f));
-      drainMessageQ(sendReq, f);
+      messageQ.addLast(new MuxedMessage<>(sendReq,f));
+//      drainMessageQ(sendReq, f);
     }
   }
 
   private Channel requestNode(){
 
-    ChannelFuture cf = connectionQ.removeFirst();
+//    ChannelFuture cf = connectionQ.removeFirst();
+
+    ChannelFuture cf = connectionQ.peek();
     if ((cf != null) && cf.isSuccess()) {
       if (cf.channel().isActive()) {
-        connectionQ.addLast(cf);
+//        connectionQ.addLast(cf);
         return cf.channel();
       } else {
 
