@@ -120,12 +120,12 @@ public class RequestMuxer<T> {
   public void write(T sendReq, SettableFuture<Boolean> f) {
     if (isRunning.get()) {
       if (counter.incrementAndGet() % 3 == 0) {
-        try {
-          Thread.sleep(0, 1);
+        //try {
+          //Thread.sleep(0, 1);
           counter.set(0);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        }
+        //} catch (InterruptedException e) {
+        //  e.printStackTrace();
+        //}
       }
       drainMessageQ(sendReq, f);
     }
@@ -153,13 +153,9 @@ public class RequestMuxer<T> {
   private void drainMessageQ() {
     if (isRunning.get() && messageQ.size() > 0) {
       final MuxedMessage<T> mm = messageQ.pollFirst();
-<<<<<<< HEAD
       log.info("Writing to channel");
-      requestNode().write(mm.getMsg()).addListener(new GenericFutureListener<Future<? super Void>>() {
-=======
 //      requestNode().write(mm.getMsg()).addListener(new GenericFutureListener<Future<? super Void>>() {
       requestNode().writeAndFlush(mm.getMsg()).addListener(new GenericFutureListener<Future<? super Void>>() {
->>>>>>> 8022bfffcd4538ed5272743bd07e09eafd98b381
         @Override
         public void operationComplete(Future<? super Void> future) throws Exception {
           if (future.isSuccess()) {
