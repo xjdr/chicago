@@ -366,24 +366,10 @@ public class RocksDBImpl implements AutoCloseable, StorageProvider {
         int size = 0;
         DBRecord lastRecord = null;
         while (i.isValid() && size < ChiUtil.MaxBufferSize) {
-          lastRecord = new DBRecord(colFam,i.key(),i.value());
-          values.add(lastRecord);
+          values.add(new DBRecord(colFam,i.key(),i.value()));
           lastOffset = i.key();
           size += colFam.length + i.key().length + i.value().length;
           i.next();
-        }
-
-        //Insert the last offset with delimiter.
-        ByteBuf lastValue = Unpooled.buffer();
-        if(values.size() > 0) {
-          lastValue.writeBytes(lastRecord.getValue());
-          lastValue.writeBytes(ChiUtil.delimiter.getBytes());
-          lastValue.writeBytes(lastOffset);
-          lastRecord.setValue(lastValue.array());
-        }else{
-          lastValue.writeBytes(ChiUtil.delimiter.getBytes());
-          lastValue.writeBytes(lastOffset);
-          values.add(new DBRecord(colFam,lastOffset,lastValue.array()));
         }
 
         log.info("Stream response from DB : " + (System.currentTimeMillis() - startTime) + "ms with last offset as " + Longs.fromByteArray(lastOffset));
