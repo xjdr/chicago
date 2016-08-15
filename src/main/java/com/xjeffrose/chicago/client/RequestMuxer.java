@@ -28,8 +28,7 @@ public class RequestMuxer<T> {
   // DO NOT CHANGE THIS VALUE or risk undoing all the
   // magic held therein...
   private static final int MAGIC_NUMBER = 23;
-  private static final int POOL_SIZE = 4;
-
+  private static final int POOL_SIZE = 12;
 
   private final String addr;
   private final EventLoopGroup workerLoop;
@@ -53,11 +52,11 @@ public class RequestMuxer<T> {
     blockAndAwaitPool();
     isRunning.set(true);
 
-    workerLoop.scheduleAtFixedRate(() -> {
-      if(messageQ.size() > 0){
-        drainMessageQ();
-      }
-    },0,2,TimeUnit.MILLISECONDS);
+//    workerLoop.scheduleAtFixedRate(() -> {
+//      if(messageQ.size() > 0){
+//        drainMessageQ();
+//      }
+//    },0,12,TimeUnit.MILLISECONDS);
 
     workerLoop.scheduleAtFixedRate(() -> {
       if(connectionRebuild.get()){
@@ -97,12 +96,13 @@ public class RequestMuxer<T> {
   }
 
   private void rebuildConnectionQ(Deque<ChannelFuture> connectionQ) {
-    connectionQ.forEach(xs -> {
+    connectionQ.stream().parallel().forEach(xs -> {
       ChannelFuture cf = xs;
-      connectionQ.remove(xs);
-      if (cf.channel().isWritable()) {
-        connectionQ.addLast(cf);
+//      connectionQ.remove(xs);
+      if (cf.channel().isActive()) {
+//        connectionQ.addLast(cf);
       } else {
+        connectionQ.remove(xs);
         Futures.addCallback(connector.connect(address(addr)), new FutureCallback<ChannelFuture>() {
           @Override
           public void onSuccess(@Nullable ChannelFuture channelFuture) {
@@ -138,35 +138,64 @@ public class RequestMuxer<T> {
 
   public void write(T sendReq, SettableFuture<Boolean> f) {
     if (isRunning.get()) {
-      messageQ.addLast(new MuxedMessage<>(sendReq,f));
+//      messageQ.addLast(new MuxedMessage<>(sendReq,f));
+      drainMessageQ(sendReq, f);
     }
   }
 
   private Channel requestNode(){
 
-    ChannelFuture cf = connectionQ.pollFirst();
+    ChannelFuture cf = connectionQ.removeFirst();
     if ((cf != null) && cf.isSuccess()) {
-      if (cf.channel().isWritable()) {
+      if (cf.channel().isActive()) {
         connectionQ.addLast(cf);
         return cf.channel();
       } else {
 
-        while(!cf.channel().isWritable()){
-          try {
-            Thread.sleep(1);
-          } catch (InterruptedException e) {
-            e.printStackTrace();
-          }
-        }
-        connectionQ.addLast(cf);
-        return cf.channel();
+//        while(!cf.channel().isWritable()){
+//          try {
+//            Thread.sleep(1);
+//          } catch (InterruptedException e) {
+//            e.printStackTrace();
+//          }
+//        }
+//        connectionQ.addLast(cf);
+        connectionRebuild.set(true);
+        return connectionQ.peekLast().channel();
       }
     } else {
       log.info("Rebuilding connectionQ when channel is not successful!!!");
       connectionRebuild.set(true);
-      return requestNode();
+//      return requestNode();
+      return connectionQ.peekLast().channel();
     }
   }
+
+//  private Channel requestNode(){
+//
+//    ChannelFuture cf = connectionQ.pollFirst();
+//    if ((cf != null) && cf.isSuccess()) {
+//      if (cf.channel().isWritable()) {
+//        connectionQ.addLast(cf);
+//        return cf.channel();
+//      } else {
+//
+//        while(!cf.channel().isWritable()){
+//          try {
+//            Thread.sleep(1);
+//          } catch (InterruptedException e) {
+//            e.printStackTrace();
+//          }
+//        }
+//        connectionQ.addLast(cf);
+//        return cf.channel();
+//      }
+//    } else {
+//      log.info("Rebuilding connectionQ when channel is not successful!!!");
+//      connectionRebuild.set(true);
+//      return requestNode();
+//    }
+//  }
 
   private void drainMessageQ() {
     Channel ch = requestNode();
