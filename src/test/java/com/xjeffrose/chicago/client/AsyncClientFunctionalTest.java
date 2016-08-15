@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
+
+import com.xjeffrose.chicago.ChiUtil;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -71,7 +73,7 @@ public class AsyncClientFunctionalTest {
           public void onSuccess(@Nullable byte[] bytes) {
             l.countDown();
 //            System.out.println(new String(bytes));
-            assertEquals("testTSVal1", new String(bytes));
+            assertEquals("testTSVal1", new String(bytes).split(ChiUtil.delimiter)[0]);
 
           }
 
@@ -99,7 +101,7 @@ public class AsyncClientFunctionalTest {
 
     CountDownLatch l = new CountDownLatch(1);
 
-    ListenableFuture<byte[]> r = c.stream("testTSColFam".getBytes(), Longs.toByteArray(0l));
+    ListenableFuture<byte[]> r = c.stream("ppfe-test-sm".getBytes(), Longs.toByteArray(0l));
     Futures.addCallback(r, new FutureCallback<byte[]>() {
       @Override
       public void onSuccess(@Nullable byte[] bytes) {
@@ -126,11 +128,38 @@ public class AsyncClientFunctionalTest {
     c.startAndWaitForNodes(3);
     CountDownLatch l = new CountDownLatch(1);
 
-    ListenableFuture<List<byte[]>> r = c.stream("testTSColFam".getBytes(), Longs.toByteArray(0l));
+    ListenableFuture<List<byte[]>> r = c.stream("ppfe-test-sm".getBytes(), Longs.toByteArray(0l));
     Futures.addCallback(r, new FutureCallback<List<byte[]>>() {
       @Override
       public void onSuccess(@Nullable List<byte[]> bytes) {
         System.out.println(new String(bytes.get(0)));
+        l.countDown();
+      }
+
+      @Override
+      public void onFailure(Throwable throwable) {
+
+      }
+    });
+
+    l.await();
+  }
+
+  @Test
+  public void tsWriteTest() throws Exception {
+
+    ChicagoAsyncClient c = new ChicagoAsyncClient("10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181", 3);
+    c.start();
+
+    CountDownLatch l = new CountDownLatch(1);
+
+    System.out.println("Sending write!!");
+    ListenableFuture<byte[]> w = c.tsWrite("testTSColFam".getBytes(), "testTSVal1".getBytes());
+
+    Futures.addCallback(w, new FutureCallback<byte[]>() {
+      @Override
+      public void onSuccess(@Nullable byte[] bites) {
+        System.out.println("Result ::::::::::::::::::::"+ Longs.fromByteArray(bites));
         l.countDown();
       }
 

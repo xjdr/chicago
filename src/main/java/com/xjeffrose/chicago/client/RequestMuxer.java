@@ -50,9 +50,8 @@ public class RequestMuxer<T> {
         if (messageQ.size() > 0) {
           messageQ.forEach(xs -> {
             drainMessageQ();
-            flushPool();
             try {
-              Thread.sleep(0, 12);
+              Thread.sleep(0, 1);
             } catch (InterruptedException e) {
               e.printStackTrace();
             }
@@ -61,10 +60,22 @@ public class RequestMuxer<T> {
       }
     }).start();
 
+    new Thread(() -> {
+      while (isRunning.get()) {
+        flushPool();
+        try {
+          Thread.sleep(5);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+    }).start();
+
   }
 
   private void flushPool() {
-    connectionQ.forEach(xs -> {
+    connectionQ.parallelStream().forEach(xs -> {
+      log.info("Flushing!!!");
       xs.channel().flush();
     });
   }
@@ -100,7 +111,7 @@ public class RequestMuxer<T> {
   }
 
   private void rebuildConnectionQ(Deque<ChannelFuture> connectionQ) {
-    connectionQ.stream().forEach(xs -> {
+    connectionQ.forEach(xs -> {
       ChannelFuture cf = xs;
       connectionQ.remove(xs);
       if (cf.channel().isWritable()) {
@@ -141,6 +152,7 @@ public class RequestMuxer<T> {
 
   public void write(T sendReq, SettableFuture<Boolean> f) {
     if (isRunning.get()) {
+      log.info("Writing to messageQ");
       messageQ.addLast(new MuxedMessage<>(sendReq, f));
     }
   }
@@ -153,10 +165,12 @@ public class RequestMuxer<T> {
         connectionQ.addLast(cf);
         return cf.channel();
       } else {
+        log.info("Rebuilding connectionQ");
         rebuildConnectionQ(connectionQ);
         return requestNode();
       }
     } else {
+      log.info("Rebuilding connectionQ");
       rebuildConnectionQ(connectionQ);
       return requestNode();
     }
@@ -165,6 +179,7 @@ public class RequestMuxer<T> {
   private void drainMessageQ() {
     if (isRunning.get() && messageQ.size() > 0) {
       final MuxedMessage<T> mm = messageQ.pollFirst();
+      log.info("Writing to channel");
       requestNode().write(mm.getMsg()).addListener(new GenericFutureListener<Future<? super Void>>() {
         @Override
         public void operationComplete(Future<? super Void> future) throws Exception {
