@@ -21,7 +21,7 @@ public class AggregatedChicagoMessage implements ChicagoMessage {
 
 
   public AggregatedChicagoMessage(ChicagoMessage msg) {
-    this(msg.getId(), msg.getOp(), msg.getColFam(), msg.getKey(), msg.getVal());
+    this(msg.getId(), msg.getOp(), msg.getColFam(), Boolean.toString(true).getBytes(), msg.getVal());
   }
 
   public AggregatedChicagoMessage(UUID id, Op _op, byte[] colFam, byte[] key, byte[] val) {

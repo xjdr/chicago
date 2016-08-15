@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 
 public class WritePerformanceAsync {
-  private final static String key = "ppfe-test-cc";
+  private final static String key = "ppfe-test-sm";
   private static final long NS_PER_MS = 1000000L;
   private static final long NS_PER_SEC = 1000 * NS_PER_MS;
   private static final long MIN_SLEEP_NS = 2 * NS_PER_MS;
@@ -32,17 +32,17 @@ public class WritePerformanceAsync {
 
   public static void main(String[] args) throws Exception {
 
-//    final int loop = Integer.parseInt(args[0]);
-//    final int size = Integer.parseInt(args[1]);
-//    final int clients = Integer.parseInt(args[2]);
-//    int throughput = Integer.parseInt(args[3]);
-//    final String connectionString = args[4];
-
-    final int loop = 100000;
-    final int size = 100;
-    final int clients = 1;
-    int throughput = -1;
-    final String connectionString = "10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181";
+    final int loop = Integer.parseInt(args[0]);
+    final int size = Integer.parseInt(args[1]);
+    final int clients = Integer.parseInt(args[2]);
+    int throughput = Integer.parseInt(args[3]);
+    final String connectionString = args[4];
+    
+//    final int loop = 1000000;
+//    final int size = 10;
+//    final int clients = 1;
+//    int throughput = -1;
+//    final String connectionString = "10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181";
 
     CountDownLatch latch = new CountDownLatch(loop);
     ChicagoAsyncClient[] ctsa = new ChicagoAsyncClient[clients];
@@ -161,7 +161,7 @@ public class WritePerformanceAsync {
         this.index++;
       }
             /* maybe report the recent perf */
-      if (time - windowStart >= reportingInterval && Thread.currentThread().getName().contains("10")) {
+      if (time - windowStart >= reportingInterval) {
         printWindow();
         newWindow();
       }
@@ -228,7 +228,7 @@ public class WritePerformanceAsync {
 
     @Override
     public void onSuccess(@Nullable byte[] bytes) {
-      System.out.println("Got response :" + Longs.fromByteArray(bytes));
+      //System.out.println("Got response :" + Longs.fromByteArray(bytes));
       long now = System.currentTimeMillis();
       int latency = (int) (now - start);
       this.stats.record(iteration, latency, nbytes, now);

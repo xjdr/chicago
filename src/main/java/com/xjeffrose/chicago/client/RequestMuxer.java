@@ -40,6 +40,7 @@ public class RequestMuxer<T> {
   @Setter
   private ChicagoConnector connector;
   private AtomicLong counter = new AtomicLong();
+  private AtomicBoolean connectionRebuild = new AtomicBoolean(false);
 
   public RequestMuxer(String addr, ChannelHandler handler, EventLoopGroup workerLoop) {
     this.addr = addr;
@@ -52,15 +53,17 @@ public class RequestMuxer<T> {
     blockAndAwaitPool();
     isRunning.set(true);
 
-    new Thread(() -> {
-      while (isRunning.get()) {
-        if (connectionQ.size() < 1) {
-          log.info("========================== Rebuilding NodeList ================================");
-          rebuildConnectionQ();
-        }
+    workerLoop.scheduleAtFixedRate(() -> {
+      if(messageQ.size() > 0){
+        drainMessageQ();
       }
-    }).start();
+    },0,2,TimeUnit.MILLISECONDS);
 
+    workerLoop.scheduleAtFixedRate(() -> {
+      if(connectionRebuild.get()){
+        rebuildConnectionQ();
+      }
+    },0,10,TimeUnit.MILLISECONDS);
   }
 
   public void shutdownGracefully() {
@@ -94,7 +97,7 @@ public class RequestMuxer<T> {
   }
 
   private void rebuildConnectionQ(Deque<ChannelFuture> connectionQ) {
-    connectionQ.stream().forEach(xs -> {
+    connectionQ.forEach(xs -> {
       ChannelFuture cf = xs;
       connectionQ.remove(xs);
       if (cf.channel().isWritable()) {
@@ -135,44 +138,42 @@ public class RequestMuxer<T> {
 
   public void write(T sendReq, SettableFuture<Boolean> f) {
     if (isRunning.get()) {
-//      if (counter.incrementAndGet() % MAGIC_NUMBER == 0) {
-//        try {
-//          Thread.sleep(0, 1);
-//          counter.set(0);
-//        } catch (InterruptedException e) {
-//          e.printStackTrace();
-//        }
-//      }
-      drainMessageQ(sendReq, f);
+      messageQ.addLast(new MuxedMessage<>(sendReq,f));
     }
   }
 
-  private Channel requestNode() {
-//    ChannelFuture cf = connectionQ.pollFirst();
-        ChannelFuture cf = connectionQ.peekFirst();
+  private Channel requestNode(){
 
+    ChannelFuture cf = connectionQ.pollFirst();
     if ((cf != null) && cf.isSuccess()) {
       if (cf.channel().isWritable()) {
         connectionQ.addLast(cf);
         return cf.channel();
       } else {
-        connectionQ.remove(cf);
-//        rebuildConnectionQ(connectionQ);
-        log.error("Error connecting channel wasnt writable");
-        return connectionQ.pollLast().channel();
+
+        while(!cf.channel().isWritable()){
+          try {
+            Thread.sleep(1);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+        }
+        connectionQ.addLast(cf);
+        return cf.channel();
       }
     } else {
-      connectionQ.remove(cf);
-//      rebuildConnectionQ(connectionQ);
-      log.error("Error connecting channel was empty");
-      return connectionQ.pollLast().channel();
+      log.info("Rebuilding connectionQ when channel is not successful!!!");
+      connectionRebuild.set(true);
+      return requestNode();
     }
   }
 
   private void drainMessageQ() {
-    if (isRunning.get() && messageQ.size() > 0) {
+    Channel ch = requestNode();
+    while (isRunning.get() && messageQ.size() > 0) {
       final MuxedMessage<T> mm = messageQ.pollFirst();
-      requestNode().writeAndFlush(mm.getMsg()).addListener(new GenericFutureListener<Future<? super Void>>() {
+      counter.incrementAndGet();
+      ch.write(mm.getMsg()).addListener(new GenericFutureListener<Future<? super Void>>() {
         @Override
         public void operationComplete(Future<? super Void> future) throws Exception {
           if (future.isSuccess()) {
@@ -184,6 +185,7 @@ public class RequestMuxer<T> {
         }
       });
     }
+    ch.flush();
   }
 
   private void drainMessageQ(T sendReq, SettableFuture<Boolean> f) {
