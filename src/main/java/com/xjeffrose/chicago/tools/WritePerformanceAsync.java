@@ -39,7 +39,7 @@ public class WritePerformanceAsync {
 //    final String connectionString = args[4];
 
     final int loop = 1000000;
-    final int size = 10;
+    final int size = 100;
     final int clients = 1;
     int throughput = -1;
     final String connectionString = "10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181";
@@ -53,7 +53,6 @@ public class WritePerformanceAsync {
         //smadan server = 10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181
         ctsa[i] = new ChicagoAsyncClient(connectionString, 3);
         ctsa[i].start();
-//        Thread.sleep(2000);
       } else {
         ctsa[i] = new ChicagoAsyncClient(connectionString);
       }

@@ -37,7 +37,6 @@ public class RequestMuxer<T> {
     this.addr = addr;
     this.workerLoop = workerLoop;
     this.connector = new ChicagoConnector(handler, workerLoop);
-
   }
 
   public void start() throws Exception {
@@ -53,6 +52,7 @@ public class RequestMuxer<T> {
             flushPool();
             try {
               Thread.sleep(0, 12);
+//              Thread.sleep(12);
             } catch (InterruptedException e) {
               e.printStackTrace();
             }
