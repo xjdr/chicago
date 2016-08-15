@@ -74,6 +74,9 @@ public class DefaultChicagoMessage implements ChicagoMessage {
 
   @Override
   public String toString() {
-    return "id: " + id + " op: " + _op + " key: " + new String(key) + " value: " + new String(val);
+    if(key != null)
+      return "id: " + id + " op: " + _op + " key: " + new String(key) + " value: " + new String(val);
+    else
+      return "id: " + id + " op: " + _op + " colFam" + new String(colFam) + " value: " + new String(val);
   }
 }
