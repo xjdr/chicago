@@ -1,5 +1,6 @@
 package com.xjeffrose.chicago.server;
 
+import com.google.common.primitives.Bytes;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -198,12 +199,16 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
     Futures.addCallback(future, new FutureCallback<List<String>>() {
       @Override
       public void onSuccess(List<String> result) {
-        ByteBuf bb = Unpooled.buffer();
-        ChicagoObjectEncoder encoder = new ChicagoObjectEncoder();
-        for(String record : result) {
-          bb.writeBytes(encoder.encode(new DefaultChicagoMessage(msg.getId(), Op.SCAN, null, record.getBytes(), null)));
-        }
-        ctx.writeAndFlush(bb).addListener(writeComplete);
+        String sb = result.toString();
+        ctx.writeAndFlush(
+          new DefaultChicagoMessage(
+            msg.getId(),
+            Op.RESPONSE,
+            msg.getColFam(),
+            Boolean.toString(true).getBytes(),
+            sb.getBytes()
+          )
+        ).addListener(writeComplete);
       }
       @Override
       public void onFailure(Throwable error) {
@@ -218,11 +223,23 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
       @Override
       public void onSuccess(List<byte[]> result) {
         ByteBuf bb = Unpooled.buffer();
-        ChicagoObjectEncoder encoder = new ChicagoObjectEncoder();
+        //ChicagoObjectEncoder encoder = new ChicagoObjectEncoder();
         for(byte[] record : result) {
-          bb.writeBytes(encoder.encode(new DefaultChicagoMessage(msg.getId(), Op.SCAN_KEYS, msg.getColFam(), record, null)));
+          bb.writeBytes(record);
+          //bb.writeBytes(encoder.encode(new DefaultChicagoMessage(msg.getId(), Op.RESPONSE, msg.getColFam(), null, record)));
         }
-        ctx.writeAndFlush(bb).addListener(writeComplete);
+        byte[] b = bb.array();
+        String str = new String(b);
+        log.info(str);
+        ctx.writeAndFlush(
+          new DefaultChicagoMessage(
+            msg.getId(),
+            Op.RESPONSE,
+            msg.getColFam(),
+            Boolean.toString(true).getBytes(),
+            bb.array()
+          )
+        ).addListener(writeComplete);
       }
       @Override
       public void onFailure(Throwable error) {
@@ -237,6 +254,14 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
       public void operationComplete(ChannelFuture future) {
         if (!future.isSuccess()) {
           log.error("Server error writing :" + " For UUID" + msg.getId() + " and key " + new String(msg.getKey()));
+        }
+        else {
+          try {
+            log.debug("done with processing: " + future.get().toString());
+          }
+          catch(Exception e){
+            log.error("Throws something");
+          }
         }
       }
     };

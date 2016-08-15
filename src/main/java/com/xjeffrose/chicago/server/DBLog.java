@@ -44,6 +44,10 @@ public class DBLog {
     entries.add(new Entry(Op.DELETE, colFam, key));
   }
 
+  public void addScanColFamily() {
+    entries.add(new Entry(Op.SCAN, null, null));
+  }
+
   public String toString() {
     return "entries: " + entries;
   }

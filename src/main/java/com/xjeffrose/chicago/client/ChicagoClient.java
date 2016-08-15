@@ -106,7 +106,7 @@ public class ChicagoClient extends BaseChicagoClient implements AutoCloseable {
         });
         futureMap.put(id, f);
         relevantFutures.add(f);
-        ch.writeAndFlush(new DefaultChicagoMessage(id, Op.SCAN, null, null, null), ch.voidPromise());
+        ch.writeAndFlush(new DefaultChicagoMessage(id, Op.SCAN, ChiUtil.defaultColFam.getBytes(), null, null), ch.voidPromise());
         connectionPoolMgr.releaseChannel(node, ch);
 
         evg.schedule(() -> {
@@ -141,7 +141,7 @@ public class ChicagoClient extends BaseChicagoClient implements AutoCloseable {
               });
               futureMap.put(id1, f1);
               relevantFutures.add(f1);
-              ch1.writeAndFlush(new DefaultChicagoMessage(id1, Op.SCAN, null, null, null), ch1.voidPromise());
+              ch1.writeAndFlush(new DefaultChicagoMessage(id1, Op.SCAN, ChiUtil.defaultColFam.getBytes(), null, null), ch1.voidPromise());
               connectionPoolMgr.releaseChannel(node, ch1);
             }
           }

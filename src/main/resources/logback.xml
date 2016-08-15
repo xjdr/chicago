@@ -37,8 +37,8 @@
     <appender-ref ref="FILE-AUDIT" />
   </logger>
 
-  <root level="info">
-    <appender-ref ref="FILE-AUDIT" />
+  <root level="debug">
+    <appender-ref ref="STDOUT" />
   </root>
 
 </configuration>
