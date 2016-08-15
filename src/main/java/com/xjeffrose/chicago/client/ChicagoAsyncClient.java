@@ -2,7 +2,6 @@ package com.xjeffrose.chicago.client;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.Funnels;
-import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -138,21 +137,23 @@ public class ChicagoAsyncClient implements Client {
     });
 
     workerLoop.schedule(() -> {
-      Futures.addCallback(connectionManager.write(nodes.get(1), new DefaultChicagoMessage(id, Op.READ, colFam, key, null)), new FutureCallback<Boolean>() {
-        @Override
-        public void onSuccess(@Nullable Boolean aBoolean) {
+      if (nodes.size() > 1) {
+        Futures.addCallback(connectionManager.write(nodes.get(1), new DefaultChicagoMessage(id, Op.READ, colFam, key, null)), new FutureCallback<Boolean>() {
+          @Override
+          public void onSuccess(@Nullable Boolean aBoolean) {
 
-        }
-
-        @Override
-        public void onFailure(Throwable throwable) {
-          try {
-            f.set(read(colFam, key).get(TIMEOUT, TimeUnit.MILLISECONDS));
-          } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            f.setException(throwable);
           }
-        }
-      });
+
+          @Override
+          public void onFailure(Throwable throwable) {
+            try {
+              f.set(read(colFam, key).get(TIMEOUT, TimeUnit.MILLISECONDS));
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+              f.setException(throwable);
+            }
+          }
+        });
+      }
     }, 2, TimeUnit.MILLISECONDS);
 
     return f;
@@ -231,6 +232,8 @@ public class ChicagoAsyncClient implements Client {
       UUID id = UUID.randomUUID();
       SettableFuture<byte[]> f = SettableFuture.create();
       futureMap.put(id, f);
+      futureList.add(f);
+
       Futures.addCallback(f, new FutureCallback<byte[]>() {
         @Override
         public void onSuccess(@Nullable byte[] bytes) {
@@ -246,7 +249,6 @@ public class ChicagoAsyncClient implements Client {
       Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.TS_WRITE, topic, null, val)), new FutureCallback<Boolean>() {
         @Override
         public void onSuccess(@Nullable Boolean aBoolean) {
-          futureList.add(f);
         }
 
         @Override
@@ -254,7 +256,7 @@ public class ChicagoAsyncClient implements Client {
           Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.TS_WRITE, topic, null, val)), new FutureCallback<Boolean>() {
             @Override
             public void onSuccess(@Nullable Boolean aBoolean) {
-              futureList.add(f);
+
             }
 
             @Override
@@ -269,7 +271,7 @@ public class ChicagoAsyncClient implements Client {
     Futures.addCallback(Futures.successfulAsList(futureList), new FutureCallback<List<byte[]>>() {
       @Override
       public void onSuccess(@Nullable List<byte[]> bytes) {
-        respFuture.set(Longs.toByteArray(0));
+        respFuture.set(bytes.get(0));
       }
 
       @Override
@@ -281,9 +283,11 @@ public class ChicagoAsyncClient implements Client {
         }
       }
     });
+
     return respFuture;
   }
 
+  @Deprecated
   @Override
   public ListenableFuture<byte[]> batchWrite(byte[] topic, byte[] val) {
     return null;
@@ -320,21 +324,23 @@ public class ChicagoAsyncClient implements Client {
     });
 
     workerLoop.schedule(() -> {
-      Futures.addCallback(connectionManager.write(nodes.get(1), new DefaultChicagoMessage(id, Op.STREAM, topic, null, offset)), new FutureCallback<Boolean>() {
-        @Override
-        public void onSuccess(@Nullable Boolean aBoolean) {
+      if (nodes.size() > 1) {
+        Futures.addCallback(connectionManager.write(nodes.get(1), new DefaultChicagoMessage(id, Op.STREAM, topic, null, offset)), new FutureCallback<Boolean>() {
+          @Override
+          public void onSuccess(@Nullable Boolean aBoolean) {
 
-        }
-
-        @Override
-        public void onFailure(Throwable throwable) {
-          try {
-            f.set(stream(topic, offset).get(TIMEOUT, TimeUnit.MILLISECONDS));
-          } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            f.setException(throwable);
           }
-        }
-      });
+
+          @Override
+          public void onFailure(Throwable throwable) {
+            try {
+              f.set(stream(topic, offset).get(TIMEOUT, TimeUnit.MILLISECONDS));
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+              f.setException(throwable);
+            }
+          }
+        });
+      }
     }, 2, TimeUnit.MILLISECONDS);
 
     return f;
@@ -343,6 +349,6 @@ public class ChicagoAsyncClient implements Client {
 
   @Override
   public void close() throws Exception {
-
+//    zkClient.stop();
   }
 }
