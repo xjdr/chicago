@@ -364,7 +364,6 @@ public class RocksDBImpl implements AutoCloseable, StorageProvider {
           i.seek(offset);
         }
         int size = 0;
-        DBRecord lastRecord = null;
         while (i.isValid() && size < ChiUtil.MaxBufferSize) {
           values.add(new DBRecord(colFam,i.key(),i.value()));
           lastOffset = i.key();
