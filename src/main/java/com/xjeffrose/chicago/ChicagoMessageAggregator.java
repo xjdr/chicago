@@ -27,7 +27,9 @@ public class ChicagoMessageAggregator extends MessageToMessageDecoder<ChicagoMes
         aggregate(msg);
         if (new String(msg.getVal()).contains(ChiUtil.delimiter)) {
           out.add(aggregatedMessage);
+          started.set(false);
         }
+
         break;
       default:
         out.add(msg);

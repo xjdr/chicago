@@ -10,7 +10,12 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.EventLoopGroup;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
+import io.netty.util.internal.PlatformDependent;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -22,16 +27,16 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RequestMuxer<T> {
-  private static final int POOL_SIZE = 4;
+  private static final int POOL_SIZE = 12;
 
   private final String addr;
   @Setter
   private ChicagoConnector connector;
   private final EventLoopGroup workerLoop;
   private final AtomicBoolean isRunning = new AtomicBoolean();
-  private final LinkedBlockingDeque<ChannelFuture> connectionQ = new LinkedBlockingDeque<>();
+  private final Deque<ChannelFuture> connectionQ = PlatformDependent.newConcurrentDeque();
   @Getter
-  private final LinkedBlockingDeque<MuxedMessage<T>> messageQ = new LinkedBlockingDeque<MuxedMessage<T>>();
+  private final Deque<MuxedMessage<T>> messageQ = PlatformDependent.newConcurrentDeque();
 
   public RequestMuxer(String addr, ChannelHandler handler, EventLoopGroup workerLoop) {
     this.addr = addr;
@@ -45,11 +50,21 @@ public class RequestMuxer<T> {
     blockAndAwaitPool();
     isRunning.set(true);
 
-    workerLoop.scheduleAtFixedRate(() -> {
-      if (messageQ.size() > 0) {
-        drainMessageQ();
+    new Thread(() -> {
+      while (isRunning.get()) {
+        if (messageQ.size() > 0) {
+          messageQ.forEach(xs -> {
+            drainMessageQ();
+            try {
+              Thread.sleep(0, 250);
+            } catch (InterruptedException e) {
+              e.printStackTrace();
+            }
+          });
+        }
       }
-    }, 0 ,200, TimeUnit.MILLISECONDS);
+    }).start();
+
   }
 
   public void shutdownGracefully() {
@@ -66,7 +81,9 @@ public class RequestMuxer<T> {
       Futures.addCallback(connector.connect(address(addr)), new FutureCallback<ChannelFuture>() {
         @Override
         public void onSuccess(@Nullable ChannelFuture channelFuture) {
-          connectionQ.addLast(channelFuture);
+//          connectionQ.addLast(channelFuture);
+          connectionQ.add(channelFuture);
+
         }
 
         @Override
@@ -81,15 +98,16 @@ public class RequestMuxer<T> {
     rebuildConnectionQ(this.connectionQ);
   }
 
-  private void rebuildConnectionQ(LinkedBlockingDeque<ChannelFuture> connectionQ) {
+  private void rebuildConnectionQ(Deque<ChannelFuture> connectionQ) {
     connectionQ.stream().forEach(xs -> {
-      ChannelFuture cf = connectionQ.pollFirst();
+      ChannelFuture cf = xs;
+      connectionQ.remove(xs);
       if (cf.channel().isWritable()) {
-        try {
-          connectionQ.putLast(cf);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        }
+//        try {
+          connectionQ.addLast(cf);
+//        } catch (InterruptedException e) {
+//          e.printStackTrace();
+//        }
       } else {
         connector.connect(address(addr));
       }
@@ -116,24 +134,27 @@ public class RequestMuxer<T> {
 
   public void write(T sendReq, SettableFuture<Boolean> f) {
     if (isRunning.get()) {
-      final MuxedMessage<T> mm = new MuxedMessage<>(sendReq, f);
-      messageQ.addLast(mm);
+//      final MuxedMessage<T> mm = new MuxedMessage<>(sendReq, f);
+//      messageQ.addLast(mm);
+      messageQ.addLast(new MuxedMessage<>(sendReq, f));
+//      drainMessageQ();
     }
   }
 
   private Channel requestNode() {
     ChannelFuture cf = null;
-    try {
-      cf = connectionQ.poll(250, TimeUnit.MILLISECONDS);
-    } catch (InterruptedException e) {
-      rebuildConnectionQ(connectionQ);
-      blockAndAwaitPool();
-      try {
-        cf = connectionQ.poll(250, TimeUnit.MILLISECONDS);
-      } catch (InterruptedException e1) {
-        log.error("Could not establish viable connection to " + addr, e1);
-      }
-    }
+//    try {
+//      cf = connectionQ.poll(250, TimeUnit.MILLISECONDS);
+      cf = connectionQ.peek();
+//    } catch (InterruptedException e) {
+//      rebuildConnectionQ(connectionQ);
+//      blockAndAwaitPool();
+//      try {
+//        cf = connectionQ.poll(250, TimeUnit.MILLISECONDS);
+//      } catch (InterruptedException e1) {
+//        log.error("Could not establish viable connection to " + addr, e1);
+//      }
+//    }
 
     if ((cf != null) && cf.isSuccess()) {
       if (cf.channel().isWritable()) {
@@ -151,8 +172,7 @@ public class RequestMuxer<T> {
   }
 
   private void drainMessageQ() {
-    if (isRunning.get()) {
-      while(messageQ.peek() != null) {
+    if (isRunning.get() && messageQ.size() > 0) {
         final MuxedMessage<T> mm = messageQ.poll();
         requestNode().writeAndFlush(mm.getMsg()).addListener(new GenericFutureListener<Future<? super Void>>() {
           @Override
@@ -165,7 +185,6 @@ public class RequestMuxer<T> {
             }
           }
         });
-      }
     }
   }
 

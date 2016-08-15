@@ -6,6 +6,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
+import io.netty.util.ReferenceCountUtil;
+import io.netty.util.ReferenceCounted;
 import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -76,7 +78,7 @@ public class ChicagoObjectEncoder extends MessageToMessageEncoder<Object> {
     if (msg instanceof ChicagoMessage) {
       out.add(encode(ctx, (ChicagoMessage) msg));
     } else if (msg instanceof ByteBuf) {
-//      out.add(((ByteBuf) msg).retain());
+      ReferenceCountUtil.retain(msg);
       out.add(msg);
     } else {
       log.error("Object not an instance of ChicagoMessage: " + msg);
