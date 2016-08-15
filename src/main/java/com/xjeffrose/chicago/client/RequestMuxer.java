@@ -27,7 +27,7 @@ public class RequestMuxer<T> {
   // This is the magic required to prevent deadlocks.
   // DO NOT CHANGE THIS VALUE or risk undoing all the
   // magic held therein...
-  private static final int MAGIC_NUMBER = 5;
+  private static final int MAGIC_NUMBER = 23;
   private static final int POOL_SIZE = 4;
 
 
@@ -51,6 +51,16 @@ public class RequestMuxer<T> {
     buildInitialConnectionQ();
     blockAndAwaitPool();
     isRunning.set(true);
+
+    new Thread(() -> {
+      while (isRunning.get()) {
+        if (connectionQ.size() < 1) {
+          log.info("========================== Rebuilding NodeList ================================");
+          rebuildConnectionQ();
+        }
+      }
+    }).start();
+
   }
 
   public void shutdownGracefully() {
@@ -125,32 +135,37 @@ public class RequestMuxer<T> {
 
   public void write(T sendReq, SettableFuture<Boolean> f) {
     if (isRunning.get()) {
-      if (counter.incrementAndGet() % MAGIC_NUMBER == 0) {
-        try {
-          Thread.sleep(0, 1);
-          counter.set(0);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        }
-      }
+//      if (counter.incrementAndGet() % MAGIC_NUMBER == 0) {
+//        try {
+//          Thread.sleep(0, 1);
+//          counter.set(0);
+//        } catch (InterruptedException e) {
+//          e.printStackTrace();
+//        }
+//      }
       drainMessageQ(sendReq, f);
     }
   }
 
   private Channel requestNode() {
-    ChannelFuture cf = connectionQ.pollFirst();
+//    ChannelFuture cf = connectionQ.pollFirst();
+        ChannelFuture cf = connectionQ.peekFirst();
 
     if ((cf != null) && cf.isSuccess()) {
       if (cf.channel().isWritable()) {
         connectionQ.addLast(cf);
         return cf.channel();
       } else {
-        rebuildConnectionQ(connectionQ);
-        return requestNode();
+        connectionQ.remove(cf);
+//        rebuildConnectionQ(connectionQ);
+        log.error("Error connecting channel wasnt writable");
+        return connectionQ.pollLast().channel();
       }
     } else {
-      rebuildConnectionQ(connectionQ);
-      return requestNode();
+      connectionQ.remove(cf);
+//      rebuildConnectionQ(connectionQ);
+      log.error("Error connecting channel was empty");
+      return connectionQ.pollLast().channel();
     }
   }
 
