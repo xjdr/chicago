@@ -50,6 +50,7 @@ public class RequestMuxer<T> {
         if (messageQ.size() > 0) {
           messageQ.forEach(xs -> {
             drainMessageQ();
+            flushPool();
             try {
               Thread.sleep(0, 12);
             } catch (InterruptedException e) {
@@ -60,6 +61,12 @@ public class RequestMuxer<T> {
       }
     }).start();
 
+  }
+
+  private void flushPool() {
+    connectionQ.forEach(xs -> {
+      xs.channel().flush();
+    });
   }
 
   public void shutdownGracefully() {
@@ -158,7 +165,7 @@ public class RequestMuxer<T> {
   private void drainMessageQ() {
     if (isRunning.get() && messageQ.size() > 0) {
       final MuxedMessage<T> mm = messageQ.pollFirst();
-      requestNode().writeAndFlush(mm.getMsg()).addListener(new GenericFutureListener<Future<? super Void>>() {
+      requestNode().write(mm.getMsg()).addListener(new GenericFutureListener<Future<? super Void>>() {
         @Override
         public void operationComplete(Future<? super Void> future) throws Exception {
           if (future.isSuccess()) {
