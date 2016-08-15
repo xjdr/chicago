@@ -1,28 +1,30 @@
 package com.xjeffrose.chicago;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufHolder;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderResult;
 import java.util.UUID;
 import lombok.EqualsAndHashCode;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Slf4j
 @EqualsAndHashCode(exclude={})
 //@ToString(exclude={})
-public class DefaultChicagoMessage implements ChicagoMessage {
+public class AggregatedChicagoMessage implements ChicagoMessage {
   private final UUID id;
   private final Op _op;
   private final byte[] colFam;
   private final byte[] key;
-  private final byte[] val;
+
+  private byte[] val;
   private DecoderResult decoderResult;
 
-  public DefaultChicagoMessage(UUID id, Op _op, byte[] colFam, byte[] key, byte[] val) {
+
+  public AggregatedChicagoMessage(ChicagoMessage msg) {
+    this(msg.getId(), msg.getOp(), msg.getColFam(), msg.getKey(), msg.getVal());
+  }
+
+  public AggregatedChicagoMessage(UUID id, Op _op, byte[] colFam, byte[] key, byte[] val) {
     this.id = id;
     this._op = _op;
     this.colFam = colFam;
@@ -31,7 +33,7 @@ public class DefaultChicagoMessage implements ChicagoMessage {
   }
 
   public ByteBuf encode() {
-    return Unpooled.directBuffer().writeBytes(new ChicagoObjectEncoder().encode(id, _op, colFam, key, val));
+    return Unpooled.directBuffer().writeBytes(new ChicagoObjectEncoder().encode(id, _op, colFam, key, getVal()));
   }
 
   @Override
@@ -64,6 +66,16 @@ public class DefaultChicagoMessage implements ChicagoMessage {
     return val;
   }
 
+  public void appendVal(byte[] valToAppend) {
+    byte[] newVal = new byte[val.length + valToAppend.length + 1];
+
+    System.arraycopy(val, 0, newVal, 0, val.length);
+    System.arraycopy(",".getBytes(), 0, newVal, val.length, 1);
+    System.arraycopy(valToAppend, 0, newVal, val.length + 1, valToAppend.length);
+
+    val = newVal;
+  }
+
   @Override
   public boolean getSuccess() {
     return true;
@@ -76,6 +88,6 @@ public class DefaultChicagoMessage implements ChicagoMessage {
 
   @Override
   public String toString() {
-    return "id: " + id + " op: " + _op + " key: " + new String(key) + " value: " + new String(val);
+    return "id: " + id + " op: " + _op + " key: " + new String(key) + " value: " + new String(getVal());
   }
 }

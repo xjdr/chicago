@@ -32,11 +32,18 @@ public class WritePerformanceAsync {
 
   public static void main(String[] args) throws Exception {
 
-    final int loop = Integer.parseInt(args[0]);
-    final int size = Integer.parseInt(args[1]);
-    final int clients = Integer.parseInt(args[2]);
-    int throughput = Integer.parseInt(args[3]);
-    final String connectionString = args[4];
+//    final int loop = Integer.parseInt(args[0]);
+//    final int size = Integer.parseInt(args[1]);
+//    final int clients = Integer.parseInt(args[2]);
+//    int throughput = Integer.parseInt(args[3]);
+//    final String connectionString = args[4];
+
+    final int loop = 1000000;
+    final int size = 10;
+    final int clients = 1;
+    int throughput = -1;
+    final String connectionString = "10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181";
+
     CountDownLatch latch = new CountDownLatch(loop);
     ChicagoAsyncClient[] ctsa = new ChicagoAsyncClient[clients];
     keys = new Long[loop];
@@ -46,7 +53,7 @@ public class WritePerformanceAsync {
         //smadan server = 10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181
         ctsa[i] = new ChicagoAsyncClient(connectionString, 3);
         ctsa[i].start();
-        Thread.sleep(2000);
+//        Thread.sleep(2000);
       } else {
         ctsa[i] = new ChicagoAsyncClient(connectionString);
       }
