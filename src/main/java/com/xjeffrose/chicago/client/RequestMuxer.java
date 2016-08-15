@@ -27,7 +27,7 @@ public class RequestMuxer<T> {
   // This is the magic required to prevent deadlocks.
   // DO NOT CHANGE THIS VALUE or risk undoing all the
   // magic held therein...
-  private static final int MAGIC_NUMBER = 5;
+  private static final int MAGIC_NUMBER = 23;
   private static final int POOL_SIZE = 4;
 
 
@@ -64,7 +64,6 @@ public class RequestMuxer<T> {
         rebuildConnectionQ();
       }
     },0,10,TimeUnit.MILLISECONDS);
-
   }
 
   public void shutdownGracefully() {
@@ -146,12 +145,12 @@ public class RequestMuxer<T> {
   private Channel requestNode(){
 
     ChannelFuture cf = connectionQ.pollFirst();
-
     if ((cf != null) && cf.isSuccess()) {
       if (cf.channel().isWritable()) {
         connectionQ.addLast(cf);
         return cf.channel();
       } else {
+
         while(!cf.channel().isWritable()){
           try {
             Thread.sleep(1);
