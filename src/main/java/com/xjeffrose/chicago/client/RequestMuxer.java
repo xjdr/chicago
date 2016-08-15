@@ -1,6 +1,5 @@
 package com.xjeffrose.chicago.client;
 
-import com.google.common.util.concurrent.AbstractExecutionThreadService;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.SettableFuture;
@@ -12,11 +11,7 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.internal.PlatformDependent;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
 import java.util.Deque;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
@@ -30,13 +25,13 @@ public class RequestMuxer<T> {
   private static final int POOL_SIZE = 12;
 
   private final String addr;
-  @Setter
-  private ChicagoConnector connector;
   private final EventLoopGroup workerLoop;
   private final AtomicBoolean isRunning = new AtomicBoolean();
   private final Deque<ChannelFuture> connectionQ = PlatformDependent.newConcurrentDeque();
   @Getter
   private final Deque<MuxedMessage<T>> messageQ = PlatformDependent.newConcurrentDeque();
+  @Setter
+  private ChicagoConnector connector;
 
   public RequestMuxer(String addr, ChannelHandler handler, EventLoopGroup workerLoop) {
     this.addr = addr;
@@ -81,8 +76,7 @@ public class RequestMuxer<T> {
       Futures.addCallback(connector.connect(address(addr)), new FutureCallback<ChannelFuture>() {
         @Override
         public void onSuccess(@Nullable ChannelFuture channelFuture) {
-//          connectionQ.addLast(channelFuture);
-          connectionQ.add(channelFuture);
+          connectionQ.addLast(channelFuture);
 
         }
 
@@ -103,13 +97,19 @@ public class RequestMuxer<T> {
       ChannelFuture cf = xs;
       connectionQ.remove(xs);
       if (cf.channel().isWritable()) {
-//        try {
-          connectionQ.addLast(cf);
-//        } catch (InterruptedException e) {
-//          e.printStackTrace();
-//        }
+        connectionQ.addLast(cf);
       } else {
-        connector.connect(address(addr));
+        Futures.addCallback(connector.connect(address(addr)), new FutureCallback<ChannelFuture>() {
+          @Override
+          public void onSuccess(@Nullable ChannelFuture channelFuture) {
+            connectionQ.addLast(channelFuture);
+          }
+
+          @Override
+          public void onFailure(Throwable throwable) {
+            log.error("Error connecting to " + addr, throwable);
+          }
+        });
       }
     });
   }
@@ -134,38 +134,22 @@ public class RequestMuxer<T> {
 
   public void write(T sendReq, SettableFuture<Boolean> f) {
     if (isRunning.get()) {
-//      final MuxedMessage<T> mm = new MuxedMessage<>(sendReq, f);
-//      messageQ.addLast(mm);
       messageQ.addLast(new MuxedMessage<>(sendReq, f));
-//      drainMessageQ();
     }
   }
 
   private Channel requestNode() {
-    ChannelFuture cf = null;
-//    try {
-//      cf = connectionQ.poll(250, TimeUnit.MILLISECONDS);
-      cf = connectionQ.peek();
-//    } catch (InterruptedException e) {
-//      rebuildConnectionQ(connectionQ);
-//      blockAndAwaitPool();
-//      try {
-//        cf = connectionQ.poll(250, TimeUnit.MILLISECONDS);
-//      } catch (InterruptedException e1) {
-//        log.error("Could not establish viable connection to " + addr, e1);
-//      }
-//    }
+    ChannelFuture cf = connectionQ.pollFirst();
 
     if ((cf != null) && cf.isSuccess()) {
       if (cf.channel().isWritable()) {
+        connectionQ.addLast(cf);
         return cf.channel();
       } else {
-        connectionQ.remove(cf);
         rebuildConnectionQ(connectionQ);
         return requestNode();
       }
     } else {
-      connectionQ.remove(cf);
       rebuildConnectionQ(connectionQ);
       return requestNode();
     }
@@ -173,18 +157,18 @@ public class RequestMuxer<T> {
 
   private void drainMessageQ() {
     if (isRunning.get() && messageQ.size() > 0) {
-        final MuxedMessage<T> mm = messageQ.poll();
-        requestNode().writeAndFlush(mm.getMsg()).addListener(new GenericFutureListener<Future<? super Void>>() {
-          @Override
-          public void operationComplete(Future<? super Void> future) throws Exception {
-            if (future.isSuccess()) {
-              mm.getF().set(true);
-            } else {
-              mm.getF().set(false);
-              mm.getF().setException(future.cause());
-            }
+      final MuxedMessage<T> mm = messageQ.pollFirst();
+      requestNode().writeAndFlush(mm.getMsg()).addListener(new GenericFutureListener<Future<? super Void>>() {
+        @Override
+        public void operationComplete(Future<? super Void> future) throws Exception {
+          if (future.isSuccess()) {
+            mm.getF().set(true);
+          } else {
+            mm.getF().set(false);
+            mm.getF().setException(future.cause());
           }
-        });
+        }
+      });
     }
   }
 
