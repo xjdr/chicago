@@ -1,23 +1,20 @@
 package com.xjeffrose.chicago.db;
 
-import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.chicago.server.ChiConfig;
-import com.xjeffrose.chicago.db.RocksDBImpl;
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class RocksDBImplTest {
@@ -96,9 +93,9 @@ public class RocksDBImplTest {
     for (int i = 0; i < 100000; i++) {
       assertEquals(i, Longs.fromByteArray(rocksDbImpl.tsWrite("ColFam".getBytes(), ("Val" + i).getBytes())));
     }
-    List<DBRecord> records = rocksDbImpl.stream("ColFam".getBytes(), Ints.toByteArray(0));
+    List<DBRecord> records = rocksDbImpl.stream("ColFam".getBytes(), Longs.toByteArray(0));
     for(DBRecord record : records){
-      assertNotNull(record.getValue());
+      assertTrue(new String(record.getValue()).contains("Val"));
     }
 //    for (int i = 0; i < 100000; i++) {
     //final String result = new String(rocksDbImpl.stream("ColFam".getBytes(), Ints.toByteArray(0)));

@@ -3,6 +3,8 @@ package com.xjeffrose.chicago.client;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.xjeffrose.chicago.ChicagoCodec;
+import com.xjeffrose.chicago.ChicagoMessageAggregator;
 import com.xjeffrose.xio.SSL.XioSecurityHandlerImpl;
 import com.xjeffrose.xio.client.retry.BoundedExponentialBackoffRetry;
 import com.xjeffrose.xio.client.retry.RetryLoop;
@@ -17,7 +19,6 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
@@ -67,7 +68,8 @@ public class ChicagoConnector {
             ChannelPipeline cp = channel.pipeline();
             cp.addLast(new XioSecurityHandlerImpl(true).getEncryptionHandler());
             //cp.addLast(new XioIdleDisconnectHandler(20, 20, 20));
-            cp.addLast(new ChicagoClientCodec());
+            cp.addLast(new ChicagoCodec());
+            cp.addLast(new ChicagoMessageAggregator());
             cp.addLast(handler);
           }
         });

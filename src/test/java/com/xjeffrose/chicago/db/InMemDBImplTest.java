@@ -2,6 +2,7 @@ package com.xjeffrose.chicago.db;
 
 import com.google.common.primitives.Longs;
 import com.xjeffrose.chicago.db.InMemDBImpl;
+import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,22 +65,25 @@ public class InMemDBImplTest {
     }
   }
 
-//  @Test
-//  public void stream() throws Exception {
-//    //TODO(JR): Fix this test to be more accurate
+  @Test
+  public void stream() throws Exception {
+  //TODO(JR): Fix this test to be more accurate
+    for (int i = 0; i < 100000; i++) {
+    assertEquals(i, Longs.fromByteArray(inMemDB.tsWrite("ColFam".getBytes(), ("Val" + i).getBytes())));
+  }
+  List<DBRecord> records = inMemDB.stream("ColFam".getBytes(), Longs.toByteArray(0));
+    for (DBRecord record : records){
+      assertTrue(new String(record.getValue()).contains("Val"));
+  }
 //    for (int i = 0; i < 100000; i++) {
-//      assertEquals(i, Longs.fromByteArray(inMemDB.tsWrite("ColFam".getBytes(), ("Val" + i).getBytes())));
+  //final String result = new String(rocksDbImpl.stream("ColFam".getBytes(), Ints.toByteArray(0)));
+//    final String[] resultBA = result.split(ChiUtil.delimiter);
+  //assertNotNull(result);
+//    assertEquals(100000, resultBA.length);
+//    assertEquals("Val12345", resultBA[12344]);
+//    assertEquals(100000, result.length);
+
 //    }
-//
-////    for (int i = 0; i < 100000; i++) {
-//    final String result = new String(inMemDB.stream("ColFam".getBytes(), Ints.toByteArray(0)));
-////    final String[] resultBA = result.split(ChiUtil.delimiter);
-//    assertNotNull(result);
-////    assertEquals(100000, resultBA.length);
-////    assertEquals("Val12345", resultBA[12344]);
-////    assertEquals(100000, result.length);
-//
-////    }
-//  }
+}
 
 }
