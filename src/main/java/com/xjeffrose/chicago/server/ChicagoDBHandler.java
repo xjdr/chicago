@@ -188,7 +188,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
             ByteBuf lastval = Unpooled.buffer();
             lastval.writeBytes(record.getValue());
             lastval.writeBytes(ChiUtil.delimiter.getBytes());
-            lastval.writableBytes(record.getKey());
+            lastval.writeBytes(record.getKey());
             record.setValue(lastval.array());
           }
           bb.writeBytes(encoder.encode(new DefaultChicagoMessage(msg.getId(),Op.STREAM_RESPONSE,msg.getColFam(),record.getKey(),record.getValue())));
