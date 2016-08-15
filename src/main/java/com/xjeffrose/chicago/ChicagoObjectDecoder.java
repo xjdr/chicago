@@ -36,31 +36,31 @@ public class ChicagoObjectDecoder extends ByteToMessageDecoder {
       out.add(_decode(msg));
     }
 
-    if (out.size() > 1 && ((ChicagoMessage)out.get(0)).getOp() == Op.STREAM_RESPONSE ) {
-      if (out.get(0) instanceof ChicagoMessage) {
-        ChicagoMessage chiMsg = (ChicagoMessage) out.get(0);
-        byte[] lastOffset = null;
-        UUID id = chiMsg.getId();
-        Op op = chiMsg.getOp();
-        byte[] colFam = chiMsg.getColFam();
-        byte[] key = chiMsg.getKey();
-        ByteBuf bb = Unpooled.buffer();
-
-        for (Object cm : out) {
-          lastOffset = ((ChicagoMessage)cm).getKey();
-          bb.writeBytes(((ChicagoMessage)cm).getVal());
-          bb.writeBytes(new byte[]{'\0'});
-        }
-
-        bb.writeBytes(ChiUtil.delimiter.getBytes());
-        bb.writeBytes(lastOffset);
-        out.clear();
-        byte[] val = bb.array();
-        ChicagoMessage cm = new DefaultChicagoMessage(id,op,colFam,Boolean.toString(true).getBytes(),bb.array());
-        cm.setDecoderResult(DecoderResult.SUCCESS);
-        out.add(cm);
-      }
-    }
+//    if (out.size() > 1 && ((ChicagoMessage)out.get(0)).getOp() == Op.STREAM_RESPONSE ) {
+//      if (out.get(0) instanceof ChicagoMessage) {
+//        ChicagoMessage chiMsg = (ChicagoMessage) out.get(0);
+//        byte[] lastOffset = null;
+//        UUID id = chiMsg.getId();
+//        Op op = chiMsg.getOp();
+//        byte[] colFam = chiMsg.getColFam();
+//        byte[] key = chiMsg.getKey();
+//        ByteBuf bb = Unpooled.buffer();
+//
+//        for (Object cm : out) {
+//          lastOffset = ((ChicagoMessage)cm).getKey();
+//          bb.writeBytes(((ChicagoMessage)cm).getVal());
+//          bb.writeBytes(new byte[]{'\0'});
+//        }
+//
+//        bb.writeBytes(ChiUtil.delimiter.getBytes());
+//        bb.writeBytes(lastOffset);
+//        out.clear();
+//        byte[] val = bb.array();
+//        ChicagoMessage cm = new DefaultChicagoMessage(id,op,colFam,Boolean.toString(true).getBytes(),bb.array());
+//        cm.setDecoderResult(DecoderResult.SUCCESS);
+//        out.add(cm);
+//      }
+//    }
   }
 
   private ChicagoMessage _decode(ByteBuf msg) {
@@ -83,25 +83,25 @@ public class ChicagoObjectDecoder extends ByteToMessageDecoder {
     final byte[] colFam = new byte[colFamLength];
 
     // Get the Col Fam
-    msg.readBytes(colFam, 0, colFam.length);
+    msg.readBytes(colFam);
 
     // Get the Key Length
-    msg.readBytes(keySize, 0, keySize.length);
+    msg.readBytes(keySize);
     final int keyLength = Ints.fromByteArray(keySize);
     final byte[] key = new byte[keyLength];
 
     // Get the Key
-    msg.readBytes(key, 0, keyLength);
+    msg.readBytes(key);
 
     // Get the Value Length
-    msg.readBytes(valSize, 0, valSize.length);
+    msg.readBytes(valSize);
 
     final int valLength = Ints.fromByteArray(valSize);
     final byte[] val = new byte[valLength];
     log.debug("val size = "+ valLength);
 
     // Get the Value
-    msg.readBytes(val, 0, valLength);
+    msg.readBytes(val);
 
     try {
       DefaultChicagoMessage _msg = new DefaultChicagoMessage(UUID.fromString(new String(id)), Op.fromInt(Ints.fromByteArray(op)), colFam, key, val);

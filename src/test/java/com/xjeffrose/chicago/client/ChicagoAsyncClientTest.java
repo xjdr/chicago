@@ -4,11 +4,16 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import com.xjeffrose.chicago.ChiUtil;
+import com.xjeffrose.chicago.ChicagoCodec;
 import com.xjeffrose.chicago.ChicagoMessage;
+import com.xjeffrose.chicago.ChicagoMessageAggregator;
 import com.xjeffrose.chicago.ChicagoObjectDecoder;
+import com.xjeffrose.chicago.ChicagoObjectEncoder;
 import com.xjeffrose.chicago.DefaultChicagoMessage;
 import com.xjeffrose.chicago.Op;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -16,6 +21,7 @@ import io.netty.util.internal.PlatformDependent;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.junit.After;
 import org.junit.Before;
@@ -25,12 +31,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ChicagoAsyncClientTest {
+  private final ChicagoObjectEncoder encoder = new ChicagoObjectEncoder();
   private final Map<UUID, SettableFuture<byte[]>> futureMap = PlatformDependent.newConcurrentHashMap();
   private EmbeddedChannel ch1 = new EmbeddedChannel(new ChannelInitializer<EmbeddedChannel>() {
     @Override
     protected void initChannel(EmbeddedChannel channel) throws Exception {
       ChannelPipeline cp = channel.pipeline();
-      cp.addLast(new ChicagoClientCodec());
+      cp.addLast(new ChicagoCodec());
+      cp.addLast(new ChicagoMessageAggregator());
       cp.addLast(new ChicagoClientHandler(futureMap));
     }
   });
@@ -75,7 +83,7 @@ public class ChicagoAsyncClientTest {
     bb.readBytes(_bb);
     ChicagoMessage chicagoMessage = decoder.decode(_bb);
 
-    ch1.writeInbound(new DefaultChicagoMessage(chicagoMessage.getId(), Op.RESPONSE, "colFam".getBytes(), Boolean.toString(true).getBytes(), "val".getBytes()));
+    ch1.writeInbound(encoder.encode(new DefaultChicagoMessage(chicagoMessage.getId(), Op.RESPONSE, "colFam".getBytes(), Boolean.toString(true).getBytes(), "val".getBytes())));
     CountDownLatch latch = new CountDownLatch(1);
     Futures.addCallback(clientResp, new FutureCallback<byte[]>() {
       @Override
@@ -90,7 +98,7 @@ public class ChicagoAsyncClientTest {
       }
     });
 
-    latch.await();
+    latch.await(2000, TimeUnit.MILLISECONDS);
   }
 
   @Test
@@ -131,7 +139,7 @@ public class ChicagoAsyncClientTest {
       }
     });
 
-    latch.await();
+    latch.await(2000, TimeUnit.MILLISECONDS);
   }
 
   @Test
@@ -149,22 +157,54 @@ public class ChicagoAsyncClientTest {
   }
 
   @Test
-  public void batchWrite() throws Exception {
-
-  }
-
-  @Test
   public void stream() throws Exception {
-    chicagoClient.stream("topic".getBytes(), "offset".getBytes());
+    UUID id = UUID.randomUUID();
+    futureMap.put(id, SettableFuture.create());
+    CountDownLatch l = new CountDownLatch(1);
 
-    ByteBuf bb = ch1.readOutbound();
-    byte[] _bb = new byte[bb.readableBytes()];
-    bb.readBytes(_bb);
-    ChicagoMessage chicagoMessage = decoder.decode(_bb);
+    Futures.addCallback(futureMap.get(id), new FutureCallback<byte[]>() {
+      @Override
+      public void onSuccess(@Nullable byte[] bytes) {
+        assertEquals("val1,val2,val3,val4@@@", new String(bytes));
+        l.countDown();
+      }
 
-    assertEquals(Op.STREAM, chicagoMessage.getOp());
-    assertEquals("topic", new String(chicagoMessage.getColFam()));
-    assertEquals("offset", new String(chicagoMessage.getVal()));
+      @Override
+      public void onFailure(Throwable throwable) {
+
+      }
+    });
+
+    ChicagoMessage cm1 = new DefaultChicagoMessage(id, Op.STREAM_RESPONSE, "colfFam".getBytes(), Boolean.toString(true).getBytes(), "val1".getBytes());
+    ChicagoMessage cm2 = new DefaultChicagoMessage(id, Op.STREAM_RESPONSE, "colfFam".getBytes(), Boolean.toString(true).getBytes(), "val2".getBytes());
+    ChicagoMessage cm3 = new DefaultChicagoMessage(id, Op.STREAM_RESPONSE, "colfFam".getBytes(), Boolean.toString(true).getBytes(), "val3".getBytes());
+    ChicagoMessage cm4 = new DefaultChicagoMessage(id, Op.STREAM_RESPONSE, "colfFam".getBytes(), Boolean.toString(true).getBytes(),
+        ("val4" + ChiUtil.delimiter).getBytes());
+
+    ByteBuf bb = Unpooled.buffer();
+
+    bb.writeBytes(encoder.encode(cm1));
+    bb.writeBytes(encoder.encode(cm2));
+    bb.writeBytes(encoder.encode(cm3));
+    bb.writeBytes(encoder.encode(cm4));
+
+    ch1.writeInbound(bb);
+
+//    Futures.addCallback(futureMap.get(id), new FutureCallback<byte[]>() {
+//      @Override
+//      public void onSuccess(@Nullable byte[] bytes) {
+//        assertEquals("val1,val2,val3,val4@@@", new String(bytes));
+//        l.countDown();
+//      }
+//
+//      @Override
+//      public void onFailure(Throwable throwable) {
+//
+//      }
+//    });
+
+    l.await(2000, TimeUnit.MILLISECONDS);
+
   }
 
 }

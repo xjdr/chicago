@@ -3,6 +3,7 @@ package com.xjeffrose.chicago.client;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.xjeffrose.chicago.ChicagoCodec;
 import com.xjeffrose.chicago.ZkClient;
 import com.xjeffrose.xio.SSL.XioSecurityHandlerImpl;
 import com.xjeffrose.xio.client.retry.BoundedExponentialBackoffRetry;
@@ -44,8 +45,6 @@ public class ConnectionPoolManagerX {
   private static final long TIMEOUT = 1000;
   protected static int MAX_RETRY = 20;
   private static boolean TIMEOUT_ENABLED = true;
-  private boolean singleClient = false;
-  private String singleClientServer;
   private final Map<String, Channel> connectionMap = PlatformDependent.newConcurrentHashMap();
   private final NioEventLoopGroup workerLoop = new NioEventLoopGroup(5,
       new ThreadFactoryBuilder()
@@ -58,9 +57,10 @@ public class ConnectionPoolManagerX {
       .newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
           .setNameFormat("chicago-connection-check")
           .build());
-
   private final Map<UUID, SettableFuture<byte[]>> futureMap;
   private final ChannelHandler handler;
+  private boolean singleClient = false;
+  private String singleClientServer;
 
   public ConnectionPoolManagerX(ZkClient zkClient, Map<UUID, SettableFuture<byte[]>> futureMap) {
     this.zkClient = zkClient;
@@ -135,9 +135,9 @@ public class ConnectionPoolManagerX {
 
   private List<String> buildNodeList() {
     List<String> l = new ArrayList<>();
-    if(singleClient){
+    if (singleClient) {
       l.add(singleClientServer);
-    }else {
+    } else {
       l = zkClient.list(NODE_LIST_PATH);
       if (l == null) {
         return buildNodeList();
@@ -146,7 +146,7 @@ public class ConnectionPoolManagerX {
     return l;
   }
 
-  public int getConnectionMapSize(){
+  public int getConnectionMapSize() {
     return connectionMap.size();
   }
 
@@ -244,7 +244,7 @@ public class ConnectionPoolManagerX {
             ChannelPipeline cp = channel.pipeline();
             cp.addLast(new XioSecurityHandlerImpl(true).getEncryptionHandler());
             //cp.addLast(new XioIdleDisconnectHandler(20, 20, 20));
-            cp.addLast(new ChicagoClientCodec());
+            cp.addLast(new ChicagoCodec());
             cp.addLast(handler);
           }
         });
