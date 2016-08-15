@@ -14,6 +14,7 @@ import java.net.InetSocketAddress;
 import java.util.Deque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
 import lombok.Data;
 import lombok.Getter;
@@ -22,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RequestMuxer<T> {
-  private static final int POOL_SIZE = 12;
+  private static final int POOL_SIZE = 4;
 
   private final String addr;
   private final EventLoopGroup workerLoop;
@@ -32,6 +33,7 @@ public class RequestMuxer<T> {
   private final Deque<MuxedMessage<T>> messageQ = PlatformDependent.newConcurrentDeque();
   @Setter
   private ChicagoConnector connector;
+  private AtomicLong counter = new AtomicLong();
 
   public RequestMuxer(String addr, ChannelHandler handler, EventLoopGroup workerLoop) {
     this.addr = addr;
@@ -43,30 +45,6 @@ public class RequestMuxer<T> {
     buildInitialConnectionQ();
     blockAndAwaitPool();
     isRunning.set(true);
-
-    new Thread(() -> {
-      while (isRunning.get()) {
-        if (messageQ.size() > 0) {
-          messageQ.forEach(xs -> {
-            drainMessageQ();
-            flushPool();
-            try {
-              Thread.sleep(0, 12);
-//              Thread.sleep(12);
-            } catch (InterruptedException e) {
-              e.printStackTrace();
-            }
-          });
-        }
-      }
-    }).start();
-
-  }
-
-  private void flushPool() {
-    connectionQ.forEach(xs -> {
-      xs.channel().flush();
-    });
   }
 
   public void shutdownGracefully() {
@@ -141,7 +119,15 @@ public class RequestMuxer<T> {
 
   public void write(T sendReq, SettableFuture<Boolean> f) {
     if (isRunning.get()) {
-      messageQ.addLast(new MuxedMessage<>(sendReq, f));
+      if (counter.incrementAndGet() % 3 == 0) {
+        try {
+          Thread.sleep(0, 1);
+          counter.set(0);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+      drainMessageQ(sendReq, f);
     }
   }
 
@@ -165,7 +151,8 @@ public class RequestMuxer<T> {
   private void drainMessageQ() {
     if (isRunning.get() && messageQ.size() > 0) {
       final MuxedMessage<T> mm = messageQ.pollFirst();
-      requestNode().write(mm.getMsg()).addListener(new GenericFutureListener<Future<? super Void>>() {
+//      requestNode().write(mm.getMsg()).addListener(new GenericFutureListener<Future<? super Void>>() {
+      requestNode().writeAndFlush(mm.getMsg()).addListener(new GenericFutureListener<Future<? super Void>>() {
         @Override
         public void operationComplete(Future<? super Void> future) throws Exception {
           if (future.isSuccess()) {
@@ -173,6 +160,22 @@ public class RequestMuxer<T> {
           } else {
             mm.getF().set(false);
             mm.getF().setException(future.cause());
+          }
+        }
+      });
+    }
+  }
+
+  private void drainMessageQ(T sendReq, SettableFuture<Boolean> f) {
+    if (isRunning.get()) {
+      requestNode().writeAndFlush(sendReq).addListener(new GenericFutureListener<Future<? super Void>>() {
+        @Override
+        public void operationComplete(Future<? super Void> future) throws Exception {
+          if (future.isSuccess()) {
+            f.set(true);
+          } else {
+            f.set(false);
+            f.setException(future.cause());
           }
         }
       });
