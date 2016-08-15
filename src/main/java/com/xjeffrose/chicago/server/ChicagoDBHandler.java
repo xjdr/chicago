@@ -191,7 +191,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
             lastval.writeBytes(record.getKey());
             record.setValue(lastval.array());
           }
-          bb.writeBytes(encoder.encode(new DefaultChicagoMessage(msg.getId(),Op.STREAM_RESPONSE,msg.getColFam(),record.getKey(),record.getValue())));
+          bb.writeBytes(encoder.encode(new DefaultChicagoMessage(msg.getId(),Op.STREAM_RESPONSE,msg.getColFam(),Boolean.toString(true).getBytes(),record.getValue())));
         }
         ctx.writeAndFlush(bb).addListener(writeComplete);
       }
