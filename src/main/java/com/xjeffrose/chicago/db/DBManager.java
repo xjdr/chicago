@@ -199,6 +199,45 @@ public class DBManager extends AbstractExecutionThreadService {
     }
   }
 
+
+  class ScanColFamilyMessage extends Message {
+    final SettableFuture<List<String>> promise;
+
+    ScanColFamilyMessage(SettableFuture<List<String>> promise) {
+      this.promise = promise;
+    }
+
+    @Override
+    void process() {
+      promise.set(backend.getColFams());
+    }
+
+    @Override
+    void fail(Throwable t) {
+      promise.setException(t);
+    }
+  }
+
+  class ScanKeyMessage extends Message {
+    final byte[] colFam;
+    final SettableFuture<List<byte[]>> promise;
+
+    ScanKeyMessage(byte[] colFam, SettableFuture<List<byte[]>> promise) {
+      this.colFam = colFam;
+      this.promise = promise;
+    }
+
+    @Override
+    void process() {
+      promise.set(backend.getKeys(colFam, new byte[0]));
+    }
+
+    @Override
+    void fail(Throwable t) {
+      promise.setException(t);
+    }
+  }
+
   private final AtomicBoolean running = new AtomicBoolean(false);
   private final BlockingQueue<Message> queue = new LinkedBlockingQueue<Message>();
   private final StorageProvider backend;
@@ -324,6 +363,18 @@ public class DBManager extends AbstractExecutionThreadService {
   public ListenableFuture<Boolean> waitForEmptyQueue() {
     SettableFuture<Boolean> promise = SettableFuture.create();
     post(new WaitMessage(promise));
+    return promise;
+  }
+
+  public ListenableFuture<List<String>> getColFamilies() {
+    SettableFuture<List<String>> promise = SettableFuture.create();
+    post(new ScanColFamilyMessage(promise));
+    return promise;
+  }
+
+  public ListenableFuture<List<byte[]>> getKeys(byte[] colFam) {
+    SettableFuture<List<byte[]>> promise = SettableFuture.create();
+    post(new ScanKeyMessage(colFam, promise));
     return promise;
   }
 }

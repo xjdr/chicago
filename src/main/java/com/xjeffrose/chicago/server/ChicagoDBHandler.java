@@ -193,6 +193,43 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
     }, ctx.executor());
   }
 
+  private void handleScanColFamily(ChannelHandlerContext ctx, ChicagoMessage msg, ChannelFutureListener writeComplete) {
+    ListenableFuture<List<String>> future = db.getColFamilies();
+    Futures.addCallback(future, new FutureCallback<List<String>>() {
+      @Override
+      public void onSuccess(List<String> result) {
+        ByteBuf bb = Unpooled.buffer();
+        ChicagoObjectEncoder encoder = new ChicagoObjectEncoder();
+        for(String record : result) {
+          bb.writeBytes(encoder.encode(new DefaultChicagoMessage(msg.getId(), Op.SCAN, null, record.getBytes(), null)));
+        }
+        ctx.writeAndFlush(bb).addListener(writeComplete);
+      }
+      @Override
+      public void onFailure(Throwable error) {
+      }
+    }, ctx.executor());
+  }
+
+
+  private void handleScanKeys(ChannelHandlerContext ctx, ChicagoMessage msg, ChannelFutureListener writeComplete) {
+    ListenableFuture<List<byte[]>> future = db.getKeys(msg.getColFam());
+    Futures.addCallback(future, new FutureCallback<List<byte[]>>() {
+      @Override
+      public void onSuccess(List<byte[]> result) {
+        ByteBuf bb = Unpooled.buffer();
+        ChicagoObjectEncoder encoder = new ChicagoObjectEncoder();
+        for(byte[] record : result) {
+          bb.writeBytes(encoder.encode(new DefaultChicagoMessage(msg.getId(), Op.SCAN_KEYS, msg.getColFam(), record, null)));
+        }
+        ctx.writeAndFlush(bb).addListener(writeComplete);
+      }
+      @Override
+      public void onFailure(Throwable error) {
+      }
+    }, ctx.executor());
+  }
+
   @Override
   protected void channelRead0(ChannelHandlerContext ctx, ChicagoMessage msg) throws Exception {
     ChannelFutureListener writeComplete = new ChannelFutureListener() {
@@ -220,7 +257,12 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
       case STREAM:
         handleStreamingRead(ctx, msg, writeComplete);
         break;
-
+      case SCAN:
+        handleScanColFamily(ctx, msg, writeComplete);
+        break;
+      case SCAN_KEYS:
+        handleScanKeys(ctx, msg, writeComplete);
+        break;
       default:
         break;
     }
