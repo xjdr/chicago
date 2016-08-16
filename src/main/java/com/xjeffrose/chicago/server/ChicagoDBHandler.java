@@ -183,8 +183,16 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
       public void onSuccess(List<DBRecord> result) {
         ByteBuf bb = Unpooled.buffer();
         ChicagoObjectEncoder encoder = new ChicagoObjectEncoder();
-        for(DBRecord record : result) {
-          bb.writeBytes(encoder.encode(new DefaultChicagoMessage(msg.getId(),Op.STREAM_RESPONSE,msg.getColFam(),record.getKey(),record.getValue())));
+        for(int i =0; i<result.size(); i++){
+          DBRecord record = result.get(i);
+          if(i == result.size()-1){
+            ByteBuf lastval = Unpooled.buffer();
+            lastval.writeBytes(record.getValue());
+            lastval.writeBytes(ChiUtil.delimiter.getBytes());
+            lastval.writeBytes(record.getKey());
+            record.setValue(lastval.array());
+          }
+          bb.writeBytes(encoder.encode(new DefaultChicagoMessage(msg.getId(),Op.STREAM_RESPONSE,msg.getColFam(),Boolean.toString(true).getBytes(),record.getValue())));
         }
         ctx.writeAndFlush(bb).addListener(writeComplete);
       }
@@ -201,7 +209,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
       public void onSuccess(List<byte[]> result) {
         ByteBuf bb = Unpooled.buffer();
         for(byte[] record : result) {
-          String temp = new String(record) + "@@@";
+          String temp = new String(record) + ChiUtil.delimiter;
           bb.writeBytes(temp.getBytes());
         }
         byte[] b = bb.array();

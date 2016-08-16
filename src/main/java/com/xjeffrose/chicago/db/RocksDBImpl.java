@@ -364,14 +364,8 @@ public class RocksDBImpl implements AutoCloseable, StorageProvider {
           i.seek(offset);
         }
         int size = 0;
-
         while (i.isValid() && size < ChiUtil.MaxBufferSize) {
           values.add(new DBRecord(colFam,i.key(),i.value()));
-//          byte[] v = i.value();
-//          byte[] _v = new byte[v.length + 1];
-//          System.arraycopy(v, 0, _v, 0, v.length);
-//          System.arraycopy(new byte[]{'\0'}, 0, _v, v.length, 1);
-//          bb.writeBytes(_v);
           lastOffset = i.key();
           size += colFam.length + i.key().length + i.value().length;
           i.next();
