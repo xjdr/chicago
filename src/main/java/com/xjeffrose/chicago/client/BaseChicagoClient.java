@@ -55,14 +55,17 @@ abstract public class BaseChicagoClient {
   protected EventLoopGroup evg;
 
 
-  public BaseChicagoClient(String address){
+  public BaseChicagoClient(String address) throws InterruptedException{
     this.single_server = true;
-    this.zkClient = null;
+    // this is only for test purpose. The zkServer should run on the same machine as that of the chicago server.
+    this.zkClient = new ZkClient(address.split(":")[0]+":2181", false);
+    this.zkClient.start();
     this.quorum = 1;
     ArrayList<String> nodeList = new ArrayList<>();
     nodeList.add(address);
     this.rendezvousHash =  new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
-    clientNodeWatcher = null;
+    // only if the zkserver runs in the same machine as the chicago server [Test purpose]
+    clientNodeWatcher = new ClientNodeWatcher(zkClient, rendezvousHash, listener);
     this.futureMap = PlatformDependent.newConcurrentHashMap();
     this.connectionPoolMgr = new ConnectionPoolManagerX(address, futureMap);
     this.chicagoBuffer = new ChicagoBuffer(connectionPoolMgr, this);
@@ -176,5 +179,15 @@ abstract public class BaseChicagoClient {
     }
 
     return hashList;
+  }
+
+  public List<String> getAllColFamily() throws Exception {
+    List<String> resp = new ArrayList<>();
+    if(this.zkClient != null) {
+      resp = this.zkClient.list(REPLICATION_LOCK_PATH);
+      return resp;
+    } else {
+      return resp;
+    }
   }
 }

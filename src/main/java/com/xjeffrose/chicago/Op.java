@@ -9,7 +9,8 @@ public enum Op {
   BATCH_WRITE(5),
   STREAM(6),
   GET_OFFSET(7),
-  STREAM_RESPONSE(8);
+  STREAM_RESPONSE(8),
+  SCAN_KEYS(9);
 
 
   private int i;
@@ -43,6 +44,8 @@ public enum Op {
         return GET_OFFSET;
       case 8:
         return STREAM_RESPONSE;
+      case 9:
+        return SCAN_KEYS;
 //      case 8:
 //        return CHILD_NODE_REMOVED;
 //      case 9:

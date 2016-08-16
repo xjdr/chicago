@@ -1,8 +1,10 @@
 package com.xjeffrose.chicago.examples;
 
 import com.google.common.primitives.Longs;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.xjeffrose.chicago.client.*;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -39,6 +41,7 @@ public class SingleServerClient {
   public static void getValue(String host, String colFam, int key){
     try{
       ChicagoClient cc = new ChicagoClient(host);
+      cc.startAndWaitForNodes(1);
       System.out.println(new String(cc.read(colFam.getBytes(),Longs.toByteArray(key)).get().get(0)));
     }catch (Exception e){
       e.printStackTrace();
@@ -49,6 +52,7 @@ public class SingleServerClient {
   public static void printStream(String host, String colFam){
     try {
       ChicagoClient cc = new ChicagoClient(host);
+      cc.startAndWaitForNodes(1);
       System.out.println(host +" : "+new String(cc.stream(colFam.getBytes(), null).get().get(0)));
       cc.stop();
     }catch(Exception e){
@@ -59,6 +63,7 @@ public class SingleServerClient {
   public static void write(String host,String cf, int key, String value){
     try {
       ChicagoClient cc = new ChicagoClient(host);
+      cc.startAndWaitForNodes(1);
       System.out.println(host +" : "+ new String(cc.tsWrite(cf.getBytes(),Longs.toByteArray(key),value.getBytes()).get().get(0)));
     }catch(Exception e){
       e.printStackTrace();
@@ -68,6 +73,7 @@ public class SingleServerClient {
   public static void write(String host,String cf, String value){
     try {
       ChicagoClient cc = new ChicagoClient(host);
+      cc.startAndWaitForNodes(1);
       System.out.println(host +" : "+Longs.fromByteArray(cc.tsWrite(cf.getBytes(),value.getBytes()).get().get(0)));
     }catch(Exception e){
       e.printStackTrace();
@@ -78,10 +84,36 @@ public class SingleServerClient {
     String cf = "test";
     String key = "key                                                               ";
     ChicagoClient cc = new ChicagoClient(host);
+    cc.startAndWaitForNodes(1);
     for (int i =200000;i<800000;i++){
       System.out.print(cc.write(cf.getBytes(),(key+i).getBytes(),("val                                                          " +
         "                                                                             " +
         "                                                                            "+i).getBytes()));
+    }
+  }
+
+
+  public void readColumnFamily(String host) throws Exception
+  {
+    ChicagoClient cc = new ChicagoClient(host);
+    cc.startAndWaitForNodes(1);
+    List<String> lines = cc.scanColFamily();
+    for(String line: lines) {
+      System.out.println("ColFamily: " + line);
+    }
+  }
+
+
+  public void readColumnFamilyKeys(String host, String colFam) throws Exception
+  {
+    ChicagoClient cc = new ChicagoClient(host);
+    cc.startAndWaitForNodes(1);
+    ListenableFuture<List<byte[]>> f = cc.scanKeys(colFam.getBytes());
+    byte[] b = f.get().get(0);
+    String resp = new String(b);
+    String[] lines = resp.split("\0")[0].split("@@@");
+    for(String line: lines) {
+      System.out.println("Keys: " + line);
     }
   }
 }
