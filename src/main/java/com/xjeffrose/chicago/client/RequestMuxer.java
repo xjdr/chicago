@@ -145,12 +145,12 @@ public class RequestMuxer<T> {
 
   private Channel requestNode(){
 
-//    ChannelFuture cf = connectionQ.removeFirst();
+    ChannelFuture cf = connectionQ.removeFirst();
 
-    ChannelFuture cf = connectionQ.peek();
+//    ChannelFuture cf = connectionQ.peek();
     if ((cf != null) && cf.isSuccess()) {
       if (cf.channel().isActive()) {
-//        connectionQ.addLast(cf);
+        connectionQ.addLast(cf);
         return cf.channel();
       } else {
 
