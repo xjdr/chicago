@@ -38,7 +38,7 @@ public class RequestMuxer<T> {
   private final Deque<MuxedMessage<T>> messageQ = PlatformDependent.newConcurrentDeque();
   @Setter
   private ChicagoConnector connector;
-  private AtomicLong counter = new AtomicLong();
+//  private AtomicLong counter = new AtomicLong();
   private AtomicBoolean connectionRebuild = new AtomicBoolean(false);
 
   public RequestMuxer(String addr, ChannelHandler handler, EventLoopGroup workerLoop) {
@@ -56,7 +56,7 @@ public class RequestMuxer<T> {
       if(messageQ.size() > 0){
         drainMessageQ();
       }
-    },0,12,TimeUnit.MILLISECONDS);
+    },0,6,TimeUnit.MILLISECONDS);
 
     workerLoop.scheduleAtFixedRate(() -> {
       if(connectionRebuild.get()){
@@ -140,6 +140,9 @@ public class RequestMuxer<T> {
     if (isRunning.get()) {
       messageQ.addLast(new MuxedMessage<>(sendReq,f));
 //      drainMessageQ(sendReq, f);
+      if (messageQ.size() > (1618 * 6)) {
+        drainMessageQ();
+      }
     }
   }
 
@@ -203,7 +206,7 @@ public class RequestMuxer<T> {
     Channel ch = requestNode();
     while (isRunning.get() && messageQ.size() > 0) {
       final MuxedMessage<T> mm = messageQ.pollFirst();
-      counter.incrementAndGet();
+//      counter.incrementAndGet();
       ch.write(mm.getMsg()).addListener(new GenericFutureListener<Future<? super Void>>() {
         @Override
         public void operationComplete(Future<? super Void> future) throws Exception {

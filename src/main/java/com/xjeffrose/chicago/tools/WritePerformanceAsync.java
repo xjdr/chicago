@@ -38,7 +38,7 @@ public class WritePerformanceAsync {
 //    int throughput = Integer.parseInt(args[3]);
 //    final String connectionString = args[4];
     
-    final int loop = 100000;
+    final int loop = 1000000;
     final int size = 100;
     final int clients = 1;
     int throughput = -1;
