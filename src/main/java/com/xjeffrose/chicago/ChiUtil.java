@@ -14,6 +14,8 @@ public class ChiUtil {
   public static final String delimiter = "@@@";
   public static final String defaultColFam = "chicago";
   public static final int MaxBufferSize = 300000;
+  public static final String TS = "timeSeries";
+  public static final String KV = "KV";
   public static byte[] getTimeStamp() {
     return ZonedDateTime
         .now(ZoneId.of("UTC"))

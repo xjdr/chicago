@@ -135,7 +135,7 @@ public class RocksDBImpl implements AutoCloseable, StorageProvider {
     }
   }
 
-  private synchronized boolean createColumnFamily(byte[] name) {
+  private synchronized boolean createColumnFamily(byte[] name, String data) {
     if (colFamilyExists(name)) {
       return true;
     }
@@ -162,7 +162,7 @@ public class RocksDBImpl implements AutoCloseable, StorageProvider {
       columnFamilies.put(new String(name), db.createColumnFamily(columnFamilyDescriptor));
       counter.put(new String(name), new AtomicLong(0));
       if (zkClient != null) {
-        zkClient.createIfNotExist(ChicagoServer.NODE_LOCK_PATH + "/" + new String(name), "");
+        zkClient.createIfNotExist(ChicagoServer.NODE_LOCK_PATH + "/" + new String(name), data);
       }
       return true;
     } catch (RocksDBException e) {
@@ -181,7 +181,7 @@ public class RocksDBImpl implements AutoCloseable, StorageProvider {
       return false;
     } else if (!colFamilyExists(colFam)) {
       synchronized (columnFamilies) {
-        createColumnFamily(colFam);
+        createColumnFamily(colFam, ChiUtil.KV);
       }
     }
     try {
@@ -271,7 +271,7 @@ public class RocksDBImpl implements AutoCloseable, StorageProvider {
       log.error("Tried to write a null value");
       return null;
     } else if (!colFamilyExists(colFam)) {
-      createColumnFamily(colFam);
+      createColumnFamily(colFam, ChiUtil.TS);
     }
     try {
       //Insert Key/Value only if it does not exists.
@@ -299,7 +299,7 @@ public class RocksDBImpl implements AutoCloseable, StorageProvider {
       log.error("Tried to ts write a null value");
       return null;
     } else if (!colFamilyExists(colFam)) {
-      createColumnFamily(colFam);
+      createColumnFamily(colFam, ChiUtil.TS);
     }
     try {
       byte[] ts = Longs.toByteArray(counter.get(new String(colFam)).getAndIncrement());
@@ -318,10 +318,10 @@ public class RocksDBImpl implements AutoCloseable, StorageProvider {
 
   public byte[] batchWrite(byte[] colFam, byte[] value) {
     if (value == null) {
-      log.error("Tried to ts write a null value");
+      log.error("Tried to batch write a null value");
       return null;
     } else if (!colFamilyExists(colFam)) {
-      createColumnFamily(colFam);
+      createColumnFamily(colFam, ChiUtil.TS);
     }
 //    int noOfRecords = value.split(ChiUtil.delimiter).length;
 //    long returnVal = counter.get(new String(colFam)).get() + noOfRecords;

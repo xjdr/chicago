@@ -57,7 +57,7 @@ abstract public class BaseChicagoClient {
 
   public BaseChicagoClient(String address){
     this.single_server = true;
-    this.zkClient = null;
+    this.zkClient = new ZkClient("127.0.0.1:2181", false);
     this.quorum = 1;
     ArrayList<String> nodeList = new ArrayList<>();
     nodeList.add(address);
@@ -176,5 +176,15 @@ abstract public class BaseChicagoClient {
     }
 
     return hashList;
+  }
+
+  public List<String> getAllColFamily() throws Exception {
+    List<String> resp = new ArrayList<>();
+    if(this.zkClient != null) {
+      resp = this.zkClient.getChildren(REPLICATION_LOCK_PATH);
+      return resp;
+    } else {
+      return resp;
+    }
   }
 }

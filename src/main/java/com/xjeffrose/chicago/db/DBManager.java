@@ -359,6 +359,12 @@ public class DBManager extends AbstractExecutionThreadService {
     return promise;
   }
 
+  public ListenableFuture<List<byte[]>> getKeys(byte[] colFam) {
+    SettableFuture<List<byte[]>> promise = SettableFuture.create();
+    post(new ScanKeyMessage(colFam, promise));
+    return promise;
+  }
+
   @VisibleForTesting
   public ListenableFuture<Boolean> waitForEmptyQueue() {
     SettableFuture<Boolean> promise = SettableFuture.create();
@@ -366,15 +372,5 @@ public class DBManager extends AbstractExecutionThreadService {
     return promise;
   }
 
-  public ListenableFuture<List<String>> getColFamilies() {
-    SettableFuture<List<String>> promise = SettableFuture.create();
-    post(new ScanColFamilyMessage(promise));
-    return promise;
-  }
 
-  public ListenableFuture<List<byte[]>> getKeys(byte[] colFam) {
-    SettableFuture<List<byte[]>> promise = SettableFuture.create();
-    post(new ScanKeyMessage(colFam, promise));
-    return promise;
-  }
 }

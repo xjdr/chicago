@@ -10,8 +10,7 @@ public enum Op {
   STREAM(6),
   GET_OFFSET(7),
   STREAM_RESPONSE(8),
-  SCAN(9),
-  SCAN_KEYS(10);
+  SCAN_KEYS(9);
 
 
   private int i;
@@ -46,8 +45,6 @@ public enum Op {
       case 8:
         return STREAM_RESPONSE;
       case 9:
-        return SCAN;
-      case 10:
         return SCAN_KEYS;
 //      case 8:
 //        return CHILD_NODE_REMOVED;
