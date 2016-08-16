@@ -221,6 +221,9 @@ public class RocksDBImpl implements AutoCloseable, StorageProvider {
         ColumnFamilyHandle ch = columnFamilies.remove(new String(colFam));
         db.dropColumnFamily(ch);
         counter.remove(new String(colFam));
+        if(zkClient!= null) {
+          zkClient.delete(ChicagoServer.NODE_LOCK_PATH + "/" + new String(colFam));
+        }
       }
     } catch (RocksDBException e) {
       e.printStackTrace();
