@@ -198,9 +198,13 @@ public class ChicagoAsyncClient implements Client {
 
   @Override
   public ListenableFuture<Boolean> write(byte[] colFam, byte[] key, byte[] val) {
-    List<SettableFuture<byte[]>> futureList = new ArrayList<>();
-    SettableFuture<Boolean> respFuture = SettableFuture.create();
-    List<String> nodes = getEffectiveNodes(colFam);
+    final List<SettableFuture<byte[]>> futureList = new ArrayList<>();
+    final SettableFuture<Boolean> respFuture = SettableFuture.create();
+    final List<String> nodes = getEffectiveNodes(colFam);
+    if (nodes.size() < quorum) {
+      log.error("Unable to establish Quorum");
+      return null;
+    }
     nodes.stream().forEach(xs -> {
       UUID id = UUID.randomUUID();
       SettableFuture<byte[]> f = SettableFuture.create();
@@ -261,9 +265,13 @@ public class ChicagoAsyncClient implements Client {
   }
 
   public ListenableFuture<byte[]> tsWrite(byte[] topic, byte[] key,  byte[] val) {
-    List<SettableFuture<byte[]>> futureList = new ArrayList<>();
-    SettableFuture<byte[]> respFuture = SettableFuture.create();
-    List<String> nodes = getEffectiveNodes(topic);
+    final List<SettableFuture<byte[]>> futureList = new ArrayList<>();
+    final SettableFuture<byte[]> respFuture = SettableFuture.create();
+    final List<String> nodes = getEffectiveNodes(topic);
+    if (nodes.size() < quorum) {
+      log.error("Unable to establish Quorum");
+      return null;
+    }
     nodes.stream().forEach(xs -> {
       UUID id = UUID.randomUUID();
       SettableFuture<byte[]> f = SettableFuture.create();
