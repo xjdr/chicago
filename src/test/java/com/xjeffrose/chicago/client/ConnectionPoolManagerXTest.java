@@ -2,11 +2,11 @@ package com.xjeffrose.chicago.client;
 
 import org.junit.Test;
 
-public class ConnectionPoolManagerTest {
+public class ConnectionPoolManagerXTest {
   @Test
   public void getNode() throws Exception {
 
-//    ConnectionPoolManager cpx = new ConnectionPoolManager();
+//    ConnectionPoolManagerX cpx = new ConnectionPoolManagerX();
 
   }
 

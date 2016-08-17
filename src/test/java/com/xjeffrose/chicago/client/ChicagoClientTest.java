@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import com.xjeffrose.chicago.ChicagoCodec;
 import com.xjeffrose.chicago.ChicagoMessage;
 import com.xjeffrose.chicago.ChicagoObjectDecoder;
 import com.xjeffrose.chicago.ChicagoObjectEncoder;
@@ -36,7 +37,7 @@ public class ChicagoClientTest {
     @Override
     protected void initChannel(EmbeddedChannel channel) throws Exception {
       ChannelPipeline cp = channel.pipeline();
-      cp.addLast(new ChicagoClientCodec());
+      cp.addLast(new ChicagoCodec());
       cp.addLast(new ChicagoClientHandler(futureMap));
     }
   });

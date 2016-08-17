@@ -13,7 +13,7 @@ public class ChiUtil {
   private static final Logger log = LoggerFactory.getLogger(ChiUtil.class.getName());
   public static final String delimiter = "@@@";
   public static final String defaultColFam = "chicago";
-  public static final int MaxBufferSize = 300000;
+  public static final int MaxBufferSize = 100000;
   public static byte[] getTimeStamp() {
     return ZonedDateTime
         .now(ZoneId.of("UTC"))

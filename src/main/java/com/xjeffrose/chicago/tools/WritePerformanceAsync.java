@@ -1,5 +1,6 @@
 package com.xjeffrose.chicago.tools;
 
+import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -13,8 +14,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 
-public class WritePerformance {
-  private final static String key = "ppfe-test-cc";
+public class WritePerformanceAsync {
+  private final static String key = "ppfe-test-sm";
   private static final long NS_PER_MS = 1000000L;
   private static final long NS_PER_SEC = 1000 * NS_PER_MS;
   private static final long MIN_SLEEP_NS = 2 * NS_PER_MS;
@@ -31,22 +32,29 @@ public class WritePerformance {
 
   public static void main(String[] args) throws Exception {
 
-    final int loop = Integer.parseInt(args[0]);
-    final int size = Integer.parseInt(args[1]);
-    final int clients = Integer.parseInt(args[2]);
-    int throughput = Integer.parseInt(args[3]);
-    final String connectionString = args[4];
+//    final int loop = Integer.parseInt(args[0]);
+//    final int size = Integer.parseInt(args[1]);
+//    final int clients = Integer.parseInt(args[2]);
+//    int throughput = Integer.parseInt(args[3]);
+//    final String connectionString = args[4];
+    
+    final int loop = 1000000;
+    final int size = 100;
+    final int clients = 1;
+    int throughput = -1;
+    final String connectionString = "10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181";
+
     CountDownLatch latch = new CountDownLatch(loop);
-    ChicagoClient[] ctsa = new ChicagoClient[clients];
+    ChicagoAsyncClient[] ctsa = new ChicagoAsyncClient[clients];
     keys = new Long[loop];
     for (int i = 0; i < clients; i++) {
       if (connectionString.contains("2181")) {
         //Jeff servers = 10.22.100.183:2181,10.25.180.234:2181,10.22.103.86:2181,10.25.180.247:2181,10.25.69.226:2181
         //smadan server = 10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181
-        ctsa[i] = new ChicagoClient(connectionString, 3);
-        ctsa[i].startAndWaitForNodes(3);
+        ctsa[i] = new ChicagoAsyncClient(connectionString, 3);
+        ctsa[i].start();
       } else {
-        ctsa[i] = new ChicagoClient(connectionString);
+        ctsa[i] = new ChicagoAsyncClient(connectionString);
       }
     }
 
@@ -63,7 +71,7 @@ public class WritePerformance {
         val[j] = (byte) (random.nextInt(26) + 65);
       //String v = "val" +i + "TTE-cc";
       Callback cb = stats.nextCompletion(sendStart, val.length, stats);
-      ListenableFuture<List<byte[]>> future = ctsa[i % clients].tsWrite(key.getBytes(), val);
+      ListenableFuture<byte[]> future = ctsa[i % clients].tsWrite(key.getBytes(), val);
       Futures.addCallback(future, cb);
       if (throughput > 0) {
         sleepDeficitNs += sleepTime;
@@ -153,7 +161,7 @@ public class WritePerformance {
         this.index++;
       }
             /* maybe report the recent perf */
-      if (time - windowStart >= reportingInterval && Thread.currentThread().getName().contains("10")) {
+      if (time - windowStart >= reportingInterval) {
         printWindow();
         newWindow();
       }
@@ -170,11 +178,11 @@ public class WritePerformance {
       double recsPerSec = 1000.0 * windowCount / (double) ellapsed;
       double mbPerSec = 1000.0 * this.windowBytes / (double) ellapsed / (1024.0 * 1024.0);
       System.out.printf("%d records sent, %.1f records/sec (%.2f MB/sec), %.1f ms avg latency, %.1f max latency.\n",
-        windowCount,
-        recsPerSec,
-        mbPerSec,
-        windowTotalLatency / (double) windowCount,
-        (double) windowMaxLatency);
+          windowCount,
+          recsPerSec,
+          mbPerSec,
+          windowTotalLatency / (double) windowCount,
+          (double) windowMaxLatency);
     }
 
     public void newWindow() {
@@ -191,19 +199,19 @@ public class WritePerformance {
       double mbPerSec = 1000.0 * this.bytes / (double) ellapsed / (1024.0 * 1024.0);
       int[] percs = percentiles(this.latencies, index, 0.5, 0.95, 0.99, 0.999);
       System.out.printf("%d records sent, %f records/sec (%.2f MB/sec), %.2f ms avg latency, %.2f ms max latency, %d ms 50th, %d ms 95th, %d ms 99th, %d ms 99.9th.\n",
-        count,
-        recsPerSec,
-        mbPerSec,
-        totalLatency / (double) count,
-        (double) maxLatency,
-        percs[0],
-        percs[1],
-        percs[2],
-        percs[3]);
+          count,
+          recsPerSec,
+          mbPerSec,
+          totalLatency / (double) count,
+          (double) maxLatency,
+          percs[0],
+          percs[1],
+          percs[2],
+          percs[3]);
     }
   }
 
-  private static class Callback implements FutureCallback<List<byte[]>> {
+  private static class Callback implements FutureCallback<byte[]> {
     private final long start;
     private final Stats stats;
     private final int iteration;
@@ -219,8 +227,8 @@ public class WritePerformance {
     }
 
     @Override
-    public void onSuccess(@Nullable List<byte[]> bytes) {
-      System.out.println("Got response :" + success.incrementAndGet());
+    public void onSuccess(@Nullable byte[] bytes) {
+      //System.out.println("Got response :" + Longs.fromByteArray(bytes));
       long now = System.currentTimeMillis();
       int latency = (int) (now - start);
       this.stats.record(iteration, latency, nbytes, now);

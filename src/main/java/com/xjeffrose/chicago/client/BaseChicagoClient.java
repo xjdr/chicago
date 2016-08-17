@@ -1,12 +1,8 @@
 package com.xjeffrose.chicago.client;
 
 import com.google.common.hash.Funnels;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.common.util.concurrent.SettableFuture;
-import com.xjeffrose.chicago.ChicagoMessage;
 import com.xjeffrose.chicago.ZkClient;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.epoll.Epoll;
@@ -20,9 +16,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +49,7 @@ abstract public class BaseChicagoClient {
       }
   };
   protected final ZkClient zkClient;
-  protected final ConnectionPoolManager connectionPoolMgr;
+  protected final ConnectionPoolManagerX connectionPoolMgr;
   protected int quorum;
   protected Map<UUID, SettableFuture<byte[]>> futureMap;
   protected EventLoopGroup evg;
@@ -71,7 +64,7 @@ abstract public class BaseChicagoClient {
     this.rendezvousHash =  new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
     clientNodeWatcher = null;
     this.futureMap = PlatformDependent.newConcurrentHashMap();
-    this.connectionPoolMgr = new ConnectionPoolManager(address, futureMap);
+    this.connectionPoolMgr = new ConnectionPoolManagerX(address, futureMap);
     this.chicagoBuffer = new ChicagoBuffer(connectionPoolMgr, this);
     if (Epoll.isAvailable()) {
       evg = new EpollEventLoopGroup(5);
@@ -90,7 +83,7 @@ abstract public class BaseChicagoClient {
     ArrayList<String> nodeList = new ArrayList<>();
     this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
     clientNodeWatcher = new ClientNodeWatcher(zkClient, rendezvousHash, listener);
-    this.connectionPoolMgr = new ConnectionPoolManager(zkClient, futureMap);
+    this.connectionPoolMgr = new ConnectionPoolManagerX(zkClient, futureMap);
     this.chicagoBuffer = new ChicagoBuffer(connectionPoolMgr, this);
     if (Epoll.isAvailable()) {
       evg = new EpollEventLoopGroup(5);
@@ -110,7 +103,7 @@ abstract public class BaseChicagoClient {
     hostPool.stream().forEach(xs -> nodeList.add(xs.remoteAddress().toString()));
     this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
     clientNodeWatcher = null;
-    this.connectionPoolMgr = new ConnectionPoolManager(hostPool, futureMap);
+    this.connectionPoolMgr = new ConnectionPoolManagerX(hostPool, futureMap);
     this.chicagoBuffer = new ChicagoBuffer(connectionPoolMgr, this);
     if (Epoll.isAvailable()) {
       evg = new EpollEventLoopGroup(5);
@@ -181,6 +174,7 @@ abstract public class BaseChicagoClient {
       List<String> replicationList = clientNodeWatcher.getReplicationPathData(path);
       hashList.removeAll(replicationList);
     }
+
     return hashList;
   }
 }

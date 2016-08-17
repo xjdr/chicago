@@ -41,7 +41,7 @@ public class EncryptedStorageProvider implements StorageProvider {
 
 
   private void configure() {
-    properties.setProperty("chimera.crypto.cipher.classes", "com.intel.chimera.crypto.OpensslCipher");
+    properties.setProperty("chimera.crypto.cipher.classes", "com.intel.chimera.cipher.OpensslCipher");
     try {
       cipher = Utils.getCipherInstance(CipherTransformation.AES_CTR_NOPADDING, properties);
     } catch (IOException e) {
