@@ -3,18 +3,17 @@ package com.xjeffrose.chicago;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
-import java.nio.charset.Charset;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 /**
  *
  */
 public class ChicagoMessageAggregatorTest {
-
 
   private ChicagoObjectEncoder encoder;
   private ChicagoObjectDecoder decoder;
@@ -26,7 +25,6 @@ public class ChicagoMessageAggregatorTest {
     decoder = new ChicagoObjectDecoder();
     aggregator = new ChicagoMessageAggregator();
   }
-
 
   @Test
   public void testDecode_streamMultipleMessages() {
@@ -159,27 +157,25 @@ public class ChicagoMessageAggregatorTest {
     assertStreamResponse(channel, cm1, cm2, cm3, cm4);
   }
 
-  private void assertStreamResponse(EmbeddedChannel channel, ChicagoMessage firstMessage, ChicagoMessage... inputMessages) {
+  private void assertStreamResponse(EmbeddedChannel channel, ChicagoMessage firstMessage,
+    ChicagoMessage... inputMessages) {
     ChicagoMessage chicagoMessage = (ChicagoMessage) channel.inboundMessages().poll();
     assertEquals(firstMessage.getId(), chicagoMessage.getId());
     assertArrayEquals(firstMessage.getColFam(), chicagoMessage.getColFam());
     assertEquals(firstMessage.getOp(), chicagoMessage.getOp());
-    // TODO: Why is the key always true for aggregated messages?
     assertArrayEquals("true".getBytes(), chicagoMessage.getKey());
     ByteBuf expectedValue = Unpooled.buffer();
     expectedValue.writeBytes(firstMessage.getVal());
     for (ChicagoMessage cm : inputMessages) {
       expectedValue.writeByte(',').writeBytes(cm.getVal());
     }
-    // TODO: Find out why aggregated messages don't need a key anywhere anymore
-    //expectedValue.writeBytes(inputMessages[inputMessages.length-1].getKey());
     byte[] expectedValueArray = new byte[expectedValue.writerIndex()];
     expectedValue.readBytes(expectedValueArray);
-    assertArrayEquals(new String(expectedValueArray) + " vs " + new String(chicagoMessage.getVal()), expectedValueArray, chicagoMessage.getVal());
+    assertArrayEquals(new String(expectedValueArray) + " vs " + new String(chicagoMessage.getVal()),
+      expectedValueArray, chicagoMessage.getVal());
   }
 
   private String getFirstMessageString(EmbeddedChannel channel) {
     return channel.inboundMessages().peek().toString();
   }
-
 }
