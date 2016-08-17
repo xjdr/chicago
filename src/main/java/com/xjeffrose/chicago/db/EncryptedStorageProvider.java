@@ -146,6 +146,6 @@ public class EncryptedStorageProvider implements StorageProvider {
   }
 
   @Override public List<String> getColFams() {
-    return getColFams();
+    return db.getColFams();
   }
 }
