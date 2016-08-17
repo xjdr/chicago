@@ -371,6 +371,11 @@ public class RocksDBImpl implements AutoCloseable, StorageProvider {
           i.next();
         }
 
+        if(values.isEmpty()){
+          i.seekToLast();
+          values.add(new DBRecord(colFam,i.key(),i.value()));
+        }
+
         log.info("Stream response from DB : " + (System.currentTimeMillis() - startTime) + "ms with last offset as " + Longs.fromByteArray(lastOffset));
         return values;
       }
