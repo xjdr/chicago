@@ -35,7 +35,7 @@ public class ChicagoAsyncClient implements Client {
   private final ZkClient zkClient;
   private final Map<UUID, SettableFuture<byte[]>> futureMap;
   private final ChannelHandler handler;
-  private final NioEventLoopGroup workerLoop = new NioEventLoopGroup(12,
+  private final NioEventLoopGroup workerLoop = new NioEventLoopGroup(5,
       new ThreadFactoryBuilder()
           .setNameFormat("chicagoClient-nioEventLoopGroup-%d")
           .build()
