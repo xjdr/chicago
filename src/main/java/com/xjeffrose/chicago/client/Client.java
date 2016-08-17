@@ -14,4 +14,6 @@ public interface Client extends AutoCloseable {
 
   ListenableFuture<byte[]> stream(byte[] topic, byte[] offset);
 
+  ListenableFuture<Boolean> deleteColFam(byte[] colFam);
+
 }

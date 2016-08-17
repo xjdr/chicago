@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -36,6 +37,7 @@ public class ChicagoAsyncClient implements Client {
   private final ZkClient zkClient;
   private final Map<UUID, SettableFuture<byte[]>> futureMap;
   private final ChannelHandler handler;
+  private ClientNodeWatcher clientNodeWatcher;
   private final NioEventLoopGroup workerLoop = new NioEventLoopGroup(5,
       new ThreadFactoryBuilder()
           .setNameFormat("chicagoClient-nioEventLoopGroup-%d")
@@ -48,6 +50,7 @@ public class ChicagoAsyncClient implements Client {
   private boolean singleServer = false;
   private String singleServerAddr = null;
   private EmbeddedChannel ech = null;
+  private CountDownLatch latch;
 
 
   public ChicagoAsyncClient(String addr) {
@@ -56,6 +59,8 @@ public class ChicagoAsyncClient implements Client {
     this.handler = new ChicagoClientHandler(futureMap);
     this.singleServer = true;
     this.singleServerAddr = addr;
+    this.clientNodeWatcher=null;
+    this.quorum = 1;
   }
 
   public ChicagoAsyncClient(String zkConnectionString, int q) {
@@ -63,6 +68,7 @@ public class ChicagoAsyncClient implements Client {
     this.futureMap = PlatformDependent.newConcurrentHashMap();
     this.handler = new ChicagoClientHandler(futureMap);
     this.quorum = q;
+    this.singleServer = false;
   }
 
   ChicagoAsyncClient(EmbeddedChannel ech, Map<UUID, SettableFuture<byte[]>> futureMap, int q) {
@@ -72,7 +78,7 @@ public class ChicagoAsyncClient implements Client {
     this.futureMap = futureMap;
     this.handler = new ChicagoClientHandler(futureMap);
     this.quorum = q;
-
+    this.singleServer = false;
   }
 
   @Override
@@ -87,12 +93,25 @@ public class ChicagoAsyncClient implements Client {
 
     if (ech != null) {
       connectionManager = new EmbeddedConnectionManager(ech);
-      rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), ImmutableList.of(ech.toString()), 3);
+      rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), ImmutableList.of(ech.toString()), quorum);
     } else {
-      List<String> nodeList = buildNodeList();
-      connectionManager = new ConnectionPoolManagerImpl(nodeList, handler, workerLoop);
-      connectionManager.start();
-      rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
+      List<String> nodeList;
+      if(singleServer){
+        nodeList = new ArrayList<>();
+        nodeList.add(singleServerAddr);
+        connectionManager = new ConnectionPoolManagerImpl(nodeList, handler, workerLoop);
+        rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
+        connectionManager.start();
+      } else {
+        nodeList = buildNodeList();
+        connectionManager = new ConnectionPoolManagerImpl(nodeList, handler, workerLoop);
+        connectionManager.start();
+        rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
+        clientNodeWatcher = new ClientNodeWatcher(zkClient);
+        clientNodeWatcher.start();
+        clientNodeWatcher.registerListener((NodeListener) rendezvousHash);
+        clientNodeWatcher.registerListener((NodeListener) connectionManager);
+      }
     }
 
   }
@@ -101,13 +120,28 @@ public class ChicagoAsyncClient implements Client {
     return zkClient.list(NODE_LIST_PATH);
   }
 
+  public List<String> getNodeList(byte[] key) {
+    return rendezvousHash.get(key);
+  }
+
+  public List<String> getEffectiveNodes(byte[] key){
+    List<String> hashList = new ArrayList<>(rendezvousHash.get(key));
+    if(!singleServer && !(clientNodeWatcher == null)) {
+      String path = REPLICATION_LOCK_PATH + "/" + new String(key);
+      List<String> replicationList = clientNodeWatcher.getReplicationPathData(path);
+      hashList.removeAll(replicationList);
+    }
+
+    return hashList;
+  }
+
   public ListenableFuture<byte[]> read(byte[] key) {
     return read(ChiUtil.defaultColFam.getBytes(), key);
   }
 
   @Override
   public ListenableFuture<byte[]> read(byte[] colFam, byte[] key) {
-    List<String> nodes = rendezvousHash.get(colFam);
+    List<String> nodes = getEffectiveNodes(colFam);
     UUID id = UUID.randomUUID();
     SettableFuture<byte[]> f = SettableFuture.create();
     futureMap.put(id, f);
@@ -166,7 +200,7 @@ public class ChicagoAsyncClient implements Client {
   public ListenableFuture<Boolean> write(byte[] colFam, byte[] key, byte[] val) {
     List<SettableFuture<byte[]>> futureList = new ArrayList<>();
     SettableFuture<Boolean> respFuture = SettableFuture.create();
-    List<String> nodes = rendezvousHash.get(colFam);
+    List<String> nodes = getEffectiveNodes(colFam);
     nodes.stream().forEach(xs -> {
       UUID id = UUID.randomUUID();
       SettableFuture<byte[]> f = SettableFuture.create();
@@ -226,12 +260,10 @@ public class ChicagoAsyncClient implements Client {
     return respFuture;
   }
 
-  @Override
-  public ListenableFuture<byte[]> tsWrite(byte[] topic, byte[] val) {
-
+  public ListenableFuture<byte[]> tsWrite(byte[] topic, byte[] key,  byte[] val) {
     List<SettableFuture<byte[]>> futureList = new ArrayList<>();
     SettableFuture<byte[]> respFuture = SettableFuture.create();
-    List<String> nodes = rendezvousHash.get(topic);
+    List<String> nodes = getEffectiveNodes(topic);
     nodes.stream().forEach(xs -> {
       UUID id = UUID.randomUUID();
       SettableFuture<byte[]> f = SettableFuture.create();
@@ -250,14 +282,14 @@ public class ChicagoAsyncClient implements Client {
         }
       });
 
-      Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.TS_WRITE, topic, null, val)), new FutureCallback<Boolean>() {
+      Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.TS_WRITE, topic, key, val)), new FutureCallback<Boolean>() {
         @Override
         public void onSuccess(@Nullable Boolean aBoolean) {
         }
 
         @Override
         public void onFailure(Throwable throwable) {
-          Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.TS_WRITE, topic, null, val)), new FutureCallback<Boolean>() {
+          Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.TS_WRITE, topic, key, val)), new FutureCallback<Boolean>() {
             @Override
             public void onSuccess(@Nullable Boolean aBoolean) {
 
@@ -281,7 +313,7 @@ public class ChicagoAsyncClient implements Client {
       @Override
       public void onFailure(Throwable throwable) {
         try {
-          respFuture.set(tsWrite(topic, val).get(TIMEOUT, TimeUnit.MILLISECONDS));
+          respFuture.set(tsWrite(topic,key, val).get(TIMEOUT, TimeUnit.MILLISECONDS));
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
           respFuture.setException(e);
         }
@@ -292,8 +324,13 @@ public class ChicagoAsyncClient implements Client {
   }
 
   @Override
+  public ListenableFuture<byte[]> tsWrite(byte[] topic, byte[] val) {
+    return tsWrite(topic,null,val);
+  }
+
+  @Override
   public ListenableFuture<byte[]> stream(byte[] topic, byte[] offset) {
-    List<String> nodes = rendezvousHash.get(topic);
+    List<String> nodes = getEffectiveNodes(topic);
     UUID id = UUID.randomUUID();
     SettableFuture<byte[]> f = SettableFuture.create();
     futureMap.put(id, f);
@@ -342,7 +379,70 @@ public class ChicagoAsyncClient implements Client {
     }, 2, TimeUnit.MILLISECONDS);
 
     return f;
+  }
 
+  @Override
+  public ListenableFuture<Boolean> deleteColFam(byte[] colFam) {
+    List<SettableFuture<byte[]>> futureList = new ArrayList<>();
+    SettableFuture<Boolean> respFuture = SettableFuture.create();
+    List<String> nodes = getEffectiveNodes(colFam);
+    nodes.stream().forEach(xs -> {
+      UUID id = UUID.randomUUID();
+      SettableFuture<byte[]> f = SettableFuture.create();
+      futureMap.put(id, f);
+      futureList.add(f);
+      Futures.addCallback(f, new FutureCallback<byte[]>() {
+        @Override
+        public void onSuccess(@Nullable byte[] bytes) {
+          f.set(bytes);
+        }
+
+        @Override
+        public void onFailure(Throwable throwable) {
+          f.setException(throwable);
+        }
+      });
+
+      Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.DELETE, colFam, null, null)), new FutureCallback<Boolean>() {
+        @Override
+        public void onSuccess(@Nullable Boolean aBoolean) {
+          futureList.add(f);
+        }
+
+        @Override
+        public void onFailure(Throwable throwable) {
+          Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.DELETE, colFam, null, null)), new FutureCallback<Boolean>() {
+            @Override
+            public void onSuccess(@Nullable Boolean aBoolean) {
+              futureList.add(f);
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+
+            }
+          });
+        }
+      });
+    });
+
+    Futures.addCallback(Futures.successfulAsList(futureList), new FutureCallback<List<byte[]>>() {
+      @Override
+      public void onSuccess(@Nullable List<byte[]> bytes) {
+        respFuture.set(true);
+      }
+
+      @Override
+      public void onFailure(Throwable throwable) {
+        try {
+          respFuture.set(deleteColFam(colFam).get(TIMEOUT, TimeUnit.MILLISECONDS));
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+          respFuture.setException(e);
+        }
+      }
+    });
+
+    return respFuture;
   }
 
   @Override

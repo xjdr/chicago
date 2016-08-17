@@ -6,20 +6,14 @@ import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import com.google.common.primitives.Longs;
 import io.netty.util.internal.PlatformDependent;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RendezvousHash<N> {
+public class RendezvousHash<N> implements NodeListener<N>{
   private static final Logger log = LoggerFactory.getLogger(RendezvousHash.class.getName());
 
   private final HashFunction hasher;
@@ -31,7 +25,7 @@ public class RendezvousHash<N> {
     public RendezvousHash(Funnel<N> nodeFunnel, Collection<N> init, int quorum) {
     this.hasher = Hashing.murmur3_128();
     this.nodeFunnel = nodeFunnel;
-    this.nodeList = new ArrayList<N>(init);
+    this.nodeList = Collections.synchronizedList(new ArrayList<N>(init));
     this.quorum = quorum;
   }
 
@@ -74,4 +68,13 @@ public class RendezvousHash<N> {
     return _nodeList;
   }
 
+  @Override
+  public void nodeAdded(N node) {
+    add(node);
+  }
+
+  @Override
+  public void nodeRemoved(N node) {
+    remove(node);
+  }
 }

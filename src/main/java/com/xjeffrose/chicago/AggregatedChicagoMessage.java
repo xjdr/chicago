@@ -70,7 +70,7 @@ public class AggregatedChicagoMessage implements ChicagoMessage {
     byte[] newVal = new byte[val.length + valToAppend.length + 1];
 
     System.arraycopy(val, 0, newVal, 0, val.length);
-    System.arraycopy(",".getBytes(), 0, newVal, val.length, 1);
+    System.arraycopy("\0".getBytes(), 0, newVal, val.length, 1);
     System.arraycopy(valToAppend, 0, newVal, val.length + 1, valToAppend.length);
 
     val = newVal;

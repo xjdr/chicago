@@ -37,16 +37,18 @@ abstract public class BaseChicagoClient {
   protected final ClientNodeWatcher clientNodeWatcher;
   protected final ChicagoBuffer chicagoBuffer;
   private CountDownLatch latch;
-  private final ClientNodeWatcher.Listener listener = new ClientNodeWatcher.Listener() {
-      public void nodeAdded() {
-        int avail = nodesAvailable.incrementAndGet();
-        if (latch != null) {
-          latch.countDown();
-        }
+  private final NodeListener listener = new NodeListener() {
+    @Override
+    public void nodeAdded(Object node) {
+      if (latch != null) {
+        latch.countDown();
       }
-      public void nodeRemoved() {
-        nodesAvailable.decrementAndGet();
-      }
+    }
+
+    @Override
+    public void nodeRemoved(Object node) {
+      nodesAvailable.decrementAndGet();
+    }
   };
   protected final ZkClient zkClient;
   protected final ConnectionPoolManagerX connectionPoolMgr;
@@ -82,7 +84,7 @@ abstract public class BaseChicagoClient {
 
     ArrayList<String> nodeList = new ArrayList<>();
     this.rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
-    clientNodeWatcher = new ClientNodeWatcher(zkClient, rendezvousHash, listener);
+    clientNodeWatcher = new ClientNodeWatcher(zkClient);
     this.connectionPoolMgr = new ConnectionPoolManagerX(zkClient, futureMap);
     this.chicagoBuffer = new ChicagoBuffer(connectionPoolMgr, this);
     if (Epoll.isAvailable()) {
@@ -118,6 +120,8 @@ abstract public class BaseChicagoClient {
         zkClient.start();
         connectionPoolMgr.start();
         clientNodeWatcher.start();
+        clientNodeWatcher.registerListener(rendezvousHash);
+        clientNodeWatcher.registerListener(listener);
       }
     } catch (Exception e) {
       e.printStackTrace();

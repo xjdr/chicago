@@ -2,10 +2,11 @@ package com.xjeffrose.chicago.client;
 
 import com.xjeffrose.chicago.TreeCacheInstance;
 import com.xjeffrose.chicago.ZkClient;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
+
+import com.xjeffrose.xio.client.loadbalancer.Node;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
@@ -14,10 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ClientNodeWatcher {
-  public interface Listener {
-    void nodeAdded();
-    void nodeRemoved();
-  }
   private static final Logger log = LoggerFactory.getLogger(ClientNodeWatcher.class);
   private final static String NODE_LIST_PATH = "/chicago/node-list";
   public final static String REPLICATION_LOCK_PATH ="/chicago/replication-lock";
@@ -27,16 +24,19 @@ public class ClientNodeWatcher {
   private TreeCacheInstance replicationPathTree;
   private ZkClient zkClient;
   private RendezvousHash rendezvousHash;
-  private final Listener listener;
+  private final List<NodeListener> listeners = Collections.synchronizedList(new ArrayList<>());
   private ConnectionPoolManagerX connectionPoolManagerX;
 
-  public ClientNodeWatcher(ZkClient zkClient, RendezvousHash rendezvousHash, Listener listener) {
+  public ClientNodeWatcher(ZkClient zkClient) {
     nodeList = new TreeCacheInstance(zkClient, NODE_LIST_PATH);
     this.zkClient = zkClient;
     this.rendezvousHash = rendezvousHash;
-    this.listener = listener;
     this.replicationPathTree = new TreeCacheInstance(zkClient, REPLICATION_LOCK_PATH);
     nodeList.getCache().getListenable().addListener(new GenericListener(NODE_LIST_PATH));
+  }
+
+  public void registerListener(NodeListener listener){
+    listeners.add(listener);
   }
 
   public void start() {
@@ -107,8 +107,10 @@ public class ClientNodeWatcher {
             nodeAdded(event.getData().getPath());
           }
           if (!NODE_LIST_PATH.equals(event.getData().getPath())) {
-            if (listener != null) {
-              listener.nodeAdded();
+            String[] path = event.getData().getPath().split("/");
+            String node = path[path.length-1];
+            for(NodeListener listener : listeners){
+              listener.nodeAdded(node);
             }
           }
           break;
@@ -117,8 +119,10 @@ public class ClientNodeWatcher {
             nodeRemoved(event.getData().getPath());
           }
           if (!NODE_LIST_PATH.equals(event.getData().getPath())) {
-            if (listener != null) {
-              listener.nodeRemoved();
+            String[] path = event.getData().getPath().split("/");
+            String node = path[path.length-1];
+            for(NodeListener listener : listeners){
+              listener.nodeRemoved(node);
             }
           }
           break;
