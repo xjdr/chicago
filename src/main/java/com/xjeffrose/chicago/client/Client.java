@@ -12,8 +12,8 @@ public interface Client extends AutoCloseable {
 
   ListenableFuture<byte[]> tsWrite(byte[] topic, byte[] val);
 
-  ListenableFuture<byte[]> batchWrite(byte[] topic, byte[] val);
-
   ListenableFuture<byte[]> stream(byte[] topic, byte[] offset);
+
+  ListenableFuture<Boolean> deleteColFam(byte[] colFam);
 
 }

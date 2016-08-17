@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class ConnectionPoolManagerImpl implements ConnectionPoolManager {
+public class ConnectionPoolManagerImpl implements ConnectionPoolManager, NodeListener {
   private final ChannelHandler handler;
   private final EventLoopGroup workerLoop;
   private final Map<String, RequestMuxer<ChicagoMessage>> connectionMap = PlatformDependent.newConcurrentHashMap();
@@ -76,4 +76,23 @@ public class ConnectionPoolManagerImpl implements ConnectionPoolManager {
   private void rebuildConnectionMap(String addr, Map<String, RequestMuxer<ChicagoMessage>> connectionMap) {
     connectionMap.get(addr).rebuildConnectionQ();
   }
+
+  @Override
+  public void nodeAdded(Object node) {
+    RequestMuxer<ChicagoMessage> mux = new RequestMuxer<>((String)node, handler, workerLoop);
+    try {
+      mux.start();
+    } catch (Exception e) {
+      //TODO(JR): Determine best course for recovery here
+      e.printStackTrace();
+    }
+    connectionMap.put((String)node, mux);
+  }
+
+  @Override
+  public void nodeRemoved(Object node) {
+    RequestMuxer mux = connectionMap.remove((String)node);
+    mux.close();
+  }
+
 }

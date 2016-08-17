@@ -1,5 +1,6 @@
 package com.xjeffrose.chicago.client;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.SettableFuture;
@@ -9,9 +10,13 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.EventLoopGroup;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
+import io.netty.util.concurrent.ScheduledFuture;
 import io.netty.util.internal.PlatformDependent;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,7 +28,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class RequestMuxer<T> {
+public class RequestMuxer<T> implements AutoCloseable {
   private static final int POOL_SIZE = 4;
   private static final int CONST = 1618;
 
@@ -40,6 +45,7 @@ public class RequestMuxer<T> {
   private ChicagoConnector connector;
   private AtomicLong counter = new AtomicLong();
   private AtomicBoolean connectionRebuild = new AtomicBoolean(false);
+  private List<ScheduledFuture> scheduledFutures = Collections.synchronizedList(new ArrayList());
 
   public RequestMuxer(String addr, ChannelHandler handler, EventLoopGroup workerLoop) {
     this.addr = addr;
@@ -58,25 +64,36 @@ public class RequestMuxer<T> {
       }
     },0,1,TimeUnit.MILLISECONDS);
 
-    workerLoop.scheduleAtFixedRate(() -> {
+    ScheduledFuture f =  workerLoop.scheduleAtFixedRate(() -> {
       if (messageQ.size() > HIGH_WATER_MARK) {
         MULT.incrementAndGet();
       }
     },0,500,TimeUnit.MILLISECONDS);
+    scheduledFutures.add(f);
 
-    workerLoop.scheduleAtFixedRate(() -> {
+    f = workerLoop.scheduleAtFixedRate(() -> {
       if ( messageQ.size() < HIGH_WATER_MARK / 10) {
         if (MULT.get() > 0) {
           MULT.decrementAndGet();
         }
       }
     },0,750,TimeUnit.MILLISECONDS);
+    scheduledFutures.add(f);
 
-    workerLoop.scheduleAtFixedRate(() -> {
+    f = workerLoop.scheduleAtFixedRate(() -> {
       if(connectionRebuild.get()){
         rebuildConnectionQ();
       }
     },0,250,TimeUnit.MILLISECONDS);
+    scheduledFutures.add(f);
+  }
+
+  @Override
+  public void close() {
+    shutdownGracefully();
+    for(ScheduledFuture f : scheduledFutures){
+      f.cancel(true);
+    }
   }
 
   public void shutdownGracefully() {
