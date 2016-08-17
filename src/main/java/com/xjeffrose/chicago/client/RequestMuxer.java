@@ -219,6 +219,7 @@ public class RequestMuxer<T> {
       });
     }
     ch.flush();
+    counter.set(0);
   }
 
   private void drainMessageQ(T sendReq, SettableFuture<Boolean> f) {
