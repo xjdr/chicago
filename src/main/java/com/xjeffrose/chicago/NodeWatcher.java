@@ -24,7 +24,6 @@ public class NodeWatcher {
   private final int quorum;
   private final CountDownLatch latch = new CountDownLatch(1);
   private final GenericListener genericListener = new GenericListener();
-  private ChicagoClient chicagoClient;
   private TreeCacheInstance nodeList;
   private ZkClient zkClient;
   private StorageProvider db;
@@ -47,8 +46,6 @@ public class NodeWatcher {
     this.advertisedEndpoint = advertisedEndpoint;
     nodeList.getCache().getListenable().addListener(genericListener);
     try {
-      this.chicagoClient = new ChicagoClient(zkClient.getConnectionString(), quorum);
-      chicagoClient.start();
       nodeList.start();
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -64,11 +61,6 @@ public class NodeWatcher {
 
   public void stop() throws Exception {
     log.info("Nodewatcher stopping");
-    if (chicagoClient != null) {
-      chicagoClient.stop();
-    } else {
-      System.out.println("No chicago client to stop");
-    }
     zkClient = null;
     if (nodeList != null && nodeList.getCache() != null && nodeList.getCache().getListenable() != null) {
       nodeList.getCache().getListenable().removeListener(genericListener);

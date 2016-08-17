@@ -165,7 +165,7 @@ public class ChicagoAsyncClientTest {
     Futures.addCallback(futureMap.get(id), new FutureCallback<byte[]>() {
       @Override
       public void onSuccess(@Nullable byte[] bytes) {
-        assertEquals("val1,val2,val3,val4@@@", new String(bytes));
+        assertEquals("val1\0val2\0val3\0val4@@@", new String(bytes));
         l.countDown();
       }
 
