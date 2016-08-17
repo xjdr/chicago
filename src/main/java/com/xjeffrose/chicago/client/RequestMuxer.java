@@ -14,6 +14,7 @@ import java.net.InetSocketAddress;
 import java.util.Deque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
 import lombok.Data;
@@ -23,12 +24,11 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RequestMuxer<T> {
-  // WARNING!!!!!!!
-  // This is the magic required to prevent deadlocks.
-  // DO NOT CHANGE THIS VALUE or risk undoing all the
-  // magic held therein...
-  private static final int MAGIC_NUMBER = 23;
   private static final int POOL_SIZE = 4;
+  private static final int CONST = 1618;
+
+  private final AtomicInteger MULT = new AtomicInteger();
+  private final int HIGH_WATER_MARK = CONST * MULT.get();
 
   private final String addr;
   private final EventLoopGroup workerLoop;
@@ -38,7 +38,7 @@ public class RequestMuxer<T> {
   private final Deque<MuxedMessage<T>> messageQ = PlatformDependent.newConcurrentDeque();
   @Setter
   private ChicagoConnector connector;
-//  private AtomicLong counter = new AtomicLong();
+  private AtomicLong counter = new AtomicLong();
   private AtomicBoolean connectionRebuild = new AtomicBoolean(false);
 
   public RequestMuxer(String addr, ChannelHandler handler, EventLoopGroup workerLoop) {
@@ -53,16 +53,30 @@ public class RequestMuxer<T> {
     isRunning.set(true);
 
     workerLoop.scheduleAtFixedRate(() -> {
-      if(messageQ.size() > 0){
+      if (messageQ.size() > 0) {
         drainMessageQ();
       }
-    },0,6,TimeUnit.MILLISECONDS);
+    },0,1,TimeUnit.MILLISECONDS);
+
+    workerLoop.scheduleAtFixedRate(() -> {
+      if (messageQ.size() > HIGH_WATER_MARK) {
+        MULT.incrementAndGet();
+      }
+    },0,500,TimeUnit.MILLISECONDS);
+
+    workerLoop.scheduleAtFixedRate(() -> {
+      if ( messageQ.size() < HIGH_WATER_MARK / 10) {
+        if (MULT.get() > 0) {
+          MULT.decrementAndGet();
+        }
+      }
+    },0,750,TimeUnit.MILLISECONDS);
 
     workerLoop.scheduleAtFixedRate(() -> {
       if(connectionRebuild.get()){
         rebuildConnectionQ();
       }
-    },0,10,TimeUnit.MILLISECONDS);
+    },0,250,TimeUnit.MILLISECONDS);
   }
 
   public void shutdownGracefully() {
@@ -138,10 +152,10 @@ public class RequestMuxer<T> {
 
   public void write(T sendReq, SettableFuture<Boolean> f) {
     if (isRunning.get()) {
-      messageQ.addLast(new MuxedMessage<>(sendReq,f));
-//      drainMessageQ(sendReq, f);
-      if (messageQ.size() > (1618 * 6)) {
-        drainMessageQ();
+      if (counter.incrementAndGet() > HIGH_WATER_MARK) {
+        messageQ.addLast(new MuxedMessage<>(sendReq, f));
+      } else {
+        drainMessageQ(sendReq, f);
       }
     }
   }
@@ -204,9 +218,11 @@ public class RequestMuxer<T> {
 
   private void drainMessageQ() {
     Channel ch = requestNode();
-    while (isRunning.get() && messageQ.size() > 0) {
+    final int snapshot = messageQ.size();
+    int count = 0;
+    while (isRunning.get() && snapshot > count) {
       final MuxedMessage<T> mm = messageQ.pollFirst();
-//      counter.incrementAndGet();
+      count++;
       ch.write(mm.getMsg()).addListener(new GenericFutureListener<Future<? super Void>>() {
         @Override
         public void operationComplete(Future<? super Void> future) throws Exception {
@@ -220,6 +236,7 @@ public class RequestMuxer<T> {
       });
     }
     ch.flush();
+    counter.set(counter.get() - snapshot);
   }
 
   private void drainMessageQ(T sendReq, SettableFuture<Boolean> f) {
@@ -228,6 +245,7 @@ public class RequestMuxer<T> {
         @Override
         public void operationComplete(Future<? super Void> future) throws Exception {
           if (future.isSuccess()) {
+            counter.decrementAndGet();
             f.set(true);
           } else {
             f.set(false);

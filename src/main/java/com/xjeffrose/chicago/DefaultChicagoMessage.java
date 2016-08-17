@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Slf4j
-@EqualsAndHashCode(exclude={})
+@EqualsAndHashCode(exclude={"decoderResult"})
 //@ToString(exclude={})
 public class DefaultChicagoMessage implements ChicagoMessage {
   private final UUID id;
