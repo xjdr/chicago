@@ -115,8 +115,8 @@ public class NodeWatcher {
               String lockPath = REPLICATION_LOCK_PATH + "/" + cf + "/" + s;
               try {
                 zkClient.createLockPath(lockPath, advertisedEndpoint, "REPLICATION_LOCK");
-                ChicagoClient c = new ChicagoClient((String) s);
-                c.startAndWaitForNodes(1);
+                ChicagoAsyncClient c = new ChicagoAsyncClient((String) s);
+                c.start();
                 byte[] offset = new byte[]{};
                 List<byte[]> keys = db.getKeys(cf.getBytes(), offset);
                 // Start replicating all the keys to the new server.
@@ -135,8 +135,6 @@ public class NodeWatcher {
                 }
               } catch (ChicagoClientException e) {
                 log.error("Something bad happened while replication");
-              } catch (InterruptedException e) {
-                e.printStackTrace();
               } finally {
                 zkClient.deleteLockPath(lockPath, advertisedEndpoint);
               }

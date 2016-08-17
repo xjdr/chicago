@@ -23,14 +23,12 @@ public class ClientNodeWatcher {
   private TreeCacheInstance nodeList;
   private TreeCacheInstance replicationPathTree;
   private ZkClient zkClient;
-  private RendezvousHash rendezvousHash;
   private final List<NodeListener> listeners = Collections.synchronizedList(new ArrayList<>());
   private ConnectionPoolManagerX connectionPoolManagerX;
 
   public ClientNodeWatcher(ZkClient zkClient) {
     nodeList = new TreeCacheInstance(zkClient, NODE_LIST_PATH);
     this.zkClient = zkClient;
-    this.rendezvousHash = rendezvousHash;
     this.replicationPathTree = new TreeCacheInstance(zkClient, REPLICATION_LOCK_PATH);
     nodeList.getCache().getListenable().addListener(new GenericListener(NODE_LIST_PATH));
   }
@@ -67,7 +65,6 @@ public class ClientNodeWatcher {
 
   private void nodeAdded(String path) {
     String[] _path = path.split("/");
-    rendezvousHash.add(_path[_path.length - 1]);
     if(connectionPoolManagerX != null){
       connectionPoolManagerX.checkConnection();
     }
@@ -84,7 +81,6 @@ public class ClientNodeWatcher {
 
   private void nodeRemoved(String path) {
     String[] _path = path.split("/");
-    rendezvousHash.remove(_path[_path.length - 1]);
   }
 
   private class GenericListener implements TreeCacheListener {
