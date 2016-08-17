@@ -40,7 +40,11 @@ public class InMemDBImpl implements StorageProvider, AutoCloseable {
   }
 
   @Override public List<String> getColFams() {
-    return null;
+    List<String> resp = new ArrayList<>();
+    for(ByteBuf keys: db.keySet()) {
+      resp.add(keys.toString());
+    }
+    return resp;
   }
 
   @Override
