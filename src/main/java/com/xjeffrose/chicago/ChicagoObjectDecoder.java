@@ -43,19 +43,19 @@ public class ChicagoObjectDecoder extends ByteToMessageDecoder {
         UUID id = chiMsg.getId();
         Op op = chiMsg.getOp();
         byte[] colFam = chiMsg.getColFam();
-        byte[] key = chiMsg.getKey();
         ByteBuf bb = Unpooled.buffer();
 
         for (Object cm : out) {
           lastOffset = ((ChicagoMessage)cm).getKey();
           bb.writeBytes(((ChicagoMessage)cm).getVal());
+          // TODO: It would be more efficient to use `writeByte(0)`
           bb.writeBytes(new byte[]{'\0'});
         }
 
+        // TODO: This feels dangerous to me, we should be specifying the charset not using system default
         bb.writeBytes(ChiUtil.delimiter.getBytes());
         bb.writeBytes(lastOffset);
         out.clear();
-        byte[] val = bb.array();
         ChicagoMessage cm = new DefaultChicagoMessage(id,op,colFam,Boolean.toString(true).getBytes(),bb.array());
         cm.setDecoderResult(DecoderResult.SUCCESS);
         out.add(cm);

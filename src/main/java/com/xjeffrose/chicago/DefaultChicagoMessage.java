@@ -9,7 +9,7 @@ import lombok.ToString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@EqualsAndHashCode(exclude={})
+@EqualsAndHashCode(exclude={"decoderResult"})
 @ToString(exclude={})
 public class DefaultChicagoMessage implements ChicagoMessage {
   private static final Logger log = LoggerFactory.getLogger(DefaultChicagoMessage.class.getName());
