@@ -7,6 +7,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.xjeffrose.chicago.ChiUtil;
 import com.xjeffrose.chicago.DefaultChicagoMessage;
 import com.xjeffrose.chicago.Op;
 import com.xjeffrose.chicago.ZkClient;
@@ -44,22 +45,17 @@ public class ChicagoAsyncClient implements Client {
   private ConnectionPoolManager connectionManager;
   private RendezvousHash<String> rendezvousHash;
   private int quorum = 3;
+  private boolean singleServer = false;
+  private String singleServerAddr = null;
   private EmbeddedChannel ech = null;
 
 
-  public ChicagoAsyncClient(InetSocketAddress addr) {
-    this(addr, 3);
-  }
-
-  public ChicagoAsyncClient(InetSocketAddress addr, int q) {
+  public ChicagoAsyncClient(String addr) {
     this.zkClient = null;
     this.futureMap = PlatformDependent.newConcurrentHashMap();
     this.handler = new ChicagoClientHandler(futureMap);
-    this.quorum = q;
-  }
-
-  public ChicagoAsyncClient(String zkConnectionString) {
-    this(zkConnectionString, 3);
+    this.singleServer = true;
+    this.singleServerAddr = addr;
   }
 
   public ChicagoAsyncClient(String zkConnectionString, int q) {
@@ -96,7 +92,7 @@ public class ChicagoAsyncClient implements Client {
       List<String> nodeList = buildNodeList();
       connectionManager = new ConnectionPoolManagerImpl(nodeList, handler, workerLoop);
       connectionManager.start();
-      rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, 3);
+      rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
     }
 
   }
@@ -105,6 +101,9 @@ public class ChicagoAsyncClient implements Client {
     return zkClient.list(NODE_LIST_PATH);
   }
 
+  public ListenableFuture<byte[]> read(byte[] key) {
+    return read(ChiUtil.defaultColFam.getBytes(), key);
+  }
 
   @Override
   public ListenableFuture<byte[]> read(byte[] colFam, byte[] key) {
@@ -159,6 +158,10 @@ public class ChicagoAsyncClient implements Client {
     return f;
   }
 
+  public ListenableFuture<Boolean> write(byte[] key, byte[] value) {
+    return write(ChiUtil.defaultColFam.getBytes(), key, value);
+  }
+
   @Override
   public ListenableFuture<Boolean> write(byte[] colFam, byte[] key, byte[] val) {
     List<SettableFuture<byte[]>> futureList = new ArrayList<>();
@@ -168,6 +171,7 @@ public class ChicagoAsyncClient implements Client {
       UUID id = UUID.randomUUID();
       SettableFuture<byte[]> f = SettableFuture.create();
       futureMap.put(id, f);
+      futureList.add(f);
       Futures.addCallback(f, new FutureCallback<byte[]>() {
         @Override
         public void onSuccess(@Nullable byte[] bytes) {
@@ -285,12 +289,6 @@ public class ChicagoAsyncClient implements Client {
     });
 
     return respFuture;
-  }
-
-  @Deprecated
-  @Override
-  public ListenableFuture<byte[]> batchWrite(byte[] topic, byte[] val) {
-    return null;
   }
 
   @Override
