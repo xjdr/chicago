@@ -154,23 +154,23 @@ public class ChicagoClientTest {
     assertEquals("Val", new String(chicagoMessage.getVal()));
   }
 
-  @Test
-  public void tsbatchWrite() throws Exception {
-    for (int i = 0; i < 10000; i++) {
-      String key = "Key";
-      String val = "Val" + i;
-      chicagoClient.tsbatchWrite(key.getBytes(), val.getBytes());
-    }
-
-    ByteBuf bb = ch1.readOutbound();
-    byte[] _bb = new byte[bb.readableBytes()];
-    bb.readBytes(_bb);
-    ChicagoMessage chicagoMessage = decoder.decode(_bb);
-
-    assertEquals(Op.TS_WRITE, chicagoMessage.getOp());
-    assertEquals("Key", new String(chicagoMessage.getColFam()));
-    assertTrue(new String(chicagoMessage.getVal()).contains("Val0"));
-  }
+//  @Test
+//  public void tsbatchWrite() throws Exception {
+//    for (int i = 0; i < 10000; i++) {
+//      String key = "Key";
+//      String val = "Val" + i;
+//      chicagoClient.tsbatchWrite(key.getBytes(), val.getBytes());
+//    }
+//
+//    ByteBuf bb = ch1.readOutbound();
+//    byte[] _bb = new byte[bb.readableBytes()];
+//    bb.readBytes(_bb);
+//    ChicagoMessage chicagoMessage = decoder.decode(_bb);
+//
+//    assertEquals(Op.TS_WRITE, chicagoMessage.getOp());
+//    assertEquals("Key", new String(chicagoMessage.getColFam()));
+//    assertTrue(new String(chicagoMessage.getVal()).contains("Val0"));
+//  }
 
   @Test
   public void delete() throws Exception {
