@@ -212,9 +212,6 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
           String temp = new String(record) + ChiUtil.delimiter;
           bb.writeBytes(temp.getBytes());
         }
-        byte[] b = bb.array();
-        String str = new String(b);
-        log.info(str);
         ctx.writeAndFlush(
           new DefaultChicagoMessage(
             msg.getId(),

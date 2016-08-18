@@ -139,10 +139,8 @@ public class ChicagoAsyncClient implements Client {
     List<String> resp = new ArrayList<>();
     if(this.zkClient != null) {
       resp = this.zkClient.list(REPLICATION_LOCK_PATH);
-      return resp;
-    } else {
-      return resp;
     }
+    return resp;
   }
 
   @Override
