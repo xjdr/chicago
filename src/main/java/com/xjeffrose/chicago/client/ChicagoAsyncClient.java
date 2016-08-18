@@ -135,6 +135,70 @@ public class ChicagoAsyncClient implements Client {
     return hashList;
   }
 
+  public List<String> scanColFamily() throws Exception {
+    List<String> resp = new ArrayList<>();
+    if(this.zkClient != null) {
+      resp = this.zkClient.list(REPLICATION_LOCK_PATH);
+      return resp;
+    } else {
+      return resp;
+    }
+  }
+
+  @Override
+  public ListenableFuture<byte[]> scanKeys(byte[] colFam) {
+    List<String> nodes = getEffectiveNodes(colFam);
+    UUID id = UUID.randomUUID();
+    SettableFuture<byte[]> f = SettableFuture.create();
+    futureMap.put(id, f);
+    Futures.addCallback(f, new FutureCallback<byte[]>() {
+      @Override
+      public void onSuccess(@Nullable byte[] bytes) {
+        f.set(bytes);
+      }
+
+      @Override
+      public void onFailure(Throwable throwable) {
+        f.setException(throwable);
+      }
+    });
+
+    Futures.addCallback(connectionManager.write(nodes.get(0), new DefaultChicagoMessage(id, Op.SCAN_KEYS, colFam, null, null)), new FutureCallback<Boolean>() {
+      @Override
+      public void onSuccess(@Nullable Boolean aBoolean) {
+
+      }
+
+      @Override
+      public void onFailure(Throwable throwable) {
+
+      }
+    });
+
+    workerLoop.schedule(() -> {
+      if (nodes.size() > 1) {
+        Futures.addCallback(connectionManager.write(nodes.get(1), new DefaultChicagoMessage(id, Op.SCAN_KEYS, colFam, null, null)), new FutureCallback<Boolean>() {
+          @Override
+          public void onSuccess(@Nullable Boolean aBoolean) {
+
+          }
+
+          @Override
+          public void onFailure(Throwable throwable) {
+            try {
+              f.set(scanKeys(colFam).get(TIMEOUT, TimeUnit.MILLISECONDS));
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+              f.setException(throwable);
+            }
+          }
+        });
+      }
+    }, 2, TimeUnit.MILLISECONDS);
+
+    return f;
+  }
+
+
   public ListenableFuture<byte[]> read(byte[] key) {
     return read(ChiUtil.defaultColFam.getBytes(), key);
   }
