@@ -6,6 +6,8 @@ public interface Client extends AutoCloseable {
 
   void start();
 
+  ListenableFuture<byte[]> scanKeys(byte[] colFam);
+
   ListenableFuture<byte[]> read(byte[] colFam, byte[] key);
 
   ListenableFuture<Boolean> write(byte[] colFam, byte[] key, byte[] val);

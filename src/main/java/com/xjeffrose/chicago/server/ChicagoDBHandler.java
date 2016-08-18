@@ -1,5 +1,6 @@
 package com.xjeffrose.chicago.server;
 
+import com.google.common.primitives.Bytes;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -201,6 +202,32 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
     }, ctx.executor());
   }
 
+  private void handleScanKeys(ChannelHandlerContext ctx, ChicagoMessage msg, ChannelFutureListener writeComplete) {
+    ListenableFuture<List<byte[]>> future = db.getKeys(msg.getColFam());
+    Futures.addCallback(future, new FutureCallback<List<byte[]>>() {
+      @Override
+      public void onSuccess(List<byte[]> result) {
+        ByteBuf bb = Unpooled.buffer();
+        for(byte[] record : result) {
+          String temp = new String(record) + ChiUtil.delimiter;
+          bb.writeBytes(temp.getBytes());
+        }
+        ctx.writeAndFlush(
+          new DefaultChicagoMessage(
+            msg.getId(),
+            Op.RESPONSE,
+            msg.getColFam(),
+            Boolean.toString(true).getBytes(),
+            bb.array()
+          )
+        ).addListener(writeComplete);
+      }
+      @Override
+      public void onFailure(Throwable error) {
+      }
+    }, ctx.executor());
+  }
+
   @Override
   protected void channelRead0(ChannelHandlerContext ctx, ChicagoMessage msg) throws Exception {
     ChannelFutureListener writeComplete = new ChannelFutureListener() {
@@ -228,7 +255,9 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
       case STREAM:
         handleStreamingRead(ctx, msg, writeComplete);
         break;
-
+      case SCAN_KEYS:
+        handleScanKeys(ctx, msg, writeComplete);
+        break;
       default:
         break;
     }
