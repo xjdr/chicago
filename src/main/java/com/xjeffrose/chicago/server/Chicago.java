@@ -13,24 +13,6 @@ public class Chicago {
 
   public static void main(String[] args) {
     log.info("Starting Chicago, have a nice day");
-/*
-    Config overrides;
-
-    if (args.length > 0) {
-      try {
-        overrides = ConfigFactory.parseFile(new File(args[0]));
-      } catch (Exception e) {
-        overrides = ConfigFactory.parseFile(new File("application.conf"));
-      }
-    } else {
-      overrides = ConfigFactory.parseFile(new File("test.conf"));
-    }
-
-    Config defaults = ConfigFactory.load();
-
-    System.out.println(overrides);
-    Config settings = overrides.withFallback(defaults).resolve();
-    */
     Config settings = ConfigFactory.load();
     ChiConfig config = new ChiConfig(settings.getConfig("chicago.application"));
 
