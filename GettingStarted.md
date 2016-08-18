@@ -25,6 +25,41 @@ Fill in the following entries :
   1. `zookeeperCluster`
   2. `bindHost` with IP address of the machine for  admin, stats and db
    
+Sample application.conf :
+
+     chicago {
+       application = ${chicago.applicationTemplate} {
+         settings {
+           zookeeperCluster = "10.24.25.188:2181,10.24.25.189:2181,10.25.145.56:2181,10.24.33.123:2181"
+           dbPath = "/var/chicago/rocks.db"
+           quorum = 3
+           compactionSize = 60GB
+           databaseMode = true
+           encryptAtRest = true
+           witnessList = [
+             ""
+           ]
+         }
+         servers {
+           admin {
+             settings {
+               bindHost = 10.25.145.56
+             }
+           }
+           stats {
+             settings {
+               bindHost = 10.25.145.56
+             }
+           }
+           db {
+             settings {
+               bindHost = 10.25.145.56
+             }
+           }
+         }
+       }
+     }
+   
 Start the server :
 
 ``` # bin/chiServer.sh & ```
