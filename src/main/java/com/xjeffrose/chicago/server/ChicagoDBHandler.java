@@ -239,14 +239,6 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
         if (!future.isSuccess()) {
           log.error("Server error writing :" + " For UUID" + msg.getId() + " and key " + new String(msg.getKey()));
         }
-        else {
-          try {
-            log.debug("done with processing: " + future.get().toString());
-          }
-          catch(Exception e){
-            log.error("Throws something");
-          }
-        }
       }
     };
 
