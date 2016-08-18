@@ -94,15 +94,12 @@ Import the chicago jar to your java project and use the Chicago client:
       }
     });
     
-    //To send value to a TimeSeries DB:
-    ctsa.tsWrite(topic, value);
-    
     // For Reads
-     ListenableFuture<byte[]> clientResp = chicagoClient.read("ColFam".getBytes(), "Key".getBytes());
+    ListenableFuture<byte[]> clientResp = chicagoClient.read("ColFam".getBytes(), "Key".getBytes());
     Futures.addCallback(clientResp, new FutureCallback<byte[]>() {
       @Override
       public void onSuccess(@Nullable byte[] bytes) {
-        assertEquals("val", new String(bytes));
+        assertEquals("Val", new String(bytes));
       }
 
       @Override
@@ -110,4 +107,8 @@ Import the chicago jar to your java project and use the Chicago client:
         throw new SadFaceException(t);
       }
     });
+        
+    //To send value to a TimeSeries DB:
+    ctsa.tsWrite(topic, value);
+    
 ```
