@@ -76,8 +76,8 @@ By default Logs will go to `bin/chi.log` file.
 Import the chicago jar to your java project and use the Chicago client:
 
 ```java
-    ChicagoAsyncClient ctsa = new ChicagoAsyncClient(zookeeperConnectionString, quoromSize);
-    ctsa.start();
+    ChicagoAsyncClient chicagoClient = new ChicagoAsyncClient(zookeeperConnectionString, quoromSize);
+    chicagoClient.start();
     
     // To send a Key/Value 
     ListenableFuture<Boolean> clientResp = chicagoClient.write("ColFam".getBytes(), "Key".getBytes(), "Val".getBytes());
@@ -109,9 +109,9 @@ Import the chicago jar to your java project and use the Chicago client:
     });
         
     //To send value to a TimeSeries DB:
-    ctsa.tsWrite(topic, value);
+    chicagoClient.tsWrite(topic, value);
     
     //To stream a TimeSeries DB:
-    ctsa.stream(topic, offset);
+    chicagoClient.stream(topic, offset);
     
 ```
