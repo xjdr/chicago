@@ -111,4 +111,7 @@ Import the chicago jar to your java project and use the Chicago client:
     //To send value to a TimeSeries DB:
     ctsa.tsWrite(topic, value);
     
+    //To stream a TimeSeries DB:
+    ctsa.stream(topic, offset);
+    
 ```
