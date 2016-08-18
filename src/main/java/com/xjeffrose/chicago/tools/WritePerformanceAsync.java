@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 
 public class WritePerformanceAsync {
-  private final static String key = "ppfe-test-sm";
+  private final static String key = "ppfe-test";
   private static final long NS_PER_MS = 1000000L;
   private static final long NS_PER_SEC = 1000 * NS_PER_MS;
   private static final long MIN_SLEEP_NS = 2 * NS_PER_MS;
@@ -70,8 +70,10 @@ public class WritePerformanceAsync {
       for (int j = 0; j < val.length; ++j)
         val[j] = (byte) (random.nextInt(26) + 65);
       //String v = "val" +i + "TTE-cc";
+//      Callback cb = stats.nextCompletion(sendStart, val.length, stats);
+//      ListenableFuture<byte[]> future = ctsa[i % clients].tsWrite(key.getBytes(), val);
       Callback cb = stats.nextCompletion(sendStart, val.length, stats);
-      ListenableFuture<byte[]> future = ctsa[i % clients].tsWrite(key.getBytes(), val);
+      ListenableFuture<Boolean> future = ctsa[i % clients].write(key.concat(String.valueOf(i)).getBytes(), val);
       Futures.addCallback(future, cb);
       if (throughput > 0) {
         sleepDeficitNs += sleepTime;
@@ -211,7 +213,7 @@ public class WritePerformanceAsync {
     }
   }
 
-  private static class Callback implements FutureCallback<byte[]> {
+  private static class Callback<V> implements FutureCallback<V> {
     private final long start;
     private final Stats stats;
     private final int iteration;
@@ -227,7 +229,7 @@ public class WritePerformanceAsync {
     }
 
     @Override
-    public void onSuccess(@Nullable byte[] bytes) {
+    public void onSuccess(@Nullable V bytes) {
       //System.out.println("Got response :" + Longs.fromByteArray(bytes));
       long now = System.currentTimeMillis();
       int latency = (int) (now - start);

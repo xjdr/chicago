@@ -167,7 +167,7 @@ public class ChicagoMessageAggregatorTest {
     ByteBuf expectedValue = Unpooled.buffer();
     expectedValue.writeBytes(firstMessage.getVal());
     for (ChicagoMessage cm : inputMessages) {
-      expectedValue.writeByte(',').writeBytes(cm.getVal());
+      expectedValue.writeByte('\0').writeBytes(cm.getVal());
     }
     byte[] expectedValueArray = new byte[expectedValue.writerIndex()];
     expectedValue.readBytes(expectedValueArray);

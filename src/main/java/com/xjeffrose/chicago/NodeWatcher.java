@@ -24,7 +24,6 @@ public class NodeWatcher {
   private final int quorum;
   private final CountDownLatch latch = new CountDownLatch(1);
   private final GenericListener genericListener = new GenericListener();
-  private ChicagoClient chicagoClient;
   private TreeCacheInstance nodeList;
   private ZkClient zkClient;
   private StorageProvider db;
@@ -47,8 +46,6 @@ public class NodeWatcher {
     this.advertisedEndpoint = advertisedEndpoint;
     nodeList.getCache().getListenable().addListener(genericListener);
     try {
-      this.chicagoClient = new ChicagoClient(zkClient.getConnectionString(), quorum);
-      chicagoClient.start();
       nodeList.start();
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -64,11 +61,6 @@ public class NodeWatcher {
 
   public void stop() throws Exception {
     log.info("Nodewatcher stopping");
-    if (chicagoClient != null) {
-      chicagoClient.stop();
-    } else {
-      System.out.println("No chicago client to stop");
-    }
     zkClient = null;
     if (nodeList != null && nodeList.getCache() != null && nodeList.getCache().getListenable() != null) {
       nodeList.getCache().getListenable().removeListener(genericListener);
@@ -115,8 +107,8 @@ public class NodeWatcher {
               String lockPath = REPLICATION_LOCK_PATH + "/" + cf + "/" + s;
               try {
                 zkClient.createLockPath(lockPath, advertisedEndpoint, "REPLICATION_LOCK");
-                ChicagoClient c = new ChicagoClient((String) s);
-                c.startAndWaitForNodes(1);
+                ChicagoAsyncClient c = new ChicagoAsyncClient((String) s);
+                c.start();
                 byte[] offset = new byte[]{};
                 List<byte[]> keys = db.getKeys(cf.getBytes(), offset);
                 // Start replicating all the keys to the new server.
@@ -135,8 +127,6 @@ public class NodeWatcher {
                 }
               } catch (ChicagoClientException e) {
                 log.error("Something bad happened while replication");
-              } catch (InterruptedException e) {
-                e.printStackTrace();
               } finally {
                 zkClient.deleteLockPath(lockPath, advertisedEndpoint);
               }
