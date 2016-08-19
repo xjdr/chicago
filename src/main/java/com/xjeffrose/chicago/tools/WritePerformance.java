@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 
 public class WritePerformance {
-  private final static String key = "ppfe-test-cc";
+  private final static String key = "ppfe-test-sm";
   private static final long NS_PER_MS = 1000000L;
   private static final long NS_PER_SEC = 1000 * NS_PER_MS;
   private static final long MIN_SLEEP_NS = 2 * NS_PER_MS;
@@ -63,7 +63,7 @@ public class WritePerformance {
         val[j] = (byte) (random.nextInt(26) + 65);
       //String v = "val" +i + "TTE-cc";
       Callback cb = stats.nextCompletion(sendStart, val.length, stats);
-      ListenableFuture<List<byte[]>> future = ctsa[i % clients].tsWrite(key.getBytes(), val);
+      ListenableFuture<List<byte[]>> future = ctsa[i % clients].tsbatchWrite(key.getBytes(), val);
       Futures.addCallback(future, cb);
       if (throughput > 0) {
         sleepDeficitNs += sleepTime;
@@ -220,7 +220,6 @@ public class WritePerformance {
 
     @Override
     public void onSuccess(@Nullable List<byte[]> bytes) {
-      System.out.println("Got response :" + success.incrementAndGet());
       long now = System.currentTimeMillis();
       int latency = (int) (now - start);
       this.stats.record(iteration, latency, nbytes, now);

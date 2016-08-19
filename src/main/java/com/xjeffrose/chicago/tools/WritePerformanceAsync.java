@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 
 public class WritePerformanceAsync {
-  private final static String key = "ppfe-test";
+  private final static String key = "ppfe-tests";
   private static final long NS_PER_MS = 1000000L;
   private static final long NS_PER_SEC = 1000 * NS_PER_MS;
   private static final long MIN_SLEEP_NS = 2 * NS_PER_MS;
@@ -38,7 +38,7 @@ public class WritePerformanceAsync {
 //    int throughput = Integer.parseInt(args[3]);
 //    final String connectionString = args[4];
     
-    final int loop = 1000000;
+    final int loop = 10;
     final int size = 100;
     final int clients = 1;
     int throughput = -1;
@@ -63,17 +63,21 @@ public class WritePerformanceAsync {
     Stats stats = new Stats(loop, 5000, latch);
     System.out.println("########       Statring writes        #########");
     long startTime = System.currentTimeMillis();
-    for (int i = 0; i < loop; i++) {
+    for (int i = 20; i < 30; i++) {
       long sendStart = System.currentTimeMillis();
       byte[] val = new byte[size];
       Random random = new Random(0);
+//      byte[] val = ("I stage2cs2678.qa.paypal.com 0818 17:41:31.3521471542091352 THREAD142 " +
+//        "1 Corrids: 1 -e34a0ccfcda20 Uris: 1 /en_US/i/logo/paypal_logo.gif ResponseCode: 1 200 | " +
+//        "Outbound: [id: 0x8e34f7bd, L:/10.57.62.106:42630 - R:stage2cs2534.qa.paypal.com/10.57.62.15:443] " +
+//        "NumOfReads: 1").getBytes();
       for (int j = 0; j < val.length; ++j)
         val[j] = (byte) (random.nextInt(26) + 65);
       //String v = "val" +i + "TTE-cc";
-//      Callback cb = stats.nextCompletion(sendStart, val.length, stats);
-//      ListenableFuture<byte[]> future = ctsa[i % clients].tsWrite(key.getBytes(), val);
       Callback cb = stats.nextCompletion(sendStart, val.length, stats);
-      ListenableFuture<Boolean> future = ctsa[i % clients].write(key.concat(String.valueOf(i)).getBytes(), val);
+      ListenableFuture<byte[]> future = ctsa[i % clients].tsWrite(key.getBytes(), val);
+//      Callback cb = stats.nextCompletion(sendStart, val.length, stats);
+//      ListenableFuture<Boolean> future = ctsa[i % clients].write(key.getBytes(),key.concat(String.valueOf(i)).getBytes(), val);
       Futures.addCallback(future, cb);
       if (throughput > 0) {
         sleepDeficitNs += sleepTime;
