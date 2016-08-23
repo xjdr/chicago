@@ -516,6 +516,21 @@ public class ChicagoAsyncClient implements Client {
 
   @Override
   public void close() {
-      workerLoop.shutdownGracefully();
+    try {
+      if(zkClient != null) {
+        zkClient.close();
+      }
+      if(clientNodeWatcher != null) {
+        clientNodeWatcher.stop();
+      }
+
+      if(connectionManager != null) {
+        connectionManager.stop();
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    workerLoop.shutdownGracefully();
   }
 }
