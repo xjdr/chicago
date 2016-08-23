@@ -14,7 +14,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.embedded.EmbeddedChannel;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.util.internal.PlatformDependent;
 import java.util.ArrayList;
 import java.util.List;
