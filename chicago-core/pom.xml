@@ -49,9 +49,9 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.xjeffrose</groupId>
-      <artifactId>xio</artifactId>
-      <version>0.12.0-SNAPSHOT</version>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-all</artifactId>
+      <version>4.1.1.Final</version>
     </dependency>
 
     <dependency>
