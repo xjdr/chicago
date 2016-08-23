@@ -79,32 +79,38 @@ public class ChicagoAsyncClient implements Client {
     if (zkClient != null) {
       try {
         zkClient.start();
-      } catch (InterruptedException e) {
+      } catch (Exception e) {
         e.printStackTrace();
+        throw new RuntimeException("Cannot instantiate ZKClient!!");
       }
     }
 
-    if (ech != null) {
-      connectionManager = new EmbeddedConnectionManager(ech);
-      rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), ImmutableList.of(ech.toString()), quorum);
-    } else {
-      List<String> nodeList;
-      if(singleServer){
-        nodeList = new ArrayList<>();
-        nodeList.add(singleServerAddr);
-        connectionManager = new ConnectionPoolManagerImpl(nodeList, handler, workerLoop);
-        rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
-        connectionManager.start();
+    try {
+      if (ech != null) {
+        connectionManager = new EmbeddedConnectionManager(ech);
+        rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), ImmutableList.of(ech.toString()), quorum);
       } else {
-        nodeList = buildNodeList();
-        connectionManager = new ConnectionPoolManagerImpl(nodeList, handler, workerLoop);
-        connectionManager.start();
-        rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
-        clientNodeWatcher = new ClientNodeWatcher(zkClient);
-        clientNodeWatcher.start();
-        clientNodeWatcher.registerListener((NodeListener) rendezvousHash);
-        clientNodeWatcher.registerListener((NodeListener) connectionManager);
+        List<String> nodeList;
+        if (singleServer) {
+          nodeList = new ArrayList<>();
+          nodeList.add(singleServerAddr);
+          connectionManager = new ConnectionPoolManagerImpl(nodeList, handler, workerLoop);
+          rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
+          connectionManager.start();
+        } else {
+          nodeList = buildNodeList();
+          connectionManager = new ConnectionPoolManagerImpl(nodeList, handler, workerLoop);
+          connectionManager.start();
+          rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, quorum);
+          clientNodeWatcher = new ClientNodeWatcher(zkClient);
+          clientNodeWatcher.start();
+          clientNodeWatcher.registerListener((NodeListener) rendezvousHash);
+          clientNodeWatcher.registerListener((NodeListener) connectionManager);
+        }
       }
+    } catch (Exception e){
+      e.printStackTrace();
+      throw new RuntimeException("Cannot start connection manager");
     }
 
   }
@@ -510,6 +516,21 @@ public class ChicagoAsyncClient implements Client {
 
   @Override
   public void close() {
-      workerLoop.shutdownGracefully();
+    try {
+      if(zkClient != null) {
+        zkClient.close();
+      }
+      if(clientNodeWatcher != null) {
+        clientNodeWatcher.stop();
+      }
+
+      if(connectionManager != null) {
+        connectionManager.stop();
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    workerLoop.shutdownGracefully();
   }
 }

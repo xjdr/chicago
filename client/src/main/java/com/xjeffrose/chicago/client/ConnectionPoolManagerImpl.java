@@ -31,6 +31,12 @@ public class ConnectionPoolManagerImpl implements ConnectionPoolManager, NodeLis
     blockAndAwaitPool();
   }
 
+  public void stop() {
+    connectionMap.forEach((k,v) ->{
+      v.close();
+    });
+  }
+
   private void buildConnectionMap(List<String> nodeList, ChannelHandler handler, EventLoopGroup workerLoop) {
     nodeList.stream().forEach(xs -> {
       RequestMuxer<ChicagoMessage> mux = new RequestMuxer<>(xs, handler, workerLoop);

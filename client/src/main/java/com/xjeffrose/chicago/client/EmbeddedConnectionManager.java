@@ -25,4 +25,9 @@ public class EmbeddedConnectionManager implements ConnectionPoolManager {
   public void start() {
 
   }
+
+  @Override
+  public void stop() {
+
+  }
 }

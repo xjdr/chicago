@@ -7,6 +7,12 @@
     <groupId>com.xjeffrose</groupId>
     <artifactId>chicago</artifactId>
     <version>0.4.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <modules>
+      <module>core</module>
+      <module>client</module>
+      <module>appender</module>
+    </modules>
 
     <inceptionYear>2015</inceptionYear>
 
@@ -41,12 +47,6 @@
     </distributionManagement>
 
     <dependencies>
-
-        <dependency>
-            <groupId>com.xjeffrose</groupId>
-            <artifactId>xio</artifactId>
-            <version>0.12.0-SNAPSHOT</version>
-        </dependency>
 
         <dependency>
             <groupId>org.mockito</groupId>
