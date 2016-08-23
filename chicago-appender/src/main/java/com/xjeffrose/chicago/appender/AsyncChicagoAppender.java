@@ -3,6 +3,7 @@ package com.xjeffrose.chicago.appender;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.xjeffrose.chicago.client.ChicagoAsyncClient;
 import com.xjeffrose.chicago.client.ChicagoClient;
 import com.xjeffrose.chicago.client.ChicagoClientException;
 import com.xjeffrose.chicago.client.ChicagoClientTimeoutException;
@@ -16,7 +17,7 @@ public class AsyncChicagoAppender extends AppenderSkeleton {
 
   private String chicagoZk;
   private String key;
-  private ChicagoClient cs;
+  private ChicagoAsyncClient cs;
 
   public String getChicagoZk() {
     return chicagoZk;
@@ -46,8 +47,11 @@ public class AsyncChicagoAppender extends AppenderSkeleton {
     }
 
     try {
-      cs = new ChicagoClient(chicagoZk, 3);
-    } catch (InterruptedException e) {
+      cs = new ChicagoAsyncClient(chicagoZk, 3);
+      cs.start();
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("Cannot instantiate a client");
     }
 
     LogLog.debug("Chicago connected to " + chicagoZk);
@@ -55,33 +59,25 @@ public class AsyncChicagoAppender extends AppenderSkeleton {
 
   @Override
   protected void append(LoggingEvent loggingEvent) {
-    try {
-      String message = subAppend(loggingEvent);
-      ListenableFuture<List<byte[]>> chiResp = cs.tsWrite(key.getBytes(), message.getBytes());
-      Futures.addCallback(chiResp, new FutureCallback<List<byte[]>>() {
-        @Override
-        public void onSuccess(@Nullable List<byte[]> bytes) {
+    String message = subAppend(loggingEvent);
+    ListenableFuture<byte[]> chiResp = cs.tsWrite(key.getBytes(), message.getBytes());
+    Futures.addCallback(chiResp, new FutureCallback<byte[]>() {
+      @Override
+      public void onSuccess(@Nullable byte[] bytes) {
 
-        }
+      }
 
-        @Override
-        public void onFailure(Throwable throwable) {
-          // TODO(JR): Maybe Try again?
-        }
-      });
-    } catch (ChicagoClientTimeoutException e) {
-      e.printStackTrace();
-    } catch (ChicagoClientException e) {
-      e.printStackTrace();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
+      @Override
+      public void onFailure(Throwable throwable) {
+        // TODO(JR): Maybe Try again?
+      }
+    });
   }
 
   @Override
   public void close() {
     try {
-      cs.stop();
+      cs.close();
     } catch (Exception e) {
       e.printStackTrace();
     }

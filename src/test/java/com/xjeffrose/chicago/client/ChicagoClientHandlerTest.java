@@ -1,6 +1,5 @@
 package com.xjeffrose.chicago.client;
 
-import com.google.common.primitives.Booleans;
 import com.google.common.util.concurrent.SettableFuture;
 import com.xjeffrose.chicago.DefaultChicagoMessage;
 import com.xjeffrose.chicago.Op;

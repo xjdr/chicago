@@ -44,8 +44,8 @@
 
         <dependency>
             <groupId>com.xjeffrose</groupId>
-            <artifactId>chicago</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
+            <artifactId>chicago-client</artifactId>
+            <version>0.4.0-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>

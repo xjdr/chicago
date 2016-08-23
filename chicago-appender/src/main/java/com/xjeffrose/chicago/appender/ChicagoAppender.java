@@ -1,7 +1,6 @@
 package com.xjeffrose.chicago.appender;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.xjeffrose.chicago.Chicago;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
