@@ -12,6 +12,7 @@
       <module>core</module>
       <module>client</module>
       <module>appender</module>
+      <module>server</module>
     </modules>
 
     <inceptionYear>2015</inceptionYear>
@@ -47,13 +48,6 @@
     </distributionManagement>
 
     <dependencies>
-
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.10.19</version>
-            <scope>test</scope>
-        </dependency>
 
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
@@ -162,11 +156,6 @@
         <version>0.9.2</version>
         <!--<type>jar</type>-->
         <!--<scope>compile</scope>-->
-    </dependency>
-    <dependency>
-        <groupId>org.projectlombok</groupId>
-        <artifactId>lombok</artifactId>
-        <version>1.16.10</version>
     </dependency>
     </dependencies>
     <build>

@@ -4,6 +4,7 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.google.common.primitives.Longs;
 import com.xjeffrose.chicago.ChiUtil;
+import com.xjeffrose.chicago.client.ChicagoAsyncClient;
 import com.xjeffrose.chicago.client.ChicagoClient;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -20,7 +21,7 @@ public class Taillog {
       + " 0, for beginning of time; -1, to get latest logs")
   long offset = -1;
   @Parameter(names = {"--zkstring", "-z"}, description = "zookeeper connection string for chicago servers")
-  String zkString = "10.22.100.183:2181,10.25.180.234:2181,10.22.103.86:2181,10.25.180.247:2181,10.25.69.226:2181";
+  String zkString = "10.24.24.235:2181,10.24.23.231:2181,10.24.24.23:2181,10.24.23.230:2181";
   @Parameter(names = {"--singleclient", "-sc"}, description = "Single client DB IP:port")
   String sc;
   @Parameter(names = {"--debug", "-d"}, description = "Debug mode")
@@ -33,7 +34,7 @@ public class Taillog {
   private Boolean infinte = false;
   @Parameter(names = {"--help", "-h"}, description = "Show usage", help = true)
   private boolean help;
-  private ChicagoClient chicagoClient;
+  private ChicagoAsyncClient chicagoClient;
   private Date lastTime;
 
   public static void main(String... args) throws Exception {
@@ -50,11 +51,12 @@ public class Taillog {
     }
 
     if (sc == null) {
-      chicagoClient = new ChicagoClient(zkString, 3);
-      chicagoClient.startAndWaitForNodes(3);
+      chicagoClient = new ChicagoAsyncClient(zkString, 3);
     } else {
-      chicagoClient = new ChicagoClient(sc);
+      chicagoClient = new ChicagoAsyncClient(sc);
     }
+    chicagoClient.start();
+
     if (startTime != null) {
       long startOffset = getNearestOffset(topic, startTime);
       printStream(topic, startOffset, endTime);
@@ -72,9 +74,9 @@ public class Taillog {
     }
     byte[] resp = null;
     if (offset == -1) {
-      resp = chicagoClient.stream(key.getBytes()).get().get(0);
+      resp = chicagoClient.stream(key.getBytes(),null).get();
     } else {
-      resp = chicagoClient.stream(key.getBytes(), Longs.toByteArray(offset)).get().get(0);
+      resp = chicagoClient.stream(key.getBytes(), Longs.toByteArray(offset)).get();
     }
 
     byte[] resultArray = resp;
@@ -92,7 +94,7 @@ public class Taillog {
       String[] lines = (result.split(ChiUtil.delimiter)[0]).split("\0");
       int count = 0;
       for (String line : lines) {
-        if (line.length() != 0) {
+        if (line.length() != 0 && (old < offset)) {
           if (debug) {
             System.out.print("Last offset =" + offset + ":");
           }
@@ -115,7 +117,7 @@ public class Taillog {
         Thread.sleep(500);
       }
 
-      resultArray = chicagoClient.stream(key.getBytes(), Longs.toByteArray(offset)).get().get(0);
+      resultArray = chicagoClient.stream(key.getBytes(), Longs.toByteArray(offset)).get();
       result = new String(resultArray);
       old = offset;
     }
@@ -187,7 +189,7 @@ public class Taillog {
   public Long getLastOffset(String key) {
     long endOffset = -1;
     try {
-      byte[] resultArray = chicagoClient.stream(key.getBytes()).get().get(0);
+      byte[] resultArray = chicagoClient.stream(key.getBytes(),null).get();
       String result = new String(resultArray);
       if (result.contains(ChiUtil.delimiter)) {
         endOffset = ChiUtil.findOffset(resultArray);
@@ -204,7 +206,7 @@ public class Taillog {
     String data = null;
     try {
       data =
-          new String(chicagoClient.read(key.getBytes(), Longs.toByteArray(offset)).get().get(0));
+          new String(chicagoClient.read(key.getBytes(), Longs.toByteArray(offset)).get());
     } catch (Exception e) {
       e.printStackTrace();
     }
