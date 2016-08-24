@@ -12,15 +12,17 @@ import org.junit.Test;
  */
 public class AsyncChicagoAppenderTest {
 
-  //@Test
-  public void testAppenderNoServer(){
+  @Test
+  public void testAppeclientnderNoServer(){
     AsyncChicagoAppender chicagoAppender = new AsyncChicagoAppender();
-    chicagoAppender.setChicagoZk("localhost:2181");
+    chicagoAppender.setChicagoZk("badIP:2181");
     chicagoAppender.setKey("TestKey");
+    long start = System.currentTimeMillis();
     try {
       chicagoAppender.activateOptions();
     }catch (Exception e){
-      e.printStackTrace();
+      long timeDifference = System.currentTimeMillis() - start;
+      assert(timeDifference < 3000);
     }
   }
 

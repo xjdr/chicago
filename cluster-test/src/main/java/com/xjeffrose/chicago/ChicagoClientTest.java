@@ -1,9 +1,8 @@
-package com.smadan.chicago;
+package com.xjeffrose.chicago;
 
 import com.google.common.primitives.Longs;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import com.xjeffrose.chicago.ChiUtil;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
