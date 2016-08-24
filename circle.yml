@@ -5,9 +5,10 @@ machine:
     - sudo apt-get update
     - sudo apt-get install openssl libssl-dev
     - curl -SsL 'https://circleci.com/api/v1/project/xjdr/xio/latest/artifacts/0/$CIRCLE_ARTIFACTS/pom.xml?filter=successful' > xio.pom
-    - curl -SsL 'https://circleci.com/api/v1/project/xjdr/xio/latest/artifacts/0/$CIRCLE_ARTIFACTS/xio-0.12.0-SNAPSHOT.jar?filter=successful' > xio.jar
-    - curl -SsL 'https://circleci.com/api/v1/project/xjdr/xio/latest/artifacts/0/$CIRCLE_ARTIFACTS/xio-0.11.0-SNAPSHOT.jar?filter=successful' > xio.jar
-    - mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file -Dfile=xio.jar -DpomFile=xio.pom
+    - curl -SsL 'https://circleci.com/api/v1/project/xjdr/xio/latest/artifacts/0/$CIRCLE_ARTIFACTS/xio-0.12.0-SNAPSHOT.jar?filter=successful' > xio12.jar
+    - curl -SsL 'https://circleci.com/api/v1/project/xjdr/xio/latest/artifacts/0/$CIRCLE_ARTIFACTS/xio-0.11.0-SNAPSHOT.jar?filter=successful' > xio11.jar
+    - mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file -Dfile=xio12.jar
+    - mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file -Dfile=xio11.jar
 
 test:
   override:
