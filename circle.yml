@@ -17,7 +17,7 @@ dependencies:
 
 test:
   override:
-    - mvn package javadoc:jar
+    - mvn package
   post:
     - cp target/chicago*jar $CIRCLE_ARTIFACTS
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
