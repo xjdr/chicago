@@ -8,6 +8,12 @@ machine:
     - curl -SsL 'https://circleci.com/api/v1/project/xjdr/xio/latest/artifacts/0/$CIRCLE_ARTIFACTS/xio-0.12.0-SNAPSHOT.jar?filter=successful' > xio.jar
     - mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file -Dfile=xio.jar -DpomFile=xio.pom
 
+dependencies:
+  pre:
+    - mvn -f chicago/core/pom.xml clean package -DskipTests
+  cache_directories:
+    - ~/.m2
+
 test:
   override:
     - mvn package javadoc:jar
