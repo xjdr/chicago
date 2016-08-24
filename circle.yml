@@ -12,6 +12,7 @@ dependencies:
     - ~/.m2
 test:
   override:
+    - mvn install -pl core 
     - mvn package javadoc:jar
   post:
     - cp target/chicago*jar $CIRCLE_ARTIFACTS
