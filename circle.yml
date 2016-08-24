@@ -10,7 +10,7 @@ machine:
 
 dependencies:
   pre:
-    - mvn -f core/pom.xml clean package -DskipTests
+    - mvn -f core/pom.xml clean install -DskipTests
   cache_directories:
     - ~/.m2
 
