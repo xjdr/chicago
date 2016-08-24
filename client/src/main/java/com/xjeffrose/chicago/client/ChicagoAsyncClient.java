@@ -329,7 +329,7 @@ public class ChicagoAsyncClient implements Client {
     final List<SettableFuture<byte[]>> futureList = new ArrayList<>();
     final SettableFuture<byte[]> respFuture = SettableFuture.create();
     final List<String> nodes = getEffectiveNodes(topic);
-    if (nodes.size() < quorum) {
+    if (nodes.size() == 0) {
       log.error("Unable to establish Quorum");
       return null;
     }

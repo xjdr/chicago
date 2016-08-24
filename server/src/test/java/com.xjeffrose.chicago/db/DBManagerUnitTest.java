@@ -3,7 +3,8 @@ package com.xjeffrose.chicago.db;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import static org.mockito.Mockito.*;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
 
 import java.util.concurrent.ExecutionException;
 
@@ -14,7 +15,7 @@ public class DBManagerUnitTest {
 
   @Before
   public void setUp() {
-    backend = mock(StorageProvider.class);
+    backend = Mockito.mock(StorageProvider.class);
     manager = new DBManager(backend);
     manager.startAsync().awaitRunning();
   }
@@ -32,7 +33,7 @@ public class DBManagerUnitTest {
 
     manager.write(colFam, key, val).get();
 
-    verify(backend).write(eq(colFam), eq(key), eq(val));
+    Mockito.verify(backend).write(Matchers.eq(colFam), Matchers.eq(key), Matchers.eq(val));
   }
 
   @Test
@@ -42,7 +43,7 @@ public class DBManagerUnitTest {
 
     manager.read(colFam, key).get();
 
-    verify(backend).read(eq(colFam), eq(key));
+    Mockito.verify(backend).read(Matchers.eq(colFam), Matchers.eq(key));
   }
 
   @Test
@@ -52,7 +53,7 @@ public class DBManagerUnitTest {
 
     manager.delete(colFam, key).get();
 
-    verify(backend).delete(eq(colFam), eq(key));
+    Mockito.verify(backend).delete(Matchers.eq(colFam), Matchers.eq(key));
   }
 
   @Test
@@ -62,7 +63,7 @@ public class DBManagerUnitTest {
 
     manager.delete(colFam, key).get();
 
-    verify(backend).delete(eq(colFam));
+    Mockito.verify(backend).delete(Matchers.eq(colFam));
   }
 
   @Test
@@ -73,7 +74,7 @@ public class DBManagerUnitTest {
 
     manager.tsWrite(colFam, key, val).get();
 
-    verify(backend).tsWrite(eq(colFam), eq(val));
+    Mockito.verify(backend).tsWrite(Matchers.eq(colFam), Matchers.eq(val));
   }
 
   @Test
@@ -83,7 +84,7 @@ public class DBManagerUnitTest {
 
     manager.batchWrite(colFam, val).get();
 
-    verify(backend).batchWrite(eq(colFam), eq(val));
+    Mockito.verify(backend).batchWrite(Matchers.eq(colFam), Matchers.eq(val));
   }
 
   @Test
@@ -93,7 +94,7 @@ public class DBManagerUnitTest {
 
     manager.stream(colFam, key).get();
 
-    verify(backend).stream(eq(colFam), eq(key));
+    Mockito.verify(backend).stream(Matchers.eq(colFam), Matchers.eq(key));
   }
 
   @Test
@@ -104,7 +105,7 @@ public class DBManagerUnitTest {
 
     manager.tsWrite(colFam, key, val).get();
 
-    verify(backend).tsWrite(eq(colFam), eq(key), eq(val));
+    Mockito.verify(backend).tsWrite(Matchers.eq(colFam), Matchers.eq(key), Matchers.eq(val));
   }
 
 }

@@ -1,6 +1,7 @@
 package com.xjeffrose.chicago.client;
 
 import com.google.common.hash.Funnels;
+import com.xjeffrose.chicago.RendezvousHash;
 import io.netty.util.internal.PlatformDependent;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
