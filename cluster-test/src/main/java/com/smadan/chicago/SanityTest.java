@@ -102,6 +102,7 @@ public class SanityTest {
       System.out.println("Writing to "+ ccs);
       ChicagoAsyncClient cc = testChicagoCluster.chicagoClientHashMap.get(ccs);
       cc.deleteColFam(colFam.getBytes());
+      Thread.sleep(100);
       byte[] key = Longs.toByteArray(2l);
       String _v = "valSometing";
       byte[] val = _v.getBytes();
