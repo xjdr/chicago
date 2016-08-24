@@ -7,7 +7,7 @@ machine:
     - curl -SsL 'https://circleci.com/api/v1/project/xjdr/xio/latest/artifacts/0/$CIRCLE_ARTIFACTS/pom.xml?filter=successful' > xio.pom
     - curl -SsL 'https://circleci.com/api/v1/project/xjdr/xio/latest/artifacts/0/$CIRCLE_ARTIFACTS/xio-0.12.0-SNAPSHOT.jar?filter=successful' > xio.jar
     - mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file -Dfile=xio.jar -DpomFile=xio.pom
-
+    
 dependencies:
   pre:
     - mvn -f core/pom.xml clean install -DskipTests

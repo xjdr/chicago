@@ -1,11 +1,29 @@
 * TODO
 
+** v0.5.0
+*** Global Offset Management
+*** New sharding strategy based on:
+ - ColFam + Key
+ - Topic + Offset
+*** Bulk replication of DB's
+I'd like to used Netty's zero copy file transfer to snapshot a ColFam from one
+DB and then upload it to another. That strategy would only really work with Rocks
+so a more generic abstraction will be required for InMem + future integrations
+(We should make a strawman, maybe MySql?)
 
-** TODO Buffer Returns from TS Stream to 16k                            :Now:
-** TODO Make the maxBufferSize as configurable                     :Now:
-** TODO API to return node from key (maybe?)                      :Strategic:
-** TODO Make a rest endpoint that exposes a chicago client        :Strategic:
-** TODO Can you perform reasonable LBing with a dumb client?      :Strategic:
-** TODO Graceful Shutdown and recovery                            :Strategic:
-** TODO Add options for DB (persist) and cache (in mem)           :Strategic:
-** TODO In cache mode, db should be mounted to tmpfs              :Strategic:
+** v0.6.0
+*** HDFS Storage Provider
+*** Implement True Time API for spanner like functionality
+the reason this was not fully implemented initially was that we could not
+guarantee performance in cloud environments. Instead, we should provide an
+implementation and allow the implementer to decide if the performance is
+adequate for their environment.
+
+** Strategic
+*** Admin Server Implementation
+Need to take the time to properly implement a functional admin server. Its all
+plumbed up, we just need to implement the handler.
+
+*** Stats Server Implementation
+Need to take the time to properly implement a functional stats server. Its all
+plumbed up, we just need to implement the handler.
