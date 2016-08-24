@@ -19,6 +19,6 @@ test:
   override:
     - mvn package
   post:
-    - cp target/chicago*jar $CIRCLE_ARTIFACTS
+    - cp */target/chicago*jar $CIRCLE_ARTIFACTS
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
     - find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
