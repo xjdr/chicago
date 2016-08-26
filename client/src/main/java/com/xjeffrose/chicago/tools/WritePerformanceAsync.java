@@ -70,7 +70,7 @@ public class WritePerformanceAsync {
 //      Callback cb = stats.nextCompletion(sendStart, val.length, stats);
 //      ListenableFuture<byte[]> future = ctsa[i % clients].tsWrite(key.getBytes(), val);
       Callback cb = stats.nextCompletion(sendStart, val.length, stats);
-      ListenableFuture<Boolean> future = ctsa[i % clients].write(key.concat(String.valueOf(i)).getBytes(), val);
+      ListenableFuture<byte[]> future = ctsa[i % clients].write(key.concat(String.valueOf(i)).getBytes(), val);
       Futures.addCallback(future, cb);
       if (throughput > 0) {
         sleepDeficitNs += sleepTime;

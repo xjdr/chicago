@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.xjeffrose.chicago.ChiUtil;
 import com.xjeffrose.chicago.ChicagoMessage;
 import com.xjeffrose.chicago.ChicagoObjectEncoder;
+import com.xjeffrose.chicago.ChicagoPaxosClient;
 import com.xjeffrose.chicago.DefaultChicagoMessage;
 import com.xjeffrose.chicago.Op;
 import com.xjeffrose.chicago.db.DBManager;
@@ -17,19 +18,20 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-
 import java.util.List;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.annotation.Nullable;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @ChannelHandler.Sharable
 public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage> {
-  private static final Logger log = LoggerFactory.getLogger(ChicagoDBHandler.class);
   private final DBManager db;
+  private final ChicagoPaxosClient paxosClient;
 
-  public ChicagoDBHandler(DBManager db) {
+  public ChicagoDBHandler(DBManager db, ChicagoPaxosClient paxosClient) {
     this.db = db;
+    this.paxosClient = paxosClient;
   }
 
   private ChicagoMessage createErrorMessage() {
@@ -58,15 +60,16 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
       @Override
       public void onSuccess(byte[] result) {
         ctx.writeAndFlush(
-          new DefaultChicagoMessage(
-            msg.getId(),
-            Op.RESPONSE,
-            msg.getColFam(),
-            Boolean.toString(true).getBytes(),
-            result
-          )
+            new DefaultChicagoMessage(
+                msg.getId(),
+                Op.RESPONSE,
+                msg.getColFam(),
+                Boolean.toString(true).getBytes(),
+                result
+            )
         ).addListener(writeComplete);
       }
+
       @Override
       public void onFailure(Throwable error) {
       }
@@ -79,15 +82,16 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
       @Override
       public void onSuccess(Boolean result) {
         ctx.writeAndFlush(
-          new DefaultChicagoMessage(
-            msg.getId(),
-            Op.RESPONSE,
-            msg.getColFam(),
-            Boolean.toString(result).getBytes(),
-            null
-          )
+            new DefaultChicagoMessage(
+                msg.getId(),
+                Op.RESPONSE,
+                msg.getColFam(),
+                Boolean.toString(result).getBytes(),
+                null
+            )
         ).addListener(writeComplete);
       }
+
       @Override
       public void onFailure(Throwable error) {
       }
@@ -105,6 +109,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
       @Override
       public void onSuccess(Boolean result) {
       }
+
       @Override
       public void onFailure(Throwable error) {
       }
@@ -112,62 +117,42 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
   }
 
   private void handleTimeSeriesWrite(ChannelHandlerContext ctx, ChicagoMessage msg, ChannelFutureListener writeComplete) {
-    // TODO(CK): batch write should have it's own op
     if (msg.getKey().length == 0) {
-      if (new String(msg.getVal()).contains(ChiUtil.delimiter)) {
-        ListenableFuture<byte[]> future = db.batchWrite(msg.getColFam(), msg.getVal());
-        Futures.addCallback(future, new FutureCallback<byte[]>() {
-          @Override
-          public void onSuccess(byte[] result) {
-            ctx.writeAndFlush(
+      ListenableFuture<byte[]> future = db.tsWrite(msg.getColFam(), null, msg.getVal());
+      Futures.addCallback(future, new FutureCallback<byte[]>() {
+        @Override
+        public void onSuccess(byte[] result) {
+          ctx.writeAndFlush(
               new DefaultChicagoMessage(
-                msg.getId(),
-                Op.RESPONSE,
-                msg.getColFam(),
-                Boolean.toString(true).getBytes(),
-                result
+                  msg.getId(),
+                  Op.RESPONSE,
+                  msg.getColFam(),
+                  Boolean.toString(true).getBytes(),
+                  result
               )
-            ).addListener(writeComplete);
-          }
-          @Override
-          public void onFailure(Throwable error) {
-          }
-        }, ctx.executor());
-      } else {
-        ListenableFuture<byte[]> future = db.tsWrite(msg.getColFam(), null, msg.getVal());
-        Futures.addCallback(future, new FutureCallback<byte[]>() {
-          @Override
-          public void onSuccess(byte[] result) {
-            ctx.writeAndFlush(
-              new DefaultChicagoMessage(
-                msg.getId(),
-                Op.RESPONSE,
-                msg.getColFam(),
-                Boolean.toString(true).getBytes(),
-                result
-              )
-            ).addListener(writeComplete);
-          }
-          @Override
-          public void onFailure(Throwable error) {
-          }
-        }, ctx.executor());
-      }
+          ).addListener(writeComplete);
+        }
+
+        @Override
+        public void onFailure(Throwable error) {
+        }
+      }, ctx.executor());
     } else {
       ListenableFuture<byte[]> future = db.tsWrite(msg.getColFam(), msg.getKey(), msg.getVal());
       Futures.addCallback(future, new FutureCallback<byte[]>() {
         @Override
         public void onSuccess(byte[] result) {
           ctx.writeAndFlush(
-            new DefaultChicagoMessage(
-              msg.getId(),
-              Op.RESPONSE,
-              msg.getColFam(),
-              Boolean.toString(true).getBytes(),
-              result
-            )
+              new DefaultChicagoMessage(
+                  msg.getId(),
+                  Op.RESPONSE,
+                  msg.getColFam(),
+                  Boolean.toString(true).getBytes(),
+                  result
+              )
           ).addListener(writeComplete);
         }
+
         @Override
         public void onFailure(Throwable error) {
         }
@@ -182,19 +167,20 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
       public void onSuccess(List<DBRecord> result) {
         ByteBuf bb = Unpooled.buffer();
         ChicagoObjectEncoder encoder = new ChicagoObjectEncoder();
-        for(int i =0; i<result.size(); i++){
+        for (int i = 0; i < result.size(); i++) {
           DBRecord record = result.get(i);
-          if(i == result.size()-1){
+          if (i == result.size() - 1) {
             ByteBuf lastval = Unpooled.buffer();
             lastval.writeBytes(record.getValue());
             lastval.writeBytes(ChiUtil.delimiter.getBytes());
             lastval.writeBytes(record.getKey());
             record.setValue(lastval.array());
           }
-          bb.writeBytes(encoder.encode(new DefaultChicagoMessage(msg.getId(),Op.STREAM_RESPONSE,msg.getColFam(),Boolean.toString(true).getBytes(),record.getValue())));
+          bb.writeBytes(encoder.encode(new DefaultChicagoMessage(msg.getId(), Op.STREAM_RESPONSE, msg.getColFam(), Boolean.toString(true).getBytes(), record.getValue())));
         }
         ctx.writeAndFlush(bb).addListener(writeComplete);
       }
+
       @Override
       public void onFailure(Throwable error) {
       }
@@ -207,25 +193,47 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
       @Override
       public void onSuccess(List<byte[]> result) {
         ByteBuf bb = Unpooled.buffer();
-        for(byte[] record : result) {
+        for (byte[] record : result) {
           String temp = new String(record) + ChiUtil.delimiter;
           bb.writeBytes(temp.getBytes());
         }
         ctx.writeAndFlush(
-          new DefaultChicagoMessage(
-            msg.getId(),
-            Op.RESPONSE,
-            msg.getColFam(),
-            Boolean.toString(true).getBytes(),
-            bb.array()
-          )
+            new DefaultChicagoMessage(
+                msg.getId(),
+                Op.RESPONSE,
+                msg.getColFam(),
+                Boolean.toString(true).getBytes(),
+                bb.array()
+            )
         ).addListener(writeComplete);
       }
+
       @Override
       public void onFailure(Throwable error) {
       }
     }, ctx.executor());
   }
+
+  private void handlePaxosPropose(ChannelHandlerContext ctx, ChicagoMessage msg, ChannelFutureListener writeComplete) {
+
+  }
+
+  private void handlePaxosPromise(ChannelHandlerContext ctx, ChicagoMessage msg, ChannelFutureListener writeComplete) {
+
+  }
+
+  private void handlePaxosAccept(ChannelHandlerContext ctx, ChicagoMessage msg, ChannelFutureListener writeComplete) {
+
+  }
+
+  private void handleMPaxosProposeWrite(ChannelHandlerContext ctx, ChicagoMessage msg, ChannelFutureListener writeComplete) {
+    handleWrite(ctx, msg, writeComplete);
+  }
+
+  private void handleMPaxosProposeTsWrite(ChannelHandlerContext ctx, ChicagoMessage msg, ChannelFutureListener writeComplete) {
+    handleTimeSeriesWrite(ctx, msg, writeComplete);
+  }
+
 
   @Override
   protected void channelRead0(ChannelHandlerContext ctx, ChicagoMessage msg) throws Exception {
@@ -243,13 +251,38 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
         handleRead(ctx, msg, writeComplete);
         break;
       case WRITE:
-        handleWrite(ctx, msg, writeComplete);
-        break;
+        ListenableFuture<List<byte[]>> f = paxosClient.write(msg.getColFam(), msg.getKey(), msg.getVal());
+        Futures.addCallback(f, new FutureCallback<List<byte[]>>() {
+          @Override
+          public void onSuccess(@Nullable List<byte[]> bytes) {
+            if (bytes.size() == paxosClient.getReplicaSize()) {
+              handleWrite(ctx, msg, writeComplete);
+            }
+          }
+
+          @Override
+          public void onFailure(Throwable throwable) {
+            // TODO(JR): Create a reasonable failure response
+          }
+        });
       case DELETE:
         handleDelete(ctx, msg, writeComplete);
         break;
       case TS_WRITE:
-        handleTimeSeriesWrite(ctx, msg, writeComplete);
+        ListenableFuture<List<byte[]>> ff = paxosClient.tsWrite(msg.getColFam(), msg.getKey(), msg.getVal());
+        Futures.addCallback(ff, new FutureCallback<List<byte[]>>() {
+          @Override
+          public void onSuccess(@Nullable List<byte[]> bytes) {
+            if (bytes.size() == paxosClient.getReplicaSize()) {
+              handleTimeSeriesWrite(ctx, msg, writeComplete);
+            }
+          }
+
+          @Override
+          public void onFailure(Throwable throwable) {
+            // TODO(JR): Create a reasonable failure response
+          }
+        });
         break;
       case STREAM:
         handleStreamingRead(ctx, msg, writeComplete);
@@ -257,8 +290,25 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
       case SCAN_KEYS:
         handleScanKeys(ctx, msg, writeComplete);
         break;
+      case PAXOS_PROPOSE:
+        handlePaxosPropose(ctx, msg, writeComplete);
+        break;
+      case PAXOS_PROMISE:
+        handlePaxosPromise(ctx, msg, writeComplete);
+        break;
+      case PAXOS_ACCEPT:
+        handlePaxosAccept(ctx, msg, writeComplete);
+        break;
+      case MPAXOS_PROPOSE_WRITE:
+        handleMPaxosProposeWrite(ctx, msg, writeComplete);
+        break;
+      case MPAXOS_PROPOSE_TS_WRITE:
+        handleMPaxosProposeTsWrite(ctx, msg, writeComplete);
+        break;
       default:
         break;
     }
   }
+
+
 }

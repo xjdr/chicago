@@ -16,7 +16,7 @@ public class ChicagoDBHandlerTest extends org.junit.Assert {
     InMemDBImpl inMemDB = new InMemDBImpl();
     DBManager manager = new DBManager(inMemDB);
     manager.startAsync().awaitRunning();
-    EmbeddedChannel ch = new EmbeddedChannel(new ChicagoDBHandler(manager));
+    EmbeddedChannel ch = new EmbeddedChannel(new ChicagoDBHandler(manager, new ChicagoPaxosClient("")));
     UUID id = UUID.randomUUID();
 
     for (int i = 0; i < 100; i++) {

@@ -30,7 +30,7 @@ public class ChicagoObjectEncoderTest {
       protected void initChannel(EmbeddedChannel channel) throws Exception {
         ChannelPipeline cp = channel.pipeline();
         cp.addLast(new ChicagoObjectDecoder());
-        cp.addLast(new ChicagoDBHandler(dbManager));
+        cp.addLast(new ChicagoDBHandler(dbManager, new ChicagoPaxosClient("")));
       }
     });
 

@@ -15,7 +15,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class ChicagoPaxosHandlerTest {
+public class ChicagoGlobalOffsetManagerHandlerTest {
   private Map<String, AtomicLong> offset;
   private Map<String, Integer> q;
   private Map<String, Map<String, Long>> sessionCoordinator;
@@ -28,12 +28,12 @@ public class ChicagoPaxosHandlerTest {
     this.sessionCoordinator = PlatformDependent.newConcurrentHashMap();
     this.qCount = PlatformDependent.newConcurrentHashMap();
 
-    ChicagoPaxosHandler paxosHandler = new ChicagoPaxosHandler(offset, q, sessionCoordinator, qCount);
+    ChicagoGlobalOffsetManagerHandler offsetManagerHandler = new ChicagoGlobalOffsetManagerHandler(offset, q, sessionCoordinator, qCount);
 
-    EmbeddedChannel ch1 = new EmbeddedChannel(paxosHandler);
-    EmbeddedChannel ch2 = new EmbeddedChannel(paxosHandler);
-    EmbeddedChannel ch3 = new EmbeddedChannel(paxosHandler);
-    EmbeddedChannel ch4 = new EmbeddedChannel(paxosHandler);
+    EmbeddedChannel ch1 = new EmbeddedChannel(offsetManagerHandler);
+    EmbeddedChannel ch2 = new EmbeddedChannel(offsetManagerHandler);
+    EmbeddedChannel ch3 = new EmbeddedChannel(offsetManagerHandler);
+    EmbeddedChannel ch4 = new EmbeddedChannel(offsetManagerHandler);
 
     ChicagoMessage cm1 = new DefaultChicagoMessage(UUID.randomUUID(), Op.GET_OFFSET, "ColFam".getBytes(), "id1".getBytes(), Ints.toByteArray(3));
     ChicagoMessage cm2 = new DefaultChicagoMessage(UUID.randomUUID(), Op.GET_OFFSET, "ColFam".getBytes(), "id2".getBytes(), Ints.toByteArray(3));
