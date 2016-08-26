@@ -266,7 +266,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
         Futures.addCallback(f, new FutureCallback<List<byte[]>>() {
           @Override
           public void onSuccess(@Nullable List<byte[]> bytes) {
-            if (bytes.size() == paxosClient.getReplicaSize()) {
+            if (bytes.size() >= ( paxosClient.getReplicaSize() - 1)) {
               handleWrite(ctx, msg, writeComplete);
             }
           }
@@ -284,7 +284,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
         Futures.addCallback(ff, new FutureCallback<List<byte[]>>() {
           @Override
           public void onSuccess(@Nullable List<byte[]> bytes) {
-            if (bytes.size() == paxosClient.getReplicaSize()) {
+            if (bytes.size() >= ( paxosClient.getReplicaSize() - 1)) {
               handleTimeSeriesWrite(ctx, msg, writeComplete);
             }
           }
