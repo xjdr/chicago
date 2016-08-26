@@ -387,23 +387,23 @@ public class ChicagoAsyncClient implements Closeable {
       });
 //    });
 
-    Futures.addCallback(Futures.successfulAsList(futureList), new FutureCallback<List<byte[]>>() {
-      @Override
-      public void onSuccess(@Nullable List<byte[]> bytes) {
-        respFuture.set(bytes.get(0));
-      }
+//    Futures.addCallback(Futures.successfulAsList(futureList), new FutureCallback<List<byte[]>>() {
+//      @Override
+//      public void onSuccess(@Nullable List<byte[]> bytes) {
+//        respFuture.set(bytes.get(0));
+//      }
+//
+//      @Override
+//      public void onFailure(Throwable throwable) {
+//        try {
+//          respFuture.set(tsWrite(topic, offset, val).get(TIMEOUT, TimeUnit.MILLISECONDS));
+//        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+//          respFuture.setException(e);
+//        }
+//      }
+//    });
 
-      @Override
-      public void onFailure(Throwable throwable) {
-        try {
-          respFuture.set(tsWrite(topic, offset, val).get(TIMEOUT, TimeUnit.MILLISECONDS));
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-          respFuture.setException(e);
-        }
-      }
-    });
-
-    return respFuture;
+    return f;
   }
 
   public ListenableFuture<byte[]> stream(byte[] topic, byte[] offset) {
