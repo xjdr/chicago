@@ -294,16 +294,23 @@ public class ChicagoAsyncClient implements Closeable {
   }
 
   public ListenableFuture<byte[]> tsWrite(byte[] topic, byte[] val) {
-    final List<ListenableFuture<byte[]>> resp = new ArrayList<>();
-
     List<String> nodes = getEffectiveNodes(topic);
     UUID id = UUID.randomUUID();
     SettableFuture<byte[]> f = SettableFuture.create();
+    SettableFuture<byte[]> resp = SettableFuture.create();
     futureMap.put(id, f);
     Futures.addCallback(f, new FutureCallback<byte[]>() {
       @Override
       public void onSuccess(@Nullable byte[] bytes) {
-        resp.add(tsWrite(topic, bytes, val));
+        try {
+          resp.set(tsWrite(topic, bytes, val).get(400, TimeUnit.MILLISECONDS));
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        } catch (ExecutionException e) {
+          e.printStackTrace();
+        } catch (TimeoutException e) {
+          e.printStackTrace();
+        }
       }
 
       @Override
@@ -311,20 +318,25 @@ public class ChicagoAsyncClient implements Closeable {
         Futures.addCallback(connectionManager.write(nodes.get(0), new DefaultChicagoMessage(id, Op.GET_OFFSET, topic, null, null)), new FutureCallback<byte[]>() {
           @Override
           public void onSuccess(@Nullable byte[] bytes) {
-            resp.add(tsWrite(topic, bytes, val));
-          }
+            try {
+              resp.set(tsWrite(topic, bytes, val).get(400, TimeUnit.MILLISECONDS));
+            } catch (InterruptedException e) {
+              e.printStackTrace();
+            } catch (ExecutionException e) {
+              e.printStackTrace();
+            } catch (TimeoutException e) {
+              e.printStackTrace();
+            }          }
 
           @Override
           public void onFailure(Throwable throwable) {
-            SettableFuture<byte[]> ff = SettableFuture.create();
-            ff.setException(throwable);
-            resp.add(ff);
+            resp.setException(throwable);
           }
         });
       }
     });
 
-    return resp.get(0);
+    return resp;
   }
 
   public ListenableFuture<byte[]> tsWrite(byte[] topic, byte[] offset, byte[] val) {

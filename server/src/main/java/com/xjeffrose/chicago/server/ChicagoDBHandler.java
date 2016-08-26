@@ -292,6 +292,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
           @Override
           public void onFailure(Throwable throwable) {
             // TODO(JR): Create a reasonable failure response
+            log.error("I'm a bad request .... ");
           }
         });
         break;
