@@ -26,7 +26,7 @@ public class ClientNodeWatcher {
   private TreeCacheInstance replicationPathTree;
   private ZkClient zkClient;
   private final List<NodeListener> listeners = Collections.synchronizedList(new ArrayList<>());
-  private ConnectionPoolManagerX connectionPoolManagerX;
+  private ConnectionPoolManager connectionPoolManager;
 
   public ClientNodeWatcher(ZkClient zkClient) {
     nodeList = new TreeCacheInstance(zkClient, NODE_LIST_PATH);
@@ -55,8 +55,8 @@ public class ClientNodeWatcher {
     }
   }
 
-  public void registerConnectionPoolManager(ConnectionPoolManagerX connectionPoolManagerX){
-    this.connectionPoolManagerX = connectionPoolManagerX;
+  public void registerConnectionPoolManager(ConnectionPoolManager connectionPoolManager){
+    this.connectionPoolManager = connectionPoolManager;
   }
 
   public void stop() {
@@ -67,8 +67,8 @@ public class ClientNodeWatcher {
 
   private void nodeAdded(String path) {
     String[] _path = path.split("/");
-    if(connectionPoolManagerX != null){
-      connectionPoolManagerX.checkConnection();
+    if(connectionPoolManager != null){
+      connectionPoolManager.checkConnection();
     }
   }
 
@@ -125,7 +125,7 @@ public class ClientNodeWatcher {
           }
           break;
         case CONNECTION_RECONNECTED:
-          connectionPoolManagerX.checkConnection();
+          connectionPoolManager.checkConnection();
         default: {
           log.info("Zk " + event.getType().name());
         }

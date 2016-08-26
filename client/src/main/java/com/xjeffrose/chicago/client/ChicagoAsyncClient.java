@@ -21,6 +21,29 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+
+  /*
+   * Happy Path:
+   * (deprecated) Delete -> send message to all (3) available nodes wait for all (3) responses to be true.
+   * Write -> send message to all (3) available nodes wait for all (3) responses to be true.
+   * Read -> send message to all (3) available nodes, wait for 1 node to reply, all other (2) replies are dropped.
+   *
+   * Fail Path:
+   * Delete -> not all responses are true
+   * Write -> not all responses are true
+   * Read -> no nodes respond
+   *
+   * Reading from a node that hasn't been able to receive writes
+   * Write fails, some nodes think that they have good data until they're told that they don't
+   * interleaved writes from two different clients for the same key
+   *
+   *
+   * two phase commit with multiple nodes
+   *  write (key, value)
+   *  ack x 3 nodes
+   *  ok x 3 nodes -> write request
+   */
+
 @Slf4j
 public class ChicagoAsyncClient implements Client {
   private final static String REPLICATION_LOCK_PATH = "/chicago/replication-lock";
