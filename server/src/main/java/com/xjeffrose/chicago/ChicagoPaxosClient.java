@@ -2,6 +2,7 @@ package com.xjeffrose.chicago;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.Funnels;
+import com.google.common.primitives.Bytes;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -129,7 +130,7 @@ public class ChicagoPaxosClient {
   }
 
   public ListenableFuture<List<byte[]>> write(byte[] colFam, byte[] key, byte[] val) {
-    List<String> nodes = getEffectiveNodes(colFam);
+    List<String> nodes = getEffectiveNodes(Bytes.concat(colFam, key));
     final List<SettableFuture<byte[]>> futureList = new ArrayList<>();
     for (int i = 1; i < replicaSize; i++) {
 
@@ -166,8 +167,8 @@ public class ChicagoPaxosClient {
 
   }
 
-  public ListenableFuture<List<byte[]>> tsWrite(byte[] topic, byte[] key, byte[] val) {
-    List<String> nodes = getEffectiveNodes(topic);
+  public ListenableFuture<List<byte[]>> tsWrite(byte[] topic, byte[] offset, byte[] val) {
+    List<String> nodes = getEffectiveNodes(Bytes.concat(topic, offset));
     final List<SettableFuture<byte[]>> futureList = new ArrayList<>();
     for (int i = 1; i < replicaSize; i++) {
 
@@ -185,7 +186,7 @@ public class ChicagoPaxosClient {
         @Override
         public void onFailure(Throwable throwable) {
 
-          Futures.addCallback(connectionManager.write(nodes.get(finalI), new DefaultChicagoMessage(id, Op.MPAXOS_PROPOSE_TS_WRITE, topic, key, val)), new FutureCallback<byte[]>() {
+          Futures.addCallback(connectionManager.write(nodes.get(finalI), new DefaultChicagoMessage(id, Op.MPAXOS_PROPOSE_TS_WRITE, topic, offset, val)), new FutureCallback<byte[]>() {
             @Override
             public void onSuccess(@Nullable byte[] bytes) {
               f.set(bytes);
@@ -201,10 +202,6 @@ public class ChicagoPaxosClient {
     }
 
     return Futures.allAsList(futureList);
-  }
-
-  public ListenableFuture<List<byte[]>> tsWrite(byte[] topic, byte[] val) {
-    return tsWrite(topic, null, val);
   }
 
   public int getReplicaSize() {

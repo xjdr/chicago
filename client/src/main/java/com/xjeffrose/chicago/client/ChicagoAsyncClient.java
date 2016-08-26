@@ -2,6 +2,7 @@ package com.xjeffrose.chicago.client;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.Funnels;
+import com.google.common.primitives.Bytes;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -29,29 +30,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import javax.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
-
-
-  /*
-   * Happy Path:
-   * (deprecated) Delete -> send message to all (3) available nodes wait for all (3) responses to be true.
-   * Write -> send message to all (3) available nodes wait for all (3) responses to be true.
-   * Read -> send message to all (3) available nodes, wait for 1 node to reply, all other (2) replies are dropped.
-   *
-   * Fail Path:
-   * Delete -> not all responses are true
-   * Write -> not all responses are true
-   * Read -> no nodes respond
-   *
-   * Reading from a node that hasn't been able to receive writes
-   * Write fails, some nodes think that they have good data until they're told that they don't
-   * interleaved writes from two different clients for the same key
-   *
-   *
-   * two phase commit with multiple nodes
-   *  write (key, value)
-   *  ack x 3 nodes
-   *  ok x 3 nodes -> write request
-   */
 
 @Slf4j
 public class ChicagoAsyncClient implements Closeable {
@@ -230,7 +208,7 @@ public class ChicagoAsyncClient implements Closeable {
   }
 
   public ListenableFuture<byte[]> read(byte[] colFam, byte[] key) {
-    List<String> nodes = getEffectiveNodes(colFam);
+    List<String> nodes = getEffectiveNodes(Bytes.concat(colFam, key));
     UUID id = UUID.randomUUID();
     SettableFuture<byte[]> f = SettableFuture.create();
     futureMap.put(id, f);
@@ -286,7 +264,7 @@ public class ChicagoAsyncClient implements Closeable {
   }
 
   public ListenableFuture<byte[]> write(byte[] colFam, byte[] key, byte[] val) {
-    List<String> nodes = getEffectiveNodes(colFam);
+    List<String> nodes = getEffectiveNodes(Bytes.concat(colFam, key));
     UUID id = UUID.randomUUID();
     SettableFuture<byte[]> f = SettableFuture.create();
     futureMap.put(id, f);
@@ -316,13 +294,43 @@ public class ChicagoAsyncClient implements Closeable {
   }
 
   public ListenableFuture<byte[]> tsWrite(byte[] topic, byte[] val) {
-    return tsWrite(topic, null, val);
+    final List<ListenableFuture<byte[]>> resp = new ArrayList<>();
+
+    List<String> nodes = getEffectiveNodes(topic);
+    UUID id = UUID.randomUUID();
+    SettableFuture<byte[]> f = SettableFuture.create();
+    futureMap.put(id, f);
+    Futures.addCallback(f, new FutureCallback<byte[]>() {
+      @Override
+      public void onSuccess(@Nullable byte[] bytes) {
+        resp.add(tsWrite(topic, bytes, val));
+      }
+
+      @Override
+      public void onFailure(Throwable throwable) {
+        Futures.addCallback(connectionManager.write(nodes.get(0), new DefaultChicagoMessage(id, Op.GET_OFFSET, topic, null, null)), new FutureCallback<byte[]>() {
+          @Override
+          public void onSuccess(@Nullable byte[] bytes) {
+            resp.add(tsWrite(topic, bytes, val));
+          }
+
+          @Override
+          public void onFailure(Throwable throwable) {
+            SettableFuture<byte[]> ff = SettableFuture.create();
+            ff.setException(throwable);
+            resp.add(ff);
+          }
+        });
+      }
+    });
+
+    return resp.get(0);
   }
 
-  public ListenableFuture<byte[]> tsWrite(byte[] topic, byte[] key, byte[] val) {
+  public ListenableFuture<byte[]> tsWrite(byte[] topic, byte[] offset, byte[] val) {
     final List<SettableFuture<byte[]>> futureList = new ArrayList<>();
     final SettableFuture<byte[]> respFuture = SettableFuture.create();
-    final List<String> nodes = getEffectiveNodes(topic);
+    final List<String> nodes = getEffectiveNodes(Bytes.concat(topic, offset));
     if (nodes.size() == 0) {
       log.error("Unable to establish Quorum");
       return null;
@@ -345,14 +353,14 @@ public class ChicagoAsyncClient implements Closeable {
         }
       });
 
-      Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.TS_WRITE, topic, key, val)), new FutureCallback<Boolean>() {
+      Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.TS_WRITE, topic, offset, val)), new FutureCallback<Boolean>() {
         @Override
         public void onSuccess(@Nullable Boolean aBoolean) {
         }
 
         @Override
         public void onFailure(Throwable throwable) {
-          Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.TS_WRITE, topic, key, val)), new FutureCallback<Boolean>() {
+          Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.TS_WRITE, topic, offset, val)), new FutureCallback<Boolean>() {
             @Override
             public void onSuccess(@Nullable Boolean aBoolean) {
 
@@ -376,7 +384,7 @@ public class ChicagoAsyncClient implements Closeable {
       @Override
       public void onFailure(Throwable throwable) {
         try {
-          respFuture.set(tsWrite(topic, key, val).get(TIMEOUT, TimeUnit.MILLISECONDS));
+          respFuture.set(tsWrite(topic, offset, val).get(TIMEOUT, TimeUnit.MILLISECONDS));
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
           respFuture.setException(e);
         }
@@ -387,7 +395,7 @@ public class ChicagoAsyncClient implements Closeable {
   }
 
   public ListenableFuture<byte[]> stream(byte[] topic, byte[] offset) {
-    List<String> nodes = getEffectiveNodes(topic);
+    List<String> nodes = getEffectiveNodes(Bytes.concat(topic, offset));
     UUID id = UUID.randomUUID();
     SettableFuture<byte[]> f = SettableFuture.create();
     futureMap.put(id, f);
@@ -436,69 +444,6 @@ public class ChicagoAsyncClient implements Closeable {
     }, 2, TimeUnit.MILLISECONDS);
 
     return f;
-  }
-
-  public ListenableFuture<Boolean> deleteColFam(byte[] colFam) {
-    List<SettableFuture<byte[]>> futureList = new ArrayList<>();
-    SettableFuture<Boolean> respFuture = SettableFuture.create();
-    List<String> nodes = getEffectiveNodes(colFam);
-    nodes.stream().forEach(xs -> {
-      UUID id = UUID.randomUUID();
-      SettableFuture<byte[]> f = SettableFuture.create();
-      futureMap.put(id, f);
-      futureList.add(f);
-      Futures.addCallback(f, new FutureCallback<byte[]>() {
-        @Override
-        public void onSuccess(@Nullable byte[] bytes) {
-          f.set(bytes);
-        }
-
-        @Override
-        public void onFailure(Throwable throwable) {
-          f.setException(throwable);
-        }
-      });
-
-      Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.DELETE, colFam, null, null)), new FutureCallback<Boolean>() {
-        @Override
-        public void onSuccess(@Nullable Boolean aBoolean) {
-          futureList.add(f);
-        }
-
-        @Override
-        public void onFailure(Throwable throwable) {
-          Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.DELETE, colFam, null, null)), new FutureCallback<Boolean>() {
-            @Override
-            public void onSuccess(@Nullable Boolean aBoolean) {
-              futureList.add(f);
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-
-            }
-          });
-        }
-      });
-    });
-
-    Futures.addCallback(Futures.successfulAsList(futureList), new FutureCallback<List<byte[]>>() {
-      @Override
-      public void onSuccess(@Nullable List<byte[]> bytes) {
-        respFuture.set(true);
-      }
-
-      @Override
-      public void onFailure(Throwable throwable) {
-        try {
-          respFuture.set(deleteColFam(colFam).get(TIMEOUT, TimeUnit.MILLISECONDS));
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-          respFuture.setException(e);
-        }
-      }
-    });
-
-    return respFuture;
   }
 
   public void close() {

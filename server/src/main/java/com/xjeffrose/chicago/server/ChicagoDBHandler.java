@@ -1,5 +1,7 @@
 package com.xjeffrose.chicago.server;
 
+import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -18,8 +20,12 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.util.internal.PlatformDependent;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,6 +34,11 @@ import lombok.extern.slf4j.Slf4j;
 public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage> {
   private final DBManager db;
   private final ChicagoPaxosClient paxosClient;
+  private final Map<String, AtomicLong> offset = PlatformDependent.newConcurrentHashMap();
+  private final Map<String, Integer> q = PlatformDependent.newConcurrentHashMap();
+  private final Map<String, Map<String, Long>> sessionCoordinator = PlatformDependent.newConcurrentHashMap();
+  private final Map<String, AtomicInteger> qCount = PlatformDependent.newConcurrentHashMap();
+
 
   public ChicagoDBHandler(DBManager db, ChicagoPaxosClient paxosClient) {
     this.db = db;
@@ -287,6 +298,9 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
       case STREAM:
         handleStreamingRead(ctx, msg, writeComplete);
         break;
+      case GET_OFFSET:
+        handleGettingOffset(ctx, msg, writeComplete);
+        break;
       case SCAN_KEYS:
         handleScanKeys(ctx, msg, writeComplete);
         break;
@@ -307,6 +321,58 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
         break;
       default:
         break;
+    }
+  }
+
+  private void handleGettingOffset(ChannelHandlerContext ctx, ChicagoMessage msg, ChannelFutureListener writeComplete) {
+    // The ColFam Exists
+    if (offset.containsKey(new String(msg.getColFam()))) {
+      // This offset has been written to all members of the replica set
+      if (qCount.get(new String(msg.getColFam())).get() == q.get(new String(msg.getColFam()))) {
+        if (sessionCoordinator.containsKey(new String(msg.getColFam()))) {
+
+        } else {
+          sessionCoordinator.put(new String(msg.getColFam()), PlatformDependent.newConcurrentHashMap());
+          sessionCoordinator.get(new String(msg.getKey())).put(new String(msg.getKey()), offset.get(new String(msg.getColFam())).incrementAndGet());
+        }
+
+        ctx.writeAndFlush(new DefaultChicagoMessage(
+            msg.getId(),
+            Op.RESPONSE,
+            msg.getColFam(),
+            null,
+            Longs.toByteArray(offset.get(new String(msg.getColFam())).incrementAndGet()))).addListener(writeComplete);
+        qCount.get(new String(msg.getColFam())).incrementAndGet();
+        sessionCoordinator.get(new String(msg.getColFam())).put(new String(msg.getKey()), offset.get(new String(msg.getColFam())).get());
+
+      } else {
+        // Return current offset to member of the replica set
+        ctx.writeAndFlush(new DefaultChicagoMessage(
+            msg.getId(),
+            Op.RESPONSE,
+            msg.getColFam(),
+            null,
+            Longs.toByteArray(offset.get(new String(msg.getColFam())).get()))).addListener(writeComplete);
+        qCount.get(new String(msg.getColFam())).incrementAndGet();
+
+      }
+
+
+    } else {
+      // Create the offset for the ColFam on first message (ColFam Create)
+      offset.put(new String(msg.getColFam()), new AtomicLong());
+      q.put(new String(msg.getColFam()), Ints.fromByteArray(msg.getVal()));
+      qCount.put(new String(msg.getColFam()), new AtomicInteger());
+      sessionCoordinator.put(new String(msg.getColFam()), PlatformDependent.newConcurrentHashMap());
+
+      ctx.writeAndFlush(new DefaultChicagoMessage(
+          msg.getId(),
+          Op.RESPONSE,
+          msg.getColFam(),
+          null,
+          Longs.toByteArray(offset.get(new String(msg.getColFam())).get()))).addListener(writeComplete);
+      qCount.get(new String(msg.getColFam())).incrementAndGet();
+      sessionCoordinator.get(new String(msg.getColFam())).put(new String(msg.getKey()), offset.get(new String(msg.getColFam())).get());
     }
   }
 
