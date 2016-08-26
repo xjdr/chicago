@@ -329,7 +329,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
     // The ColFam Exists
     if (offset.containsKey(new String(msg.getColFam()))) {
       // This offset has been written to all members of the replica set
-      if (qCount.get(new String(msg.getColFam())).get() == q.get(new String(msg.getColFam()))) {
+//      if (qCount.get(new String(msg.getColFam())).get() == q.get(new String(msg.getColFam()))) {
         if (sessionCoordinator.containsKey(new String(msg.getColFam()))) {
 
         } else {
@@ -346,17 +346,17 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
         qCount.get(new String(msg.getColFam())).incrementAndGet();
         sessionCoordinator.get(new String(msg.getColFam())).put(new String(msg.getKey()), offset.get(new String(msg.getColFam())).get());
 
-      } else {
-        // Return current offset to member of the replica set
-        ctx.writeAndFlush(new DefaultChicagoMessage(
-            msg.getId(),
-            Op.RESPONSE,
-            msg.getColFam(),
-            null,
-            Longs.toByteArray(offset.get(new String(msg.getColFam())).get()))).addListener(writeComplete);
-        qCount.get(new String(msg.getColFam())).incrementAndGet();
-
-      }
+//      } else {
+//        // Return current offset to member of the replica set
+//        ctx.writeAndFlush(new DefaultChicagoMessage(
+//            msg.getId(),
+//            Op.RESPONSE,
+//            msg.getColFam(),
+//            null,
+//            Longs.toByteArray(offset.get(new String(msg.getColFam())).get()))).addListener(writeComplete);
+//        qCount.get(new String(msg.getColFam())).incrementAndGet();
+//
+//      }
 
 
     } else {
