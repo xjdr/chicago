@@ -335,7 +335,7 @@ public class ChicagoAsyncClient implements Closeable {
       log.error("Unable to establish Quorum");
       return null;
     }
-    nodes.stream().forEach(xs -> {
+//    nodes.stream().forEach(xs -> {
       UUID id = UUID.randomUUID();
       SettableFuture<byte[]> f = SettableFuture.create();
       futureMap.put(id, f);
@@ -353,14 +353,14 @@ public class ChicagoAsyncClient implements Closeable {
         }
       });
 
-      Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.TS_WRITE, topic, offset, val)), new FutureCallback<Boolean>() {
+      Futures.addCallback(connectionManager.write(nodes.get(0), new DefaultChicagoMessage(id, Op.TS_WRITE, topic, offset, val)), new FutureCallback<Boolean>() {
         @Override
         public void onSuccess(@Nullable Boolean aBoolean) {
         }
 
         @Override
         public void onFailure(Throwable throwable) {
-          Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.TS_WRITE, topic, offset, val)), new FutureCallback<Boolean>() {
+          Futures.addCallback(connectionManager.write(nodes.get(0), new DefaultChicagoMessage(id, Op.TS_WRITE, topic, offset, val)), new FutureCallback<Boolean>() {
             @Override
             public void onSuccess(@Nullable Boolean aBoolean) {
 
@@ -373,7 +373,7 @@ public class ChicagoAsyncClient implements Closeable {
           });
         }
       });
-    });
+//    });
 
     Futures.addCallback(Futures.successfulAsList(futureList), new FutureCallback<List<byte[]>>() {
       @Override
