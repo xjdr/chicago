@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Nullable;
 import java.net.InetSocketAddress;
+import java.nio.channels.ClosedChannelException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
@@ -94,6 +95,7 @@ public class RequestMuxer<T> implements AutoCloseable {
     for(ScheduledFuture f : scheduledFutures){
       f.cancel(true);
     }
+    stopMessageQ();
   }
 
   public void shutdownGracefully() {
@@ -177,7 +179,7 @@ public class RequestMuxer<T> implements AutoCloseable {
     }
   }
 
-  private Channel requestNode(){
+  public Channel requestNode(){
 
     ChannelFuture cf = connectionQ.removeFirst();
 
@@ -246,7 +248,7 @@ public class RequestMuxer<T> implements AutoCloseable {
           if (future.isSuccess()) {
             mm.getF().set(true);
           } else {
-            mm.getF().set(false);
+            //mm.getF().set(false);
             mm.getF().setException(future.cause());
           }
         }
@@ -265,12 +267,19 @@ public class RequestMuxer<T> implements AutoCloseable {
             counter.decrementAndGet();
             f.set(true);
           } else {
-            f.set(false);
+            //f.set(false);
             f.setException(future.cause());
           }
         }
       });
     }
+  }
+
+  private void stopMessageQ(){
+      while(messageQ.peekFirst() != null){
+        final MuxedMessage<T> mm = messageQ.pollFirst();
+        mm.getF().setException(new ClosedChannelException());
+      }
   }
 
   @Data

@@ -87,4 +87,45 @@ public class RequestMuxerTest {
     latch.await();
   }
 
+  @Test
+  public void writeTestWithBadChannel() throws Exception{
+    SettableFuture<ChannelFuture> f = SettableFuture.create();
+    ChannelFuture cf = mock(ChannelFuture.class);
+    f.set(cf);
+    when(connector.connect(new InetSocketAddress("127.0.0.1",12000))).thenReturn(f);
+    when(cf.isSuccess()).thenReturn(true);
+
+    Channel helper = new EmbeddedChannel(mock(ChannelHandler.class));
+    Channel chMock = spy(helper);
+    ChannelPromise promise = new DefaultChannelPromise(chMock);
+    promise.setFailure(new RuntimeException("Channel not acitve!!!"));
+
+    when(cf.channel()).thenReturn(chMock);
+    when(chMock.isWritable()).thenReturn(false);
+    when(chMock.isActive()).thenReturn(false);
+    requestMuxer.start();
+    ChicagoMessage cm = new DefaultChicagoMessage(UUID.randomUUID(), Op.TS_WRITE,"colFam".getBytes(),null,"val".getBytes());
+    SettableFuture<Boolean> f2 = SettableFuture.create();
+    DefaultChannelPromise cfmock = mock(DefaultChannelPromise.class);
+    when(chMock.write(cm)).thenReturn(promise);
+    when(cfmock.isSuccess()).thenReturn(false);
+    CountDownLatch latch = new CountDownLatch(1);
+    Futures.addCallback(f2, new FutureCallback<Boolean>() {
+      @Override
+      public void onSuccess(@Nullable Boolean result) {
+        latch.countDown();
+      }
+
+      @Override
+      public void onFailure(Throwable t) {
+        latch.countDown();
+      }
+    });
+
+
+    requestMuxer.write(cm, f2);
+
+    latch.await();
+  }
+
 }
