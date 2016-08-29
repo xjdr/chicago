@@ -294,16 +294,23 @@ public class ChicagoAsyncClient implements Closeable {
   }
 
   public ListenableFuture<byte[]> tsWrite(byte[] topic, byte[] val) {
-    final List<ListenableFuture<byte[]>> resp = new ArrayList<>();
-
     List<String> nodes = getEffectiveNodes(topic);
     UUID id = UUID.randomUUID();
     SettableFuture<byte[]> f = SettableFuture.create();
+    SettableFuture<byte[]> resp = SettableFuture.create();
     futureMap.put(id, f);
     Futures.addCallback(f, new FutureCallback<byte[]>() {
       @Override
       public void onSuccess(@Nullable byte[] bytes) {
-        resp.add(tsWrite(topic, bytes, val));
+        try {
+          resp.set(tsWrite(topic, bytes, val).get(400, TimeUnit.MILLISECONDS));
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        } catch (ExecutionException e) {
+          e.printStackTrace();
+        } catch (TimeoutException e) {
+          e.printStackTrace();
+        }
       }
 
       @Override
@@ -311,20 +318,25 @@ public class ChicagoAsyncClient implements Closeable {
         Futures.addCallback(connectionManager.write(nodes.get(0), new DefaultChicagoMessage(id, Op.GET_OFFSET, topic, null, null)), new FutureCallback<byte[]>() {
           @Override
           public void onSuccess(@Nullable byte[] bytes) {
-            resp.add(tsWrite(topic, bytes, val));
-          }
+            try {
+              resp.set(tsWrite(topic, bytes, val).get(400, TimeUnit.MILLISECONDS));
+            } catch (InterruptedException e) {
+              e.printStackTrace();
+            } catch (ExecutionException e) {
+              e.printStackTrace();
+            } catch (TimeoutException e) {
+              e.printStackTrace();
+            }          }
 
           @Override
           public void onFailure(Throwable throwable) {
-            SettableFuture<byte[]> ff = SettableFuture.create();
-            ff.setException(throwable);
-            resp.add(ff);
+            resp.setException(throwable);
           }
         });
       }
     });
 
-    return resp.get(0);
+    return resp;
   }
 
   public ListenableFuture<byte[]> tsWrite(byte[] topic, byte[] offset, byte[] val) {
@@ -335,7 +347,7 @@ public class ChicagoAsyncClient implements Closeable {
       log.error("Unable to establish Quorum");
       return null;
     }
-    nodes.stream().forEach(xs -> {
+//    nodes.stream().forEach(xs -> {
       UUID id = UUID.randomUUID();
       SettableFuture<byte[]> f = SettableFuture.create();
       futureMap.put(id, f);
@@ -353,14 +365,14 @@ public class ChicagoAsyncClient implements Closeable {
         }
       });
 
-      Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.TS_WRITE, topic, offset, val)), new FutureCallback<Boolean>() {
+      Futures.addCallback(connectionManager.write(nodes.get(0), new DefaultChicagoMessage(id, Op.TS_WRITE, topic, offset, val)), new FutureCallback<Boolean>() {
         @Override
         public void onSuccess(@Nullable Boolean aBoolean) {
         }
 
         @Override
         public void onFailure(Throwable throwable) {
-          Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.TS_WRITE, topic, offset, val)), new FutureCallback<Boolean>() {
+          Futures.addCallback(connectionManager.write(nodes.get(0), new DefaultChicagoMessage(id, Op.TS_WRITE, topic, offset, val)), new FutureCallback<Boolean>() {
             @Override
             public void onSuccess(@Nullable Boolean aBoolean) {
 
@@ -373,25 +385,25 @@ public class ChicagoAsyncClient implements Closeable {
           });
         }
       });
-    });
+//    });
 
-    Futures.addCallback(Futures.successfulAsList(futureList), new FutureCallback<List<byte[]>>() {
-      @Override
-      public void onSuccess(@Nullable List<byte[]> bytes) {
-        respFuture.set(bytes.get(0));
-      }
+//    Futures.addCallback(Futures.successfulAsList(futureList), new FutureCallback<List<byte[]>>() {
+//      @Override
+//      public void onSuccess(@Nullable List<byte[]> bytes) {
+//        respFuture.set(bytes.get(0));
+//      }
+//
+//      @Override
+//      public void onFailure(Throwable throwable) {
+//        try {
+//          respFuture.set(tsWrite(topic, offset, val).get(TIMEOUT, TimeUnit.MILLISECONDS));
+//        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+//          respFuture.setException(e);
+//        }
+//      }
+//    });
 
-      @Override
-      public void onFailure(Throwable throwable) {
-        try {
-          respFuture.set(tsWrite(topic, offset, val).get(TIMEOUT, TimeUnit.MILLISECONDS));
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-          respFuture.setException(e);
-        }
-      }
-    });
-
-    return respFuture;
+    return f;
   }
 
   public ListenableFuture<byte[]> stream(byte[] topic, byte[] offset) {
