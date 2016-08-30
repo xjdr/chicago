@@ -1,4 +1,4 @@
-package com.xjeffrose.chicago.client;
+package com.xjeffrose.chicago;
 
 import com.google.common.hash.Funnels;
 import com.xjeffrose.chicago.RendezvousHash;
@@ -40,6 +40,23 @@ public class RendezvousHashTest {
     Double xd = xx.stream().mapToInt(x -> x).average().orElse(-1);
     assertEquals(3000, xd.intValue());
 
+  }
+
+  @Test
+  public void HashTestNode0(){
+    List<String> nodeList = new ArrayList<>();
+    for (int i = 0; i < 10; i++) {
+      nodeList.add(("Host" + i));
+    }
+    RendezvousHash rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, 3);
+
+    String key ="someColFam+someKey";
+    List<String> nodeBefore = rendezvousHash.get(key.getBytes());
+
+    rendezvousHash.add("Host6");
+
+    List<String> nodeAfter = rendezvousHash.get(key.getBytes());
+    assertEquals(nodeBefore.get(0),nodeAfter.get(0));
   }
 
 }

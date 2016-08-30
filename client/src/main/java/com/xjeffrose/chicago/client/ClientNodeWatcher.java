@@ -125,7 +125,7 @@ public class ClientNodeWatcher {
           }
           break;
         case CONNECTION_RECONNECTED:
-          connectionPoolManager.checkConnection();
+          //connectionPoolManager.checkConnection();
         default: {
           log.info("Zk " + event.getType().name());
         }

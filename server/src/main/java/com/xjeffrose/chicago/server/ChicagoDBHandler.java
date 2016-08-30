@@ -35,9 +35,9 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
   private final DBManager db;
   private final ChicagoPaxosClient paxosClient;
   private final Map<String, AtomicLong> offset = PlatformDependent.newConcurrentHashMap();
-  private final Map<String, Integer> q = PlatformDependent.newConcurrentHashMap();
-  private final Map<String, Map<String, Long>> sessionCoordinator = PlatformDependent.newConcurrentHashMap();
-  private final Map<String, AtomicInteger> qCount = PlatformDependent.newConcurrentHashMap();
+//  private final Map<String, Long> q = PlatformDependent.newConcurrentHashMap();
+//  private final Map<String, Map<String, Long>> sessionCoordinator = PlatformDependent.newConcurrentHashMap();
+//  private final Map<String, AtomicInteger> qCount = PlatformDependent.newConcurrentHashMap();
 
 
   public ChicagoDBHandler(DBManager db, ChicagoPaxosClient paxosClient) {
@@ -256,6 +256,7 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
         }
       }
     };
+    log.info(ctx.toString() + " received msg="+ msg.toString());
 
     switch (msg.getOp()) {
       case READ:
@@ -330,21 +331,21 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
     if (offset.containsKey(new String(msg.getColFam()))) {
       // This offset has been written to all members of the replica set
 //      if (qCount.get(new String(msg.getColFam())).get() == q.get(new String(msg.getColFam()))) {
-        if (sessionCoordinator.containsKey(new String(msg.getColFam()))) {
-
-        } else {
-          sessionCoordinator.put(new String(msg.getColFam()), PlatformDependent.newConcurrentHashMap());
-          sessionCoordinator.get(new String(msg.getKey())).put(new String(msg.getKey()), offset.get(new String(msg.getColFam())).incrementAndGet());
-        }
+//        if (sessionCoordinator.containsKey(new String(msg.getColFam()))) {
+//
+//        } else {
+//          sessionCoordinator.put(new String(msg.getColFam()), PlatformDependent.newConcurrentHashMap());
+//          sessionCoordinator.get(new String(msg.getKey())).put(new String(msg.getKey()), offset.get(new String(msg.getColFam())).incrementAndGet());
+//        }
 
         ctx.writeAndFlush(new DefaultChicagoMessage(
             msg.getId(),
             Op.RESPONSE,
             msg.getColFam(),
-            null,
+            Boolean.toString(true).getBytes(),
             Longs.toByteArray(offset.get(new String(msg.getColFam())).incrementAndGet()))).addListener(writeComplete);
-        qCount.get(new String(msg.getColFam())).incrementAndGet();
-        sessionCoordinator.get(new String(msg.getColFam())).put(new String(msg.getKey()), offset.get(new String(msg.getColFam())).get());
+        //qCount.get(new String(msg.getColFam())).incrementAndGet();
+        //sessionCoordinator.get(new String(msg.getColFam())).put(new String(msg.getKey()), offset.get(new String(msg.getColFam())).get());
 
 //      } else {
 //        // Return current offset to member of the replica set
@@ -361,19 +362,19 @@ public class ChicagoDBHandler extends SimpleChannelInboundHandler<ChicagoMessage
 
     } else {
       // Create the offset for the ColFam on first message (ColFam Create)
-      offset.put(new String(msg.getColFam()), new AtomicLong());
-      q.put(new String(msg.getColFam()), Ints.fromByteArray(msg.getVal()));
-      qCount.put(new String(msg.getColFam()), new AtomicInteger());
-      sessionCoordinator.put(new String(msg.getColFam()), PlatformDependent.newConcurrentHashMap());
+      offset.put(new String(msg.getColFam()), new AtomicLong(0));
+//      q.put(new String(msg.getColFam()), Longs.fromByteArray(msg.getVal()));
+//      qCount.put(new String(msg.getColFam()), new AtomicInteger(0));
+//      sessionCoordinator.put(new String(msg.getColFam()), PlatformDependent.newConcurrentHashMap());
 
       ctx.writeAndFlush(new DefaultChicagoMessage(
           msg.getId(),
           Op.RESPONSE,
           msg.getColFam(),
-          null,
+          Boolean.toString(true).getBytes(),
           Longs.toByteArray(offset.get(new String(msg.getColFam())).get()))).addListener(writeComplete);
-      qCount.get(new String(msg.getColFam())).incrementAndGet();
-      sessionCoordinator.get(new String(msg.getColFam())).put(new String(msg.getKey()), offset.get(new String(msg.getColFam())).get());
+      //qCount.get(new String(msg.getColFam())).incrementAndGet();
+      //sessionCoordinator.get(new String(msg.getColFam())).put(new String(msg.getKey()), offset.get(new String(msg.getColFam())).get());
     }
   }
 

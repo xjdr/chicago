@@ -161,14 +161,14 @@ public class ChicagoPaxosClient {
           });
         }
       });
+      connectionManager.write(nodes.get(finalI), new DefaultChicagoMessage(id, Op.MPAXOS_PROPOSE_WRITE, colFam, key, val));
     }
-
     return Futures.allAsList(futureList);
 
   }
 
   public ListenableFuture<List<byte[]>> tsWrite(byte[] topic, byte[] offset, byte[] val) {
-    List<String> nodes = getEffectiveNodes(Bytes.concat(topic, offset));
+    List<String> nodes = rendezvousHash.get(Bytes.concat(topic, offset));
     final List<SettableFuture<byte[]>> futureList = new ArrayList<>();
     for (int i = 1; i < replicaSize; i++) {
 
@@ -199,6 +199,7 @@ public class ChicagoPaxosClient {
           });
         }
       });
+      connectionManager.write(nodes.get(finalI), new DefaultChicagoMessage(id, Op.MPAXOS_PROPOSE_TS_WRITE, topic, offset, val));
     }
 
     return Futures.allAsList(futureList);

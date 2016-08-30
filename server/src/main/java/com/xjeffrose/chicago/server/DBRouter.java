@@ -1,5 +1,7 @@
 package com.xjeffrose.chicago.server;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.chicago.ChicagoPaxosClient;
 import com.xjeffrose.chicago.db.DBManager;
 import com.xjeffrose.chicago.db.StorageProvider;
@@ -30,10 +32,11 @@ public class DBRouter implements Closeable {
   private final Map<String, Integer> q;
   private final Map<String, Map<String, Long>> sessionCoordinator;
   private final Map<String, AtomicInteger> qCount;
+  private final Config conf;
 
   private Application application;
 
-  public DBRouter(StorageProvider db, ChicagoPaxosClient paxosClient) {
+  public DBRouter(StorageProvider db, ChicagoPaxosClient paxosClient, Config conf) {
     this.db = db;
     this.manager = new DBManager(db);
     this.handler = new ChicagoDBHandler(manager, paxosClient);
@@ -42,6 +45,7 @@ public class DBRouter implements Closeable {
     this.sessionCoordinator = PlatformDependent.newConcurrentHashMap();
     this.qCount = PlatformDependent.newConcurrentHashMap();
     this.chicagoPaxosHandler = new ChicagoPaxosHandler(offset, q, sessionCoordinator, qCount);
+    this.conf = conf;
   }
 
   private ChicagoServerPipeline buildDbPipeline() {
@@ -66,7 +70,7 @@ public class DBRouter implements Closeable {
   public void run() {
     manager.startAsync().awaitRunning();
 
-    application = new ApplicationBootstrap("chicago.application")
+    application = new ApplicationBootstrap(conf)
         .addServer("admin", (bs) -> bs.addToPipeline(new XioSslHttp1_1Pipeline()))
         .addServer("stats", (bs) -> bs.addToPipeline(new XioSslHttp1_1Pipeline()))
         .addServer("db", (bs) -> bs.addToPipeline(buildDbPipeline()))

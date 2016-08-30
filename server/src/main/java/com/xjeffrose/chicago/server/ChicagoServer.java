@@ -38,7 +38,7 @@ public class ChicagoServer {
     this.db = getStorageProvider(config);
     this.nodeWatcher = new NodeWatcher(NODE_LIST_PATH, NODE_LOCK_PATH, config.getQuorum());
     this.paxosClient = new ChicagoPaxosClient(config.getZkHosts(), config.getReplicaSize());
-    this.dbRouter = new DBRouter(db, paxosClient);
+    this.dbRouter = new DBRouter(db, paxosClient, config.conf);
   }
 
   private StorageProvider getStorageProvider(ChiConfig config) {

@@ -208,7 +208,7 @@ public class ChicagoAsyncClient implements Closeable {
   }
 
   public ListenableFuture<byte[]> read(byte[] colFam, byte[] key) {
-    List<String> nodes = getEffectiveNodes(Bytes.concat(colFam, key));
+    List<String> nodes = rendezvousHash.get(Bytes.concat(colFam,key));
     UUID id = UUID.randomUUID();
     SettableFuture<byte[]> f = SettableFuture.create();
     futureMap.put(id, f);
@@ -289,7 +289,7 @@ public class ChicagoAsyncClient implements Closeable {
         });
       }
     });
-
+    connectionManager.write(nodes.get(0), new DefaultChicagoMessage(id, Op.WRITE, colFam, key, val));
     return f;
   }
 
@@ -303,13 +303,13 @@ public class ChicagoAsyncClient implements Closeable {
       @Override
       public void onSuccess(@Nullable byte[] bytes) {
         try {
-          resp.set(tsWrite(topic, bytes, val).get(400, TimeUnit.MILLISECONDS));
+          resp.set(tsWrite(topic, bytes, val).get());
         } catch (InterruptedException e) {
           e.printStackTrace();
         } catch (ExecutionException e) {
           e.printStackTrace();
-        } catch (TimeoutException e) {
-          e.printStackTrace();
+        //} catch (TimeoutException e) {
+        //  e.printStackTrace();
         }
       }
 
@@ -335,14 +335,14 @@ public class ChicagoAsyncClient implements Closeable {
         });
       }
     });
-
+    connectionManager.write(nodes.get(0), new DefaultChicagoMessage(id, Op.GET_OFFSET, topic, null, null));
     return resp;
   }
 
   public ListenableFuture<byte[]> tsWrite(byte[] topic, byte[] offset, byte[] val) {
     final List<SettableFuture<byte[]>> futureList = new ArrayList<>();
     final SettableFuture<byte[]> respFuture = SettableFuture.create();
-    final List<String> nodes = getEffectiveNodes(Bytes.concat(topic, offset));
+    final List<String> nodes = rendezvousHash.get(Bytes.concat(topic,offset));
     if (nodes.size() == 0) {
       log.error("Unable to establish Quorum");
       return null;
@@ -402,7 +402,7 @@ public class ChicagoAsyncClient implements Closeable {
 //        }
 //      }
 //    });
-
+    //connectionManager.write(nodes.get(0), new DefaultChicagoMessage(id, Op.TS_WRITE, topic, offset, val));
     return f;
   }
 
@@ -455,6 +455,12 @@ public class ChicagoAsyncClient implements Closeable {
       }
     }, 2, TimeUnit.MILLISECONDS);
 
+    return f;
+  }
+
+  public ListenableFuture<byte[]> deleteColFam(byte[] colFam){
+    SettableFuture<byte[]> f = SettableFuture.create();
+    f.set("true".getBytes());
     return f;
   }
 
