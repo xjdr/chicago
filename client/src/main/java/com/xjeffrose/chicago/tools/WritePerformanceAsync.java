@@ -4,7 +4,6 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.xjeffrose.chicago.client.ChicagoAsyncClient;
-import com.xjeffrose.chicago.client.ChicagoClient;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,7 +25,6 @@ public class WritePerformanceAsync {
   private static AtomicInteger readFailure = new AtomicInteger(0);
   private static AtomicInteger timeouts = new AtomicInteger(0);
   private static Long[] keys;
-  ChicagoClient cts;
   int valCount;
 
   public static void main(String[] args) throws Exception {
@@ -72,7 +70,7 @@ public class WritePerformanceAsync {
 //      Callback cb = stats.nextCompletion(sendStart, val.length, stats);
 //      ListenableFuture<byte[]> future = ctsa[i % clients].tsWrite(key.getBytes(), val);
       Callback cb = stats.nextCompletion(sendStart, val.length, stats);
-      ListenableFuture<Boolean> future = ctsa[i % clients].write(key.concat(String.valueOf(i)).getBytes(), val);
+      ListenableFuture<byte[]> future = ctsa[i % clients].write(key.concat(String.valueOf(i)).getBytes(), val);
       Futures.addCallback(future, cb);
       if (throughput > 0) {
         sleepDeficitNs += sleepTime;

@@ -30,4 +30,9 @@ public class EmbeddedConnectionManager implements ConnectionPoolManager {
   public void stop() {
 
   }
+
+  @Override
+  public void checkConnection() {
+
+  }
 }

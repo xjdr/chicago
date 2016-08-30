@@ -31,5 +31,4 @@ public interface StorageProvider extends AutoCloseable {
   List<byte[]> getKeys(byte[] colFam, byte[] offset);
 
   List<String> getColFams();
-
 }

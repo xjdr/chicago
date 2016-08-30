@@ -10,4 +10,6 @@ public interface ConnectionPoolManager<N> {
   void start();
 
   void stop();
+
+  void checkConnection();
 }
