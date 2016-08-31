@@ -1,4 +1,4 @@
-package com.smadan.chicago;
+package com.xjeffrose.chicago;
 
 import com.google.common.primitives.Longs;
 import com.jcraft.jsch.Channel;

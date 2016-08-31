@@ -59,19 +59,28 @@ public class AsyncChicagoAppender extends AppenderSkeleton {
 
   @Override
   protected void append(LoggingEvent loggingEvent) {
-    String message = subAppend(loggingEvent);
-    ListenableFuture<byte[]> chiResp = cs.tsWrite(key.getBytes(), message.getBytes());
-    Futures.addCallback(chiResp, new FutureCallback<byte[]>() {
-      @Override
-      public void onSuccess(@Nullable byte[] bytes) {
+    try {
+      String message = subAppend(loggingEvent);
+      ListenableFuture<byte[]> chiResp = cs.tsWrite(key.getBytes(), message.getBytes());
+      if (chiResp != null) {
+        Futures.addCallback(chiResp, new FutureCallback<byte[]>() {
+          @Override
+          public void onSuccess(@Nullable byte[] bytes) {
 
-      }
+          }
 
-      @Override
-      public void onFailure(Throwable throwable) {
-        // TODO(JR): Maybe Try again?
+          @Override
+          public void onFailure(Throwable throwable) {
+            // TODO(JR): Maybe Try again?
+          }
+        });
+      } else {
+        //Todo : Maybe try again since the future was null.
       }
-    });
+    } catch (Exception e){
+      e.printStackTrace();
+      throw new RuntimeException(e);
+    }
   }
 
   @Override

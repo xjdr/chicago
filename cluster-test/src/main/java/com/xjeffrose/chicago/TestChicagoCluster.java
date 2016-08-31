@@ -1,4 +1,4 @@
-package com.smadan.chicago;
+package com.xjeffrose.chicago;
 
 import com.xjeffrose.chicago.ZkClient;
 import com.xjeffrose.chicago.client.ChicagoAsyncClient;
