@@ -1,17 +1,21 @@
 package com.xjeffrose.chicago.server;
 
+import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 import com.xjeffrose.chicago.ChicagoMessage;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
+import com.xjeffrose.chicago.DefaultChicagoMessage;
+import com.xjeffrose.chicago.Op;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.util.internal.PlatformDependent;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+// This is a state machine to manage offsets for our Time Series Database functionality
+// in our streaming functionality
+
 @ChannelHandler.Sharable
 public class ChicagoPaxosHandler extends SimpleChannelInboundHandler<ChicagoMessage> {
   private final Map<String, AtomicLong> offset;
@@ -30,37 +34,62 @@ public class ChicagoPaxosHandler extends SimpleChannelInboundHandler<ChicagoMess
     this.qCount = qCount;
   }
 
-  private void handlePaxosPropose(ChannelHandlerContext ctx, ChicagoMessage msg, ChannelFutureListener writeComplete) {
-
-  }
-
-  private void handlePaxosPromise(ChannelHandlerContext ctx, ChicagoMessage msg, ChannelFutureListener writeComplete) {
-
-  }
-
-  private void handlePaxosAccept(ChannelHandlerContext ctx, ChicagoMessage msg, ChannelFutureListener writeComplete) {
-
-  }
-
   @Override
-  protected void channelRead0(ChannelHandlerContext ctx, ChicagoMessage msg) throws Exception {    ChannelFutureListener writeComplete = new ChannelFutureListener() {
-    @Override
-    public void operationComplete(ChannelFuture future) {
-      if (!future.isSuccess()) {
-        log.error("Server error writing :" + " For UUID" + msg.getId() + " and key " + new String(msg.getKey()));
-      }
-    }
-  };
-
+  protected void channelRead0(ChannelHandlerContext ctx, ChicagoMessage msg) throws Exception {
     switch (msg.getOp()) {
-      case PAXOS_PROPOSE:
-        handlePaxosPropose(ctx, msg, writeComplete);
+      case GET_OFFSET:
+        // The ColFam Exists
+        if (offset.containsKey(new String(msg.getColFam()))) {
+          // This offset has been written to all members of the replica set
+          if (qCount.get(new String(msg.getColFam())).get() == q.get(new String(msg.getColFam()))) {
+            if (sessionCoordinator.containsKey(new String(msg.getColFam()))) {
+
+            } else {
+              sessionCoordinator.put(new String(msg.getColFam()), PlatformDependent.newConcurrentHashMap());
+              sessionCoordinator.get(new String(msg.getKey())).put(new String(msg.getKey()), offset.get(new String(msg.getColFam())).incrementAndGet());
+            }
+
+            ctx.writeAndFlush(new DefaultChicagoMessage(
+                msg.getId(),
+                Op.RESPONSE,
+                msg.getColFam(),
+                null,
+                Longs.toByteArray(offset.get(new String(msg.getColFam())).incrementAndGet())));
+            qCount.get(new String(msg.getColFam())).incrementAndGet();
+            sessionCoordinator.get(new String(msg.getColFam())).put(new String(msg.getKey()), offset.get(new String(msg.getColFam())).get());
+
+          } else {
+            // Return current offset to member of the replica set
+            ctx.writeAndFlush(new DefaultChicagoMessage(
+                msg.getId(),
+                Op.RESPONSE,
+                msg.getColFam(),
+                null,
+                Longs.toByteArray(offset.get(new String(msg.getColFam())).get())));
+            qCount.get(new String(msg.getColFam())).incrementAndGet();
+
+          }
+
+
+
+        } else {
+          // Create the offset for the ColFam on first message (ColFam Create)
+          offset.put(new String(msg.getColFam()), new AtomicLong());
+          q.put(new String(msg.getColFam()), Ints.fromByteArray(msg.getVal()));
+          qCount.put(new String(msg.getColFam()), new AtomicInteger());
+          sessionCoordinator.put(new String(msg.getColFam()), PlatformDependent.newConcurrentHashMap());
+
+          ctx.writeAndFlush(new DefaultChicagoMessage(
+              msg.getId(),
+              Op.RESPONSE,
+              msg.getColFam(),
+              null,
+              Longs.toByteArray(offset.get(new String(msg.getColFam())).get())));
+          qCount.get(new String(msg.getColFam())).incrementAndGet();
+          sessionCoordinator.get(new String(msg.getColFam())).put(new String(msg.getKey()), offset.get(new String(msg.getColFam())).get());
+
+        }
         break;
-      case PAXOS_PROMISE:
-        handlePaxosPromise(ctx, msg, writeComplete);
-        break;
-      case PAXOS_ACCEPT:
-        handlePaxosAccept(ctx, msg, writeComplete);
 
       default:
         break;

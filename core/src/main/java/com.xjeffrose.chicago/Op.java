@@ -10,12 +10,7 @@ public enum Op {
   STREAM(6),
   GET_OFFSET(7),
   STREAM_RESPONSE(8),
-  SCAN_KEYS(9),
-  PAXOS_PROPOSE(10),
-  PAXOS_PROMISE(11),
-  PAXOS_ACCEPT(12),
-  MPAXOS_PROPOSE_WRITE(13),
-  MPAXOS_PROPOSE_TS_WRITE(14);
+  SCAN_KEYS(9);
 
 
   private int i;
@@ -51,16 +46,24 @@ public enum Op {
         return STREAM_RESPONSE;
       case 9:
         return SCAN_KEYS;
-      case 10:
-        return PAXOS_PROPOSE;
-      case 11:
-        return PAXOS_PROMISE;
-      case 12:
-        return PAXOS_ACCEPT;
-      case 13:
-        return MPAXOS_PROPOSE_WRITE;
-      case 14:
-        return MPAXOS_PROPOSE_TS_WRITE;
+//      case 8:
+//        return CHILD_NODE_REMOVED;
+//      case 9:
+//        return FILE_MODIFIED;
+//      case 10:
+//        return LOCK_ACQUIRED;
+//      case 11:
+//        return LOCK_CONFLICT;
+//      case 12:
+//        return MASTER_FAILED;
+//      case 13:
+//        return MASTER_BALLOT;
+//      case 14:
+//        return INVALIDATE_CACHE;
+//      case 15:
+//        return MARK_NODE_DIRTY;
+//      case 16:
+//        return REPLICATION_EVENT;
     }
     return null;
   }

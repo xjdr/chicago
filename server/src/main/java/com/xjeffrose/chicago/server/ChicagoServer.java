@@ -1,6 +1,5 @@
 package com.xjeffrose.chicago.server;
 
-import com.xjeffrose.chicago.ChicagoPaxosClient;
 import com.xjeffrose.chicago.NodeWatcher;
 import com.xjeffrose.chicago.db.EncryptedStorageProvider;
 import com.xjeffrose.chicago.db.InMemDBImpl;
@@ -24,21 +23,17 @@ public class ChicagoServer {
   public final static String NODE_LOCK_PATH = "/chicago/replication-lock";
 
   public final ChiConfig config;
-  private final ChicagoPaxosClient paxosClient;
+  private ZkClient zkClient;
   private final StorageProvider db;
   private final NodeWatcher nodeWatcher;
   private final DBRouter dbRouter;
 
-  private  ZkClient zkClient;
-
-
   public ChicagoServer(ChiConfig config) {
     this.config = config;
-    this.zkClient = new ZkClient(config.getZkHosts(),true);
-    this.db = getStorageProvider(config);
-    this.nodeWatcher = new NodeWatcher(NODE_LIST_PATH, NODE_LOCK_PATH, config.getQuorum());
-    this.paxosClient = new ChicagoPaxosClient(config.getZkHosts(), config.getReplicaSize());
-    this.dbRouter = new DBRouter(db, paxosClient);
+    zkClient = new ZkClient(config.getZkHosts(),true);
+    db = getStorageProvider(config);
+    nodeWatcher = new NodeWatcher(NODE_LIST_PATH, NODE_LOCK_PATH, config.getQuorum());
+    dbRouter = new DBRouter(db);
   }
 
   private StorageProvider getStorageProvider(ChiConfig config) {
@@ -61,8 +56,8 @@ public class ChicagoServer {
     dbRouter.run();
     if(!zkClient.getClient().getState().equals(CuratorFrameworkState.STARTED)) {
       zkClient = new ZkClient(config.getZkHosts(), true);
+//      config.setZkClient(zkClient);
       zkClient.start();
-      paxosClient.start();
     }
     register(NODE_LIST_PATH, config, dbRouter.getDBBoundInetAddress(),zkClient);
     zkClient.electLeader(ELECTION_PATH);

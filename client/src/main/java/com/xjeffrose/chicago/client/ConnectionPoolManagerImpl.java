@@ -37,11 +37,6 @@ public class ConnectionPoolManagerImpl implements ConnectionPoolManager, NodeLis
     });
   }
 
-  @Override
-  public void checkConnection() {
-    //TODO(JR): No idea what this was supposed to do. Prob check a connection?!?
-  }
-
   private void buildConnectionMap(List<String> nodeList, ChannelHandler handler, EventLoopGroup workerLoop) {
     nodeList.stream().forEach(xs -> {
       RequestMuxer<ChicagoMessage> mux = new RequestMuxer<>(xs, handler, workerLoop);

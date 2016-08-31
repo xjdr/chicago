@@ -19,8 +19,6 @@ public class ChiConfig {
   @Getter
   private int quorum;
   @Getter
-  private int replicaSize;
-  @Getter
   private boolean graceFullStart;
   @Getter
   private long compactionSize;
@@ -39,7 +37,6 @@ public class ChiConfig {
 
     this.dbPath = conf.getString("settings.dbPath");
     this.quorum = conf.getInt("settings.quorum");
-    this.replicaSize = conf.getInt("settings.replicaSize");
     this.zkHosts = conf.getString("settings.zookeeperCluster");
     this.graceFullStart = conf.withFallback(defaults).getBoolean("graceful");
     this.compactionSize = conf.getMemorySize("settings.compactionSize").toBytes();
