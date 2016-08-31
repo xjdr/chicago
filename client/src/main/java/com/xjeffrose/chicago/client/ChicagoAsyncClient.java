@@ -7,10 +7,12 @@ import com.xjeffrose.chicago.*;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.handler.codec.http2.StreamBufferingEncoder;
 import io.netty.util.internal.PlatformDependent;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Nullable;
+import java.nio.channels.ClosedChannelException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -329,7 +331,7 @@ public class ChicagoAsyncClient implements Client {
     final List<SettableFuture<byte[]>> futureList = new ArrayList<>();
     final SettableFuture<byte[]> respFuture = SettableFuture.create();
     final List<String> nodes = getEffectiveNodes(topic);
-    if (nodes.size() < quorum) {
+    if (nodes.size() == 0) {
       log.error("Unable to establish Quorum");
       return null;
     }
@@ -338,7 +340,6 @@ public class ChicagoAsyncClient implements Client {
       SettableFuture<byte[]> f = SettableFuture.create();
       futureMap.put(id, f);
       futureList.add(f);
-
       Futures.addCallback(f, new FutureCallback<byte[]>() {
         @Override
         public void onSuccess(@Nullable byte[] bytes) {
@@ -358,17 +359,21 @@ public class ChicagoAsyncClient implements Client {
 
         @Override
         public void onFailure(Throwable throwable) {
-          Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.TS_WRITE, topic, key, val)), new FutureCallback<Boolean>() {
-            @Override
-            public void onSuccess(@Nullable Boolean aBoolean) {
+          if(throwable instanceof ClosedChannelException){
+            f.setException(throwable);
+          } else {
+            Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.TS_WRITE, topic, key, val)), new FutureCallback<Boolean>() {
+              @Override
+              public void onSuccess(@Nullable Boolean aBoolean) {
 
-            }
+              }
 
-            @Override
-            public void onFailure(Throwable throwable) {
-
-            }
-          });
+              @Override
+              public void onFailure(Throwable throwable) {
+                f.setException(throwable);
+              }
+            });
+          }
         }
       });
     });
@@ -381,11 +386,7 @@ public class ChicagoAsyncClient implements Client {
 
       @Override
       public void onFailure(Throwable throwable) {
-        try {
-          respFuture.set(tsWrite(topic,key, val).get(TIMEOUT, TimeUnit.MILLISECONDS));
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-          respFuture.setException(e);
-        }
+        respFuture.setException(throwable);
       }
     });
 

@@ -4,6 +4,7 @@ import java.nio.charset.Charset;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
@@ -52,6 +53,10 @@ public class ZkClient  implements  AutoCloseable {
 
   public void start() throws InterruptedException {
     client.start();
+    boolean connected = client.blockUntilConnected(2000, TimeUnit.MILLISECONDS);
+    if(!connected){
+      throw new RuntimeException("Cannot connect to zookeeper");
+    }
   }
 
   public void stop() throws Exception {

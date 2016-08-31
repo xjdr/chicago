@@ -1,11 +1,12 @@
 package com.xjeffrose.chicago;
 
 import com.xjeffrose.chicago.db.DBManager;
-import com.xjeffrose.chicago.server.ChicagoDBHandler;
 import com.xjeffrose.chicago.db.InMemDBImpl;
+import com.xjeffrose.chicago.server.ChicagoDBHandler;
 import io.netty.channel.embedded.EmbeddedChannel;
-import java.util.UUID;
 import org.junit.Test;
+
+import java.util.UUID;
 
 // TODO(CK): change this into three tests
 public class ChicagoDBHandlerTest extends org.junit.Assert {
