@@ -5,6 +5,7 @@ import com.beust.jcommander.Parameter;
 import com.google.common.primitives.Longs;
 import com.xjeffrose.chicago.ChiUtil;
 import com.xjeffrose.chicago.client.ChicagoAsyncClient;
+import com.xjeffrose.chicago.client.ChicagoClient;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;

@@ -103,7 +103,7 @@ public class ChicagoAsyncClientTest {
 
   @Test
   public void write() throws Exception {
-    ListenableFuture<byte[]> clientResp = chicagoClient.write("ColFam".getBytes(), "Key".getBytes(), "Val".getBytes());
+    ListenableFuture<Boolean> clientResp = chicagoClient.write("ColFam".getBytes(), "Key".getBytes(), "Val".getBytes());
 
     ByteBuf bb = ch1.readOutbound();
     byte[] _bb = new byte[bb.readableBytes()];
@@ -118,7 +118,7 @@ public class ChicagoAsyncClientTest {
 
   @Test
   public void writeHappyRespPath() throws Exception {
-    ListenableFuture<byte[]> clientResp = chicagoClient.write("ColFam".getBytes(), "Key".getBytes(), "Val".getBytes());
+    ListenableFuture<Boolean> clientResp = chicagoClient.write("ColFam".getBytes(), "Key".getBytes(), "Val".getBytes());
 
     ByteBuf bb = ch1.readOutbound();
     byte[] _bb = new byte[bb.readableBytes()];
@@ -127,9 +127,9 @@ public class ChicagoAsyncClientTest {
 
     ch1.writeInbound(new DefaultChicagoMessage(chicagoMessage.getId(), Op.RESPONSE, "ColFam".getBytes(), Boolean.toString(true).getBytes(), null));
     CountDownLatch latch = new CountDownLatch(1);
-    Futures.addCallback(clientResp, new FutureCallback<byte[]>() {
+    Futures.addCallback(clientResp, new FutureCallback<Boolean>() {
       @Override
-      public void onSuccess(@Nullable byte[] bytes) {
+      public void onSuccess(@Nullable Boolean aBoolean) {
         latch.countDown();
       }
 
@@ -138,6 +138,7 @@ public class ChicagoAsyncClientTest {
 
       }
     });
+
     latch.await(2000, TimeUnit.MILLISECONDS);
   }
 

@@ -34,7 +34,7 @@ public class ChicagoObjectDecoderTest {
     DBManager dbManager = new DBManager(db);
     dbManager.startAsync().awaitRunning();
 
-    EmbeddedChannel ch1 = new EmbeddedChannel(decoder, new ChicagoDBHandler(dbManager, new ChicagoPaxosClient("")));
+    EmbeddedChannel ch1 = new EmbeddedChannel(decoder, new ChicagoDBHandler(dbManager));
 
     ChicagoMessage cm1 =
       new DefaultChicagoMessage(UUID.randomUUID(), Op.WRITE, "colfFam".getBytes(),
