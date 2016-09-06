@@ -208,28 +208,13 @@ public class ChicagoAsyncClient implements Client {
     UUID id = UUID.randomUUID();
     SettableFuture<byte[]> f = SettableFuture.create();
     futureMap.put(id, f);
-    Futures.addCallback(f, new FutureCallback<byte[]>() {
-      @Override
-      public void onSuccess(@Nullable byte[] bytes) {
-        f.set(bytes);
-      }
-
-      @Override
-      public void onFailure(Throwable throwable) {
-        f.setException(throwable);
-      }
-    });
 
     Futures.addCallback(connectionManager.write(nodes.get(0), new DefaultChicagoMessage(id, Op.READ, colFam, key, null)), new FutureCallback<Boolean>() {
       @Override
-      public void onSuccess(@Nullable Boolean aBoolean) {
-
-      }
+      public void onSuccess(@Nullable Boolean aBoolean) {}
 
       @Override
-      public void onFailure(Throwable throwable) {
-
-      }
+      public void onFailure(Throwable throwable) {}
     });
 
     workerLoop.schedule(() -> {
@@ -264,51 +249,35 @@ public class ChicagoAsyncClient implements Client {
     final List<SettableFuture<byte[]>> futureList = new ArrayList<>();
     final SettableFuture<Boolean> respFuture = SettableFuture.create();
     final List<String> nodes = getEffectiveNodes(colFam);
-    if (nodes.size() < quorum) {
+    if (nodes.size() == 0) {
       log.error("Unable to establish Quorum");
       return null;
     }
+
     nodes.stream().forEach(xs -> {
       UUID id = UUID.randomUUID();
       SettableFuture<byte[]> f = SettableFuture.create();
       futureMap.put(id, f);
       futureList.add(f);
-      Futures.addCallback(f, new FutureCallback<byte[]>() {
-        @Override
-        public void onSuccess(@Nullable byte[] bytes) {
-          f.set(bytes);
-        }
-
-        @Override
-        public void onFailure(Throwable throwable) {
-          f.setException(throwable);
-        }
-      });
 
       Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.WRITE, colFam, key, val)), new FutureCallback<Boolean>() {
         @Override
-        public void onSuccess(@Nullable Boolean aBoolean) {
-          futureList.add(f);
-        }
+        public void onSuccess(@Nullable Boolean aBoolean) {}
 
         @Override
         public void onFailure(Throwable throwable) {
           Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.WRITE, colFam, key, val)), new FutureCallback<Boolean>() {
             @Override
-            public void onSuccess(@Nullable Boolean aBoolean) {
-              futureList.add(f);
-            }
+            public void onSuccess(@Nullable Boolean aBoolean) {}
 
             @Override
-            public void onFailure(Throwable throwable) {
-
-            }
+            public void onFailure(Throwable throwable) {}
           });
         }
       });
     });
 
-    Futures.addCallback(Futures.successfulAsList(futureList), new FutureCallback<List<byte[]>>() {
+    Futures.addCallback(Futures.allAsList(futureList), new FutureCallback<List<byte[]>>() {
       @Override
       public void onSuccess(@Nullable List<byte[]> bytes) {
         respFuture.set(true);
@@ -340,22 +309,10 @@ public class ChicagoAsyncClient implements Client {
       SettableFuture<byte[]> f = SettableFuture.create();
       futureMap.put(id, f);
       futureList.add(f);
-      Futures.addCallback(f, new FutureCallback<byte[]>() {
-        @Override
-        public void onSuccess(@Nullable byte[] bytes) {
-          f.set(bytes);
-        }
-
-        @Override
-        public void onFailure(Throwable throwable) {
-          f.setException(throwable);
-        }
-      });
 
       Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.TS_WRITE, topic, key, val)), new FutureCallback<Boolean>() {
         @Override
-        public void onSuccess(@Nullable Boolean aBoolean) {
-        }
+        public void onSuccess(@Nullable Boolean aBoolean) {}
 
         @Override
         public void onFailure(Throwable throwable) {
@@ -378,7 +335,7 @@ public class ChicagoAsyncClient implements Client {
       });
     });
 
-    Futures.addCallback(Futures.successfulAsList(futureList), new FutureCallback<List<byte[]>>() {
+    Futures.addCallback(Futures.allAsList(futureList), new FutureCallback<List<byte[]>>() {
       @Override
       public void onSuccess(@Nullable List<byte[]> bytes) {
         respFuture.set(bytes.get(0));
@@ -404,37 +361,20 @@ public class ChicagoAsyncClient implements Client {
     UUID id = UUID.randomUUID();
     SettableFuture<byte[]> f = SettableFuture.create();
     futureMap.put(id, f);
-    Futures.addCallback(f, new FutureCallback<byte[]>() {
-      @Override
-      public void onSuccess(@Nullable byte[] bytes) {
-        f.set(bytes);
-      }
-
-      @Override
-      public void onFailure(Throwable throwable) {
-        f.setException(throwable);
-      }
-    });
 
     Futures.addCallback(connectionManager.write(nodes.get(0), new DefaultChicagoMessage(id, Op.STREAM, topic, null, offset)), new FutureCallback<Boolean>() {
       @Override
-      public void onSuccess(@Nullable Boolean aBoolean) {
-
-      }
+      public void onSuccess(@Nullable Boolean aBoolean) {}
 
       @Override
-      public void onFailure(Throwable throwable) {
-
-      }
+      public void onFailure(Throwable throwable) {}
     });
 
     workerLoop.schedule(() -> {
       if (nodes.size() > 1) {
         Futures.addCallback(connectionManager.write(nodes.get(1), new DefaultChicagoMessage(id, Op.STREAM, topic, null, offset)), new FutureCallback<Boolean>() {
           @Override
-          public void onSuccess(@Nullable Boolean aBoolean) {
-
-          }
+          public void onSuccess(@Nullable Boolean aBoolean) {}
 
           @Override
           public void onFailure(Throwable throwable) {
@@ -461,17 +401,6 @@ public class ChicagoAsyncClient implements Client {
       SettableFuture<byte[]> f = SettableFuture.create();
       futureMap.put(id, f);
       futureList.add(f);
-      Futures.addCallback(f, new FutureCallback<byte[]>() {
-        @Override
-        public void onSuccess(@Nullable byte[] bytes) {
-          f.set(bytes);
-        }
-
-        @Override
-        public void onFailure(Throwable throwable) {
-          f.setException(throwable);
-        }
-      });
 
       Futures.addCallback(connectionManager.write(xs, new DefaultChicagoMessage(id, Op.DELETE, colFam, null, null)), new FutureCallback<Boolean>() {
         @Override
@@ -488,9 +417,7 @@ public class ChicagoAsyncClient implements Client {
             }
 
             @Override
-            public void onFailure(Throwable throwable) {
-
-            }
+            public void onFailure(Throwable throwable) {}
           });
         }
       });

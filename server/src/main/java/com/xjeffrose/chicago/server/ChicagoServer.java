@@ -33,7 +33,7 @@ public class ChicagoServer {
     zkClient = new ZkClient(config.getZkHosts(),true);
     db = getStorageProvider(config);
     nodeWatcher = new NodeWatcher(NODE_LIST_PATH, NODE_LOCK_PATH, config.getQuorum());
-    dbRouter = new DBRouter(db);
+    dbRouter = new DBRouter(db,config.getConf());
   }
 
   private StorageProvider getStorageProvider(ChiConfig config) {

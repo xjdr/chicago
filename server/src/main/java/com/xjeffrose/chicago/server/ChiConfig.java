@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ChiConfig {
   @Getter
   private final String zkHosts;
+  @Getter
   private Config conf;
   //  private Map<XioServerDef, XioMetrics> channelStats;
   @Getter
